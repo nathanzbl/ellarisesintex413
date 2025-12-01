@@ -77,7 +77,7 @@ saveUninitialized - Default: true
 app.use(
     session(
         {
-    secret: process.env.SESSION_SECRET ||~ 'fallback-secret-key',
+    secret: process.env.SESSION_SECRET || 'fallback-secret-key',
     resave: false,
     saveUninitialized: false,
         }
