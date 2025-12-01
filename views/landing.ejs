@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ella Rises</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'pink': '#FFD7D1',
+                        'blue': '#A8C0CC',
+                        'text-gray': '#4A4A4A',
+                        'purple-accent': '#C4B7D3',
+                        'flower-red': '#D9414E',
+                        'flower-lavender': '#A7A9E0',
+                        'flower-yellow': '#F4D57D',
+                        'flower-green': '#799E82',
+                    },
+                    fontFamily: {
+                        'heading': ['Poppins', 'Montserrat', 'sans-serif'],
+                        'body': ['Inter', 'Lato', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --pink: #FFD7D1;
+            --blue: #A8C0CC;
+            --black: #000000;
+            --text-gray: #4A4A4A;
+            --purple-accent: #C4B7D3;
+            --flower-red: #D9414E;
+            --flower-lavender: #A7A9E0;
+            --flower-yellow: #F4D57D;
+            --flower-green: #799E82;
+            --heading-font: "Poppins", "Montserrat", sans-serif;
+            --body-font: "Inter", "Lato", sans-serif;
+        }
+
+        body {
+            font-family: var(--body-font);
+            color: var(--text-gray);
+            background: #ffffff;
+        }
+
+        h1, h2, h3 {
+            font-family: var(--heading-font);
+            letter-spacing: 1px;
+        }
+
+        .cta-btn {
+            background: #000;
+            color: #fff;
+            padding: 14px 28px;
+            border-radius: 9999px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+            transition: all 0.3s ease;
+        }
+
+        .cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+        }
+
+        .card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-white font-body text-text-gray">
+    <!-- Navigation -->
+    <nav class="bg-pink px-6 py-3 shadow-sm border-b border-blue/30 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto flex items-center justify-between w-full">
+            <img src="images/EllaRisesLogo.png.avif" alt="Ella Rises" class="h-10">
+            <div class="flex gap-8">
+                <a href="/donations" class="text-text-gray hover:text-flower-red transition-colors font-medium">Donations</a>
+                <a href="/events" class="text-text-gray hover:text-flower-red transition-colors font-medium">Events</a>
+                <a href="/milestones" class="text-text-gray hover:text-flower-red transition-colors font-medium">Milestones</a>
+                <a href="/participants" class="text-text-gray hover:text-flower-red transition-colors font-medium">Participants</a>
+                <a href="/surveys" class="text-text-gray hover:text-flower-red transition-colors font-medium">Surveys</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="bg-gradient-to-b from-pink to-white py-24 px-5">
+        <div class="max-w-4xl mx-auto text-center">
+            <h1 class="text-5xl md:text-6xl font-bold text-gray-800 font-heading leading-tight">Empowering Women to Rise</h1>
+            <p class="mt-6 text-xl text-text-gray max-w-2xl mx-auto leading-relaxed">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+            <div class="mt-10 flex gap-4 justify-center">
+                <button class="cta-btn cursor-pointer">Get Involved</button>
+                <button class="bg-white text-text-gray border-2 border-text-gray px-7 py-3 rounded-full font-medium hover:bg-gray-50 transition-colors cursor-pointer">Learn More</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- About Section -->
+    <main class="max-w-6xl mx-auto px-5 py-20">
+        <section id="about" class="mb-24">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <span class="text-flower-red font-semibold uppercase tracking-wider text-sm">Who We Are</span>
+                    <h2 class="text-4xl font-bold text-gray-800 font-heading mt-2">About Ella Rises</h2>
+                    <p class="mt-6 text-text-gray leading-relaxed">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam scelerisque leo nec nibh vehicula, vel consectetur massa fermentum. Praesent euismod justo vel urna tincidunt, in consectetur magna feugiat.</p>
+                    <p class="mt-4 text-text-gray leading-relaxed">Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae. Donec velit neque, auctor sit amet aliquam vel, ullamcorper sit amet ligula.</p>
+                </div>
+                <div class="bg-gradient-to-br from-pink to-blue/50 rounded-3xl h-80 flex items-center justify-center">
+                    <span class="text-text-gray/50">Image Placeholder</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats Section -->
+        <section class="bg-pink rounded-3xl p-12 mb-24">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+                <div>
+                    <p class="text-4xl font-bold text-flower-red font-heading">500+</p>
+                    <p class="mt-2 text-text-gray">Women Empowered</p>
+                </div>
+                <div>
+                    <p class="text-4xl font-bold text-flower-lavender font-heading">50+</p>
+                    <p class="mt-2 text-text-gray">Events Hosted</p>
+                </div>
+                <div>
+                    <p class="text-4xl font-bold text-flower-green font-heading">25+</p>
+                    <p class="mt-2 text-text-gray">Communities</p>
+                </div>
+                <div>
+                    <p class="text-4xl font-bold text-flower-yellow font-heading">100%</p>
+                    <p class="mt-2 text-text-gray">Dedication</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Services Section -->
+        <section id="services" class="mb-24">
+            <div class="text-center mb-12">
+                <span class="text-flower-red font-semibold uppercase tracking-wider text-sm">What We Offer</span>
+                <h2 class="text-4xl font-bold text-gray-800 font-heading mt-2">Our Services</h2>
+                <p class="mt-4 text-text-gray max-w-2xl mx-auto">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt.</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="card bg-white border border-gray-100 rounded-2xl p-8 shadow-sm">
+                    <div class="w-14 h-14 bg-pink rounded-xl flex items-center justify-center mb-6">
+                        <span class="text-2xl">🌸</span>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 font-heading">Mentorship Programs</h3>
+                    <p class="mt-3 text-text-gray leading-relaxed">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam scelerisque leo nec nibh vehicula.</p>
+                </div>
+                <div class="card bg-white border border-gray-100 rounded-2xl p-8 shadow-sm">
+                    <div class="w-14 h-14 bg-blue rounded-xl flex items-center justify-center mb-6">
+                        <span class="text-2xl">💪</span>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 font-heading">Wellness Workshops</h3>
+                    <p class="mt-3 text-text-gray leading-relaxed">Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae.</p>
+                </div>
+                <div class="card bg-white border border-gray-100 rounded-2xl p-8 shadow-sm">
+                    <div class="w-14 h-14 bg-purple-accent rounded-xl flex items-center justify-center mb-6">
+                        <span class="text-2xl">🤝</span>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 font-heading">Community Building</h3>
+                    <p class="mt-3 text-text-gray leading-relaxed">Praesent euismod justo vel urna tincidunt, in consectetur magna feugiat.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Events Section -->
+        <section id="events" class="mb-24">
+            <div class="text-center mb-12">
+                <span class="text-flower-red font-semibold uppercase tracking-wider text-sm">Join Us</span>
+                <h2 class="text-4xl font-bold text-gray-800 font-heading mt-2">Upcoming Events</h2>
+            </div>
+            <div class="space-y-6">
+                <div class="card bg-white border border-gray-100 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row gap-6 items-center">
+                    <div class="bg-pink rounded-xl p-4 text-center min-w-[100px]">
+                        <p class="text-3xl font-bold text-flower-red">15</p>
+                        <p class="text-text-gray font-medium">Jan</p>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-xl font-semibold text-gray-800 font-heading">Annual Women's Wellness Retreat</h3>
+                        <p class="mt-2 text-text-gray">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam scelerisque leo.</p>
+                    </div>
+                    <button class="cta-btn text-sm cursor-pointer">Register</button>
+                </div>
+                <div class="card bg-white border border-gray-100 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row gap-6 items-center">
+                    <div class="bg-blue rounded-xl p-4 text-center min-w-[100px]">
+                        <p class="text-3xl font-bold text-gray-700">22</p>
+                        <p class="text-text-gray font-medium">Feb</p>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-xl font-semibold text-gray-800 font-heading">Leadership Workshop Series</h3>
+                        <p class="mt-2 text-text-gray">Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere.</p>
+                    </div>
+                    <button class="cta-btn text-sm cursor-pointer">Register</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section id="contact" class="bg-gradient-to-r from-pink to-blue rounded-3xl p-12 text-center">
+            <h2 class="text-4xl font-bold text-gray-800 font-heading">Ready to Rise?</h2>
+            <p class="mt-4 text-text-gray max-w-xl mx-auto">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Join our community today and start your journey.</p>
+            <button class="cta-btn mt-8 cursor-pointer">Get Started Today</button>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-50 border-t border-gray-100 mt-20">
+        <div class="max-w-6xl mx-auto px-5 py-12">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div>
+                    <img src="images/EllaRisesLogo.png.avif" alt="Ella Rises" class="h-10 mb-4">
+                    <p class="text-text-gray text-sm">Empowering women to rise, thrive, and lead with confidence.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-gray-800 mb-4">Quick Links</h4>
+                    <ul class="space-y-2 text-sm text-text-gray">
+                        <li><a href="#about" class="hover:text-flower-red transition-colors">About Us</a></li>
+                        <li><a href="#services" class="hover:text-flower-red transition-colors">Services</a></li>
+                        <li><a href="#events" class="hover:text-flower-red transition-colors">Events</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-gray-800 mb-4">Get Involved</h4>
+                    <ul class="space-y-2 text-sm text-text-gray">
+                        <li><a href="#" class="hover:text-flower-red transition-colors">Volunteer</a></li>
+                        <li><a href="#" class="hover:text-flower-red transition-colors">Donate</a></li>
+                        <li><a href="#" class="hover:text-flower-red transition-colors">Partner</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-gray-800 mb-4">Contact</h4>
+                    <ul class="space-y-2 text-sm text-text-gray">
+                        <li>hello@ellarises.org</li>
+                        <li>(555) 123-4567</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-200 mt-10 pt-6 text-center">
+                <p class="text-text-gray text-sm">&copy; 2024 Ella Rises. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html></section></div>
