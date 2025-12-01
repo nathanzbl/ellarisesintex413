@@ -1,0 +1,90 @@
+<style>
+:root {
+        --er-blue:     #99B7C6;
+        --er-lavender: #978EC4;
+        --er-cream:    #F9F5EA;
+        --er-blush:    #FFD8D1;
+        --pink: #FFD7D1;
+        --er-pink:     #F9AFB1;
+        --er-sage:     #9AB59D;
+        --er-charcoal: #3A3F3B;
+        --er-peach:    #F4B092;
+        --er-rose:     #CE325B;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 0;
+        font-family: "Montserrat", system-ui, sans-serif;
+        background: var(--er-cream);
+        color: var(--er-charcoal);
+    }
+
+    nav {
+        width: 100%;
+        background-color: var(--pink);
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+
+    .nav-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem 1.5rem;
+    }
+
+    .nav-logo {
+        height: 50px;
+        width: auto;
+    }
+
+    .nav-links {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .nav-links a {
+        text-decoration: none;
+        color: var(--er-charcoal);
+        font-size: 0.9rem;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.5rem;
+        transition: all 0.2s ease;
+    }
+
+    .nav-links a:hover {
+        background: var(--er-cream);
+        color: var(--er-rose);
+    }
+
+</style>
+
+<nav>
+    <div class="nav-container">
+        <a href="/">
+            <img src="images/EllaRisesLogo.png.avif" alt="Ella Rises" class="nav-logo">
+        </a>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/donations">Donations</a>
+            <a href="/events">Events</a>
+            <a href="/milestones">Milestones</a>
+            <a href="/participants">Participants</a>
+            <a href="/surveys">Surveys</a>
+            <a href="/login">Login</a>
+        </div>
+    </div>
+</nav>

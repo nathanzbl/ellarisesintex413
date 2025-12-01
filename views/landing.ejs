@@ -41,34 +41,6 @@
             width: 100%;
         }
 
-        .nav-container {
-            max-width: 72rem;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .nav-logo {
-            height: 40px;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 32px;
-        }
-
-        .nav-links a {
-            color: var(--text-gray);
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s ease;
-        }
-
-        .nav-links a:hover {
-            color: var(--flower-red);
-        }
-
         /* Hero Section */
         header {
             background: linear-gradient(to bottom, var(--pink), white);
@@ -158,18 +130,7 @@
 </head>
 <body>
     <!-- Navigation -->
-    <nav>
-        <div class="nav-container">
-            <img src="images/EllaRisesLogo.png.avif" alt="Ella Rises" class="nav-logo">
-            <div class="nav-links">
-                <a href="/donations">Donations</a>
-                <a href="/events">Events</a>
-                <a href="/milestones">Milestones</a>
-                <a href="/participants">Participants</a>
-                <a href="/surveys">Surveys</a>
-            </div>
-        </div>
-    </nav>
+     <%- include('navbar.ejs') %>
 
     <!-- Hero Section -->
     <header>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <%- include('navbar.ejs') %>
+
+    <div class="container">
+                <br>
+                <% if (typeof error_message !== 'undefined' && error_message) { %>
+                    <div class="alert alert-danger" role="alert">
+                        <%= error_message %>
+                    </div>
+                <% } %>
+                <% if (workshops.length === 0) { %>
+                    <div class="alert alert-warning" role="alert">
+                        No workshops found in the database.
+                    </div>
+                <% } else { %>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Event Date</th>
+                                <th>Location</th>
+                                <th>Max Seats</th>
+                                <% if (isManager) { %>
+                                    <th></th>
+                                    <th></th>
+                                <% } %>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% for (let iCount = 0; iCount < workshops.length; iCount++) { %>
+                                <tr>
+                                    <td><%= workshops[iCount].title %></td>
+                                    <td><%= workshops[iCount].event_date %></td>
+                                    <td><%= workshops[iCount].location %></td>
+                                    <td><%= workshops[iCount].max_seats %></td>
+                                    <% if (isManager) { %>
+                                        <td>
+                                            <form action="/editWorkshop/<%= workshops[iCount].id %>" method="post">
+                                                <input type="submit" name="Edit" value="Edit" />
+                                            </form>
+                                        </td>
+                                    <% } %>
+                                    <% if (isManager) { %>
+                                        <td>
+                                            <form action="/deleteWorkshop/<%= workshops[iCount].id %>" method="post">
+                                                <input type="submit" name="Delete" value="Delete" />
+                                            </form>
+                                        </td>
+                                    <% } %>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                <% } %>
+                <div class="text-center">
+                    <a href="/logout" class="btn btn-danger">Logout</a>
+                    <% if (isManager) { %>
+                        <a href="/addWorkshop" class="btn btn-primary me-2">Add Workshop</a>
+                    <% } %>
+                </div>
+                <!-- <a href="/test" class="btn btn-danger">Test</a> -->
+            </div>
+</body>
+</html>

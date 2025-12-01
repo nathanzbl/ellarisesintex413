@@ -275,9 +275,27 @@ app.get("/addUser", (req, res) => {
     res.render("addUser");
 });    
 
+// Donation Routes
 app.get("/donations", (req, res) => {
     res.render("donations");
 });
+
+// Milestone Routes
+app.get("/milestones", (req, res) => {
+    res.render("milestones");
+});
+
+// Participant Routes
+app.get("/participants", (req, res) => {
+    res.render("participants");
+});
+
+// Events Routes
+app.get("/events", (req, res) => {
+    res.render("events");
+});
+
+
 app.get("/register", (req, res) => {
     res.render("register");
 });
