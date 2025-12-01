@@ -257,40 +257,72 @@ app.get("/addUser", (req, res) => {
 app.get("/donations", (req, res) => {
     res.render("donations");
 });
+app.get("/register", (req, res) => {
+    res.render("register");
+});
+app.post('/register', async (req, res) => {
+    const { username, password, confirmPassword } = req.body;
 
-app.post("/addUser", upload.single("profileImage"), (req, res) => {
-    // Destructuring grabs them regardless of field order.
-    //const username = req.body.username;
-    //const password = req.body.password;
-    const { username, password } = req.body;
-    // Basic validation to ensure required fields are present.
-    if (!username || !password) {
-        return res.status(400).render("addUser", { error_message: "Username and password are required." });
-    }
-    // Build the relative path to the uploaded file so the
-    // browser can load it later.
-    const profileImagePath = req.file ? `/images/uploads/${req.file.filename}` : null;
-    // Shape the data to match the users table schema.
-    // Object literal - other languages use dictionaries
-    // When the object is inserted with Knex, that value profileImagePath,
-    // becomes the database column profile_image, so the saved path to
-    // the uploaded image ends up in the profile_image column for that user.
-    const newUser = {
-        username,
-        password,
-        profile_image: profileImagePath
-    };
-    // Insert the record into PostgreSQL and return the user list on success.
-    knex("users")
-        .insert(newUser)
-        .then(() => {
-            res.redirect("/users");
-        })
-        .catch((dbErr) => {
-            console.error("Error inserting user:", dbErr.message);
-            // Database error, so show the form again with a generic message.
-            res.status(500).render("addUser", { error_message: "Unable to save user. Please try again." });
+    try {
+        // Validation
+        if (!username || !password || !confirmPassword) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'All fields are required.' 
+            });
+        }
+
+        if (password !== confirmPassword) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Passwords do not match.' 
+            });
+        }
+
+        if (password.length < 6) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Password must be at least 6 characters long.' 
+            });
+        }
+
+        // Check if username already exists
+        const existingUser = await knex.raw(
+            'SELECT * FROM users WHERE username = ?',
+            [username]
+        );
+
+        if (existingUser.rows.length > 0) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Username already exists.' 
+            });
+        }
+
+        // Hash the password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Insert new owner into database
+        await knex.raw(
+            'INSERT INTO users (username, password, role) VALUES (?, ?, ?)',
+            [username, hashedPassword, 'owner']
+        );
+
+        console.log(`✅ New owner registered: ${username}`);
+
+        return res.status(200).json({ 
+            success: true, 
+            message: 'Owner registration successful!', 
+            redirectTo: '/login' 
         });
+
+    } catch (error) {
+        console.error('Owner registration error:', error);
+        return res.status(500).json({ 
+            success: false, 
+            message: 'An error occurred during registration.' 
+        });
+    }
 });
 
 app.post("/deleteUser/:id", (req, res) => {
