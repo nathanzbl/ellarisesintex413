@@ -77,7 +77,7 @@ saveUninitialized - Default: true
 app.use(
     session(
         {
-    secret: process.env.SESSION_SECRET ||~ 'fallback-secret-key',
+    secret: process.env.SESSION_SECRET || 'fallback-secret-key',
     resave: false,
     saveUninitialized: false,
         }
@@ -142,7 +142,7 @@ app.use((req, res, next) => {
 app.get("/login", (req, res) => {
     // Check if user is logged in
     if (req.session.isLoggedIn) {        
-        res.render("index");
+        res.render("landing");
     } 
     else {
         res.render("login", { error_message: "" });
@@ -182,7 +182,7 @@ app.get("/users", (req, res) => {
 
 app.get("/", (req, res) => {
     if (req.session.isLoggedIn) {
-        res.render("index");
+        res.render("landing");
     } else {
         res.redirect("/login");
     }
@@ -225,12 +225,10 @@ app.post('/login', async (req, res) => {
             username: user.username,
             role: user.role
         };
-
-        return res.status(200).json({ 
-            success: true, 
-            message: 'Login successful!', 
-            redirectTo: '/' 
-        });
+        // Mark session as logged in so the auth middleware allows access
+        req.session.isLoggedIn = true;
+        // Redirect to main page
+        return res.redirect('/');
 
     } catch (error) {
         console.error('Login error:', error);
@@ -255,6 +253,10 @@ app.get("/logout", (req, res) => {
 app.get("/addUser", (req, res) => {
     res.render("addUser");
 });    
+
+app.get("/donations", (req, res) => {
+    res.render("donations");
+});
 
 app.post("/addUser", upload.single("profileImage"), (req, res) => {
     // Destructuring grabs them regardless of field order.
