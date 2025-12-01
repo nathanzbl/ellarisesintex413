@@ -18,8 +18,12 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "dotenv": "^17.2.3",
     "ejs": "^3.1.10",
     "express": "^5.2.0",
-    "express-session": "^1.18.2"
+    "express-session": "^1.18.2",
+    "knex": "^3.1.0",
+    "multer": "^2.0.2",
+    "pg": "^8.16.3"
   }
 }
