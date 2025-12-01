@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Post Event Survey | Ella Rises</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:wght@400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --er-blue:     #99B7C6;
+            --er-lavender: #978EC4;
+            --er-cream:    #F9F5EA;
+            --er-blush:    #FFD8D1;
+            --er-pink:     #F9AFB1;
+            --er-sage:     #9AB59D;
+            --er-charcoal: #3A3F3B;
+            --er-peach:    #F4B092;
+            --er-rose:     #CE325B;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0;
+            font-family: "Montserrat", system-ui, sans-serif;
+            background: var(--er-cream);
+            color: var(--er-charcoal);
+        }
+
+        nav {
+            width: 100%;
+            background: #ffffff;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1.5rem;
+        }
+
+        .nav-logo {
+            height: 50px;
+            width: auto;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--er-charcoal);
+            font-size: 0.9rem;
+            font-weight: 500;
+            letter-spacing: 0.04em;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .nav-links a:hover {
+            background: var(--er-blush);
+            color: var(--er-rose);
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+            width: 100%;
+        }
+
+        .survey-card {
+            max-width: 720px;
+            width: 100%;
+            padding: 2.5rem 2.25rem;
+            border-radius: 1.5rem;
+            background-color: #ffffff;
+            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.08);
+            border-top: 6px solid var(--er-pink);
+        }
+
+        .survey-title {
+            font-family: "DM Serif Display", serif;
+            font-size: 2rem;
+            text-align: center;
+            letter-spacing: 0.06em;
+            margin: 0 0 0.25rem;
+        }
+
+        .survey-subtitle {
+            font-size: 0.95rem;
+            text-align: center;
+            color: rgba(58, 63, 59, 0.7);
+            margin-bottom: 2rem;
+        }
+
+        .mb-3 { margin-bottom: 2rem; }
+
+        .field-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 0.75rem;
+        }
+
+        .field-label .label-main {
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .field-label .label-hint {
+            font-size: 0.78rem;
+            color: rgba(58, 63, 59, 0.65);
+        }
+
+        .slider-container {
+            position: relative;
+            padding: 0 0.5rem;
+        }
+
+        .rating-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: linear-gradient(to right, var(--er-blush), var(--er-pink), var(--er-rose));
+            outline: none;
+            cursor: pointer;
+        }
+
+        .rating-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #fff;
+            border: 3px solid var(--er-pink);
+            box-shadow: 0 4px 12px rgba(206, 50, 91, 0.3);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .rating-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            border-color: var(--er-rose);
+        }
+
+        .rating-slider::-moz-range-thumb {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #fff;
+            border: 3px solid var(--er-pink);
+            box-shadow: 0 4px 12px rgba(206, 50, 91, 0.3);
+            cursor: pointer;
+        }
+
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.5rem;
+            font-size: 0.72rem;
+            color: rgba(58, 63, 59, 0.6);
+        }
+
+        .slider-value {
+            display: flex;
+            justify-content: center;
+            margin-top: 0.5rem;
+        }
+
+        .slider-value span {
+            background: var(--er-pink);
+            color: #fff;
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 999px;
+            min-width: 2.5rem;
+            text-align: center;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            border-radius: 999px;
+            border: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            cursor: pointer;
+            background: var(--er-pink);
+            color: #fff;
+            box-shadow: 0 10px 24px rgba(206, 50, 91, 0.25);
+            transition: all 0.18s ease;
+        }
+
+        .btn-primary:hover {
+            background: var(--er-rose);
+            transform: translateY(-1px);
+        }
+
+        .error-message {
+            text-align: center;
+            color: var(--er-rose);
+            background: rgba(206, 50, 91, 0.07);
+            padding: 0.6rem 0.9rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .thankyou-hint {
+            margin-top: 1rem;
+            text-align: center;
+            font-size: 0.8rem;
+            color: rgba(58, 63, 59, 0.7);
+        }
+
+        @media (max-width: 600px) {
+            .nav-container {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 0.5rem;
+            }
+
+            .nav-links a {
+                font-size: 0.8rem;
+                padding: 0.4rem 0.6rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-container">
+            <img src="images/EllaRisesLogo.png.avif" alt="Ella Rises" class="nav-logo">
+            <div class="nav-links">
+                <a href="/donations">Donations</a>
+                <a href="/events">Events</a>
+                <a href="/milestones">Milestones</a>
+                <a href="/participants">Participants</a>
+                <a href="/surveys">Surveys</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <div class="survey-card">
+            <h1 class="survey-title">Post Event Survey</h1>
+            <p class="survey-subtitle">Thank you for attending. Please rate your experience on a scale of 1 to 5.</p>
+
+            <% if (error_message && error_message !== "") { %>
+                <p class="error-message"><%= error_message %></p>
+            <% } %>
+
+            <form action="/survey" method="POST">
+                <% const questions = [
+                    { name: 'SurveySatisfactionScore', label: 'Overall Satisfaction', hint: 'How satisfied were you with the event', low: 'Very dissatisfied', high: 'Very satisfied' },
+                    { name: 'SurveyUsefulnessScore', label: 'Usefulness', hint: 'How useful was the content for you', low: 'Not useful', high: 'Extremely useful' },
+                    { name: 'SurveyInstructorScore', label: 'Instructor', hint: 'Rate the instructor or speaker', low: 'Very poor', high: 'Excellent' },
+                    { name: 'SurveyRecommendationScore', label: 'Recommendation', hint: 'How likely are you to recommend this event', low: 'Not likely', high: 'Very likely' },
+                    { name: 'SurveyOverallScore', label: 'Overall Event Score', hint: 'Your overall rating', low: 'Very poor', high: 'Outstanding' }
+                ]; %>
+
+                <% questions.forEach(q => { %>
+                    <div class="mb-3">
+                        <div class="field-label">
+                            <span class="label-main"><%= q.label %></span>
+                            <span class="label-hint"><%= q.hint %></span>
+                        </div>
+                        <div class="slider-container">
+                            <input type="range" name="<%= q.name %>" class="rating-slider" min="1" max="5" value="3" oninput="this.nextElementSibling.nextElementSibling.querySelector('span').textContent = this.value">
+                            <div class="slider-labels">
+                                <span><%= q.low %></span>
+                                <span><%= q.high %></span>
+                            </div>
+                            <div class="slider-value"><span>3</span></div>
+                        </div>
+                    </div>
+                <% }); %>
+
+                <button type="submit" class="btn-primary">Submit Survey</button>
+            </form>
+
+            <p class="thankyou-hint">Your feedback helps shape future Ella Rises events.</p>
+        </div>
+    </div>
+</body>
+</html>
