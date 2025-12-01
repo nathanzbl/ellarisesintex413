@@ -101,6 +101,13 @@ app.use((req, res, next) => {
     next();
 });
 
+// 403 handler
+app.get("/forbidden", (req, res) => {
+  res.status(403).render("403");
+});
+
+// 404 catch all
+
 
 
 const knex = require("knex")({
@@ -153,6 +160,20 @@ app.get("/test", (req, res) => {
     // Check if user is logged in
     if (req.session.isLoggedIn) {        
         res.render("test", {name : "BYU"});
+    } 
+    else {
+        res.render("login", { error_message: "" });
+    }
+});
+
+
+app.get("/surveys", (req, res) => {
+    // Check if user is logged in
+    if (req.session.isLoggedIn) {        
+        res.render("surveys" ,{
+    error_message: null,          // make sure this always exists
+    // any other data you pass in...
+  });
     } 
     else {
         res.render("login", { error_message: "" });
