@@ -8,6 +8,8 @@ require('dotenv').config();
 
 const express = require("express");
 const multer = require("multer");
+const bcrypt = require('bcrypt');
+
 
 //Needed for the session variable - Stored on the server to hold data
 const session = require("express-session");
@@ -99,14 +101,19 @@ app.use((req, res, next) => {
     next();
 });
 
+
+
 const knex = require("knex")({
     client: "pg",
     connection: {
-        host : process.env.DB_HOST || "database-1.cuxceiacqgo6.us-east-1.rds.amazonaws.com",
-        user : process.env.DB_USER || "postgres",
-        password : process.env.DB_PASSWORD || "adminpassword12345",
-        database : process.env.DB_NAME || "postgres",
-        port : process.env.DB_PORT || 5432  // PostgreSQL 16 typically uses port 5434
+        host : process.env.RDS_HOSTNAME || "database-1.cuxceiacqgo6.us-east-1.rds.amazonaws.com",
+        user : process.env.RDS_USERNAME || "postgres",
+        password : process.env.RDS_PASSWORD || "adminpassword12345",
+        database : process.env.RDS_DB_NAME || "postgres",
+        port : process.env.RDS_PORT || 5432,  // PostgreSQL 16 typically uses port 5434
+        ssl: {
+        rejectUnauthorized: false  // AWS RDS requires SSL
+    }
     }
 });
 
@@ -182,29 +189,56 @@ app.get("/", (req, res) => {
 });
 
 // This creates attributes in the session object to keep track of user and if they logged in
-app.post("/login", (req, res) => {
-    let sName = req.body.username;
-    let sPassword = req.body.password;
+app.post('/login', async (req, res) => {
+    const { username, password } = req.body;
+    console.log(`Login attempt for user: ${username}`);
 
-    knex.select('username', 'password')
-        .from('users')
-        .where('username', sName)
-        .andWhere("password", sPassword)
-        .then(users => {
-            // Check if a user was found with matching username AND password
-            if (users.length > 0) {
-                req.session.isLoggedIn = true;
-                req.session.username = sName;
-                res.redirect("/");
-            } else {
-                // No matching user found
-                res.render("login", { error_message: "Invalid login" });
-            }
-        })
-        .catch(err => {
-            console.error("Login error:", err);
-            res.render("login", { error_message: "Invalid login" });
-        });   
+    try {
+        // Query the database for the user
+        const result = await knex.raw(
+            'SELECT * FROM users WHERE username = ?',
+            [username]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(401).json({ 
+                success: false, 
+                message: 'Invalid username or password.' 
+            });
+        }
+
+        const user = result.rows[0];
+
+        // Compare the provided password with the hashed password
+        const passwordMatch = await bcrypt.compare(password, user.password);
+
+        if (!passwordMatch) {
+            return res.status(401).json({ 
+                success: false, 
+                message: 'Invalid username or password.' 
+            });
+        }
+
+        // Success! Store user info in session
+        req.session.user = {
+            id: user.id,
+            username: user.username,
+            role: user.role
+        };
+
+        return res.status(200).json({ 
+            success: true, 
+            message: 'Login successful!', 
+            redirectTo: '/' 
+        });
+
+    } catch (error) {
+        console.error('Login error:', error);
+        return res.status(500).json({ 
+            success: false, 
+            message: 'An error occurred during login.' 
+        });
+    }
 });
 
 // Logout route
