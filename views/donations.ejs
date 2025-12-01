@@ -57,55 +57,7 @@
             text-decoration: underline;
         }
 
-        header {
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: var(--er-cream);
-            backdrop-filter: blur(4px);
-            border-bottom: 1px solid var(--er-blush);
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        header .brand {
-            font-family: 'DM Serif Display', serif;
-            font-weight: 400;
-            letter-spacing: 0.06em;
-            color: var(--er-charcoal);
-        }
-
-        header .brand span {
-            color: var(--er-rose);
-        }
-
-        header nav a {
-            margin-left: 1rem;
-            text-decoration: none;
-            font-size: 0.95rem;
-            color: var(--er-charcoal);
-            font-family: 'Montserrat', sans-serif;
-        }
-
-        header nav a:hover {
-            color: var(--er-rose);
-        }
-
-        header nav a.donate-link {
-            padding: 0.5rem 1rem;
-            border-radius: 999px;
-            background-color: var(--er-pink);
-            color: white;
-            font-weight: 600;
-        }
-
-        header nav a.donate-link:hover {
-            background-color: var(--er-rose);
-            text-decoration: none;
-        }
-
+        
         main {
             max-width: 1100px;
             margin: 2.5rem auto;
@@ -393,19 +345,11 @@
     </style>
 </head>
 <body>
-
-<header>
-    <div class="brand">ELLA <span>RISES</span></div>
-    <nav>
-        <a href="/">Home</a>
-        <a href="/events">Events</a>
-        <a href="/impact">Impact</a>
-        <a href="/donate" class="donate-link">Donate</a>
-    </nav>
-</header>
+    <%- include('navbar.ejs') %>
 
 <main>
     <div class="page-layout">
+     
 
         <!-- LEFT: Story / Impact -->
         <section class="story-card">
