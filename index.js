@@ -1598,7 +1598,7 @@ app.post("/events/:eventdefid/day/:date/add", requireManager, async (req, res) =
 
 // Show Add Event Form
 app.get("/events/add", requireManager, (req, res) => {
-    res.render("addevent", { error_message: "" });
+    res.render("events/addevent", { error_message: "" });
 });
 
 // Submit Add Event
@@ -1624,7 +1624,7 @@ app.post("/events/add", requireManager, async (req, res) => {
         res.redirect("/events");
     } catch (err) {
         console.error("Error adding event:", err);
-        res.render("addevent", { error_message: "Error adding event." });
+        res.render("events/addevent", { error_message: "Error adding event." });
     }
 });
 
@@ -1637,10 +1637,10 @@ app.get("/events", requireManager, async (req, res) => {
             .select("eventdefid", "eventname", "eventdescription")
             .orderBy("eventname");
 
-        res.render("eventlist", { eventDefs });
+        res.render("events/eventlist", { eventDefs });
     } catch (err) {
         console.error("Error loading event definitions:", err);
-        res.render("eventlist", { eventDefs: [] });
+        res.render("events/eventlist", { eventDefs: [] });
     }
 });
 
@@ -1652,7 +1652,7 @@ app.get("/events/:eventdefid/day/:date", requireManager, async (req, res) => {
 
     let events = await knex("event")
         .join("eventdefinition", "event.eventdefid", "eventdefinition.eventdefid")
-        .select("event.*", "eventdefinition.eventname")
+        .select("event.*", "eventdefinition.eventname", "eventdefinition.eventdescription")
         .where("event.eventdefid", eventdefid)
         .whereRaw("DATE(eventdatetimestart AT TIME ZONE 'UTC' AT TIME ZONE 'America/Denver') = ?", [date]);
 
@@ -1670,11 +1670,11 @@ app.get("/events/:eventdefid/day/:date", requireManager, async (req, res) => {
         })
     }));
 
-    res.render("eventdetails", { events, dateFormatted });
+    res.render("events/eventdetails", { events, dateFormatted });
 });
 
 // -----------------------------------------------------
-// EVENT CALENDAR PAGE — MUST BE LAST DYNAMIC ROUTE
+// EVENT CALENDAR PAGE
 // -----------------------------------------------------
 app.get("/events/:eventdefid", requireManager, async (req, res) => {
     try {
@@ -1696,7 +1696,7 @@ app.get("/events/:eventdefid", requireManager, async (req, res) => {
             return local.toISOString().split("T")[0];
         });
 
-        res.render("eventcalendar", { eventDef, datesAvailable });
+        res.render("events/eventcalendar", { eventDef, datesAvailable });
     } catch (err) {
         console.error("Error loading calendar:", err);
         res.status(500).render("404");
@@ -1706,8 +1706,6 @@ app.get("/events/:eventdefid", requireManager, async (req, res) => {
 // -----------------------------------------------------
 // EDIT EVENT
 // -----------------------------------------------------
-
-// Load edit form
 app.get("/events/edit/:id", requireManager, async (req, res) => {
     try {
         const event = await knex("event")
@@ -1722,7 +1720,7 @@ app.get("/events/edit/:id", requireManager, async (req, res) => {
             .where("event.eventid", req.params.id)
             .first();
 
-        res.render("editevent", { event });
+        res.render("events/editevent", { event });
     } catch (err) {
         console.error("Error loading edit event:", err);
         res.status(500).render("404");
@@ -1776,7 +1774,6 @@ app.post("/events/delete/:id", requireManager, async (req, res) => {
         res.status(500).render("404");
     }
 });
-
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
