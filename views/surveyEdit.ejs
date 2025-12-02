@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Edit Survey Response | Ella Rises</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:wght@400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --er-blue:     #99B7C6;
+      --er-lavender: #978EC4;
+      --er-cream:    #F9F5EA;
+      --er-charcoal: #3A3F3B;
+      --er-rose:     #CE325B;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Montserrat", system-ui, sans-serif;
+      background: var(--er-cream);
+      color: var(--er-charcoal);
+    }
+
+    .page {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem 1rem 3rem;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 1.25rem;
+      padding: 2rem 1.75rem;
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.08);
+      border-top: 5px solid var(--er-lavender);
+    }
+
+    .page-title {
+      font-family: "DM Serif Display", serif;
+      font-size: 1.8rem;
+      margin: 0 0 0.25rem;
+    }
+
+    .page-subtitle {
+      font-size: 0.9rem;
+      color: rgba(0,0,0,0.65);
+      margin-bottom: 1.5rem;
+    }
+
+    .meta {
+      font-size: 0.8rem;
+      background: rgba(153, 183, 198, 0.15);
+      padding: 0.6rem 0.8rem;
+      border-radius: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .meta strong {
+      font-weight: 600;
+    }
+
+    .form-section {
+      margin-bottom: 1.4rem;
+    }
+
+    .field-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 0.4rem;
+    }
+
+    .label-main {
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .label-hint {
+      font-size: 0.78rem;
+      color: rgba(0,0,0,0.6);
+    }
+
+    .score-input {
+      width: 80px;
+      padding: 0.4rem 0.5rem;
+      border-radius: 0.5rem;
+      border: 1px solid rgba(0,0,0,0.2);
+      font-family: inherit;
+      font-size: 0.9rem;
+    }
+
+    .score-input:focus {
+      outline: none;
+      border-color: var(--er-lavender);
+    }
+
+    .score-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem 1.5rem;
+    }
+
+    .score-item {
+      flex: 1 1 160px;
+    }
+
+    .comments-textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 0.8rem;
+      border-radius: 0.75rem;
+      border: 1px solid rgba(0,0,0,0.2);
+      font-family: inherit;
+      font-size: 0.9rem;
+      resize: vertical;
+    }
+
+    .comments-textarea:focus {
+      outline: none;
+      border-color: var(--er-lavender);
+    }
+
+    .button-row {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 1.5rem;
+    }
+
+    .btn-primary {
+      padding: 0.75rem 1.4rem;
+      border-radius: 999px;
+      border: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      background: var(--er-lavender);
+      color: #fff;
+      box-shadow: 0 10px 22px rgba(151, 142, 196, 0.35);
+    }
+
+    .btn-primary:hover {
+      background: #7f74c0;
+    }
+
+    .btn-secondary {
+      padding: 0.7rem 1.2rem;
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,0.18);
+      background: #fff;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(0,0,0,0.03);
+    }
+
+    .danger-note {
+      margin-top: 0.75rem;
+      font-size: 0.8rem;
+      color: rgba(0,0,0,0.55);
+    }
+  </style>
+</head>
+<body>
+  <%- include("navbar.ejs") %>
+
+  <main class="page">
+    <div class="card">
+      <h1 class="page-title">Edit Survey Response</h1>
+      <p class="page-subtitle">
+        Adjust scores or comments for this survey entry. Changes save immediately to the database.
+      </p>
+
+      <div class="meta">
+        <div><strong>Event:</strong> <%= survey.eventname %> (Def ID <%= survey.eventdefid %>, Event ID <%= survey.eventid %>)</div>
+        <div><strong>Participant:</strong> <%= survey.participantemail %></div>
+        <div><strong>Submitted:</strong>
+          <%= new Date(survey.surveysubmissiondate).toLocaleString("en-US", {
+            month: "short",
+            day: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit"
+          }) %>
+        </div>
+      </div>
+
+      <form
+        action="/survey/<%= survey.surveyid %>/edit?<%=
+          eventDefId ? 'eventDefId=' + encodeURIComponent(eventDefId) : ''
+        %>"
+        method="POST"
+      >
+        <div class="form-section">
+          <div class="field-label">
+            <span class="label-main">Scores</span>
+            <span class="label-hint">Values from 1 to 5</span>
+          </div>
+          <div class="score-row">
+            <div class="score-item">
+              <label class="label-main" for="sat">Satisfaction</label><br />
+              <input
+                id="sat"
+                type="number"
+                name="SurveySatisfactionScore"
+                class="score-input"
+                min="1"
+                max="5"
+                value="<%= survey.surveysatisfactionscore %>"
+                required
+              />
+            </div>
+
+            <div class="score-item">
+              <label class="label-main" for="useful">Usefulness</label><br />
+              <input
+                id="useful"
+                type="number"
+                name="SurveyUsefulnessScore"
+                class="score-input"
+                min="1"
+                max="5"
+                value="<%= survey.surveyusefulnessscore %>"
+                required
+              />
+            </div>
+
+            <div class="score-item">
+              <label class="label-main" for="instr">Instructor</label><br />
+              <input
+                id="instr"
+                type="number"
+                name="SurveyInstructorScore"
+                class="score-input"
+                min="1"
+                max="5"
+                value="<%= survey.surveyinstructorscore %>"
+                required
+              />
+            </div>
+
+            <div class="score-item">
+              <label class="label-main" for="recom">Recommendation</label><br />
+              <input
+                id="recom"
+                type="number"
+                name="SurveyRecommendationScore"
+                class="score-input"
+                min="1"
+                max="5"
+                value="<%= survey.surveyrecommendationscore %>"
+                required
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="field-label">
+            <span class="label-main">Comments</span>
+            <span class="label-hint">Optional</span>
+          </div>
+          <textarea
+            name="SurveyComments"
+            class="comments-textarea"
+            placeholder="Update or correct the participant comment..."
+          ><%= survey.surveycomments || "" %></textarea>
+        </div>
+
+        <div class="button-row">
+          <button type="submit" class="btn-primary">Save Changes</button>
+          <button
+            type="button"
+            class="btn-secondary"
+            onclick="window.location.href='<%= eventDefId ? `/survey/responses?eventDefId=${encodeURIComponent(eventDefId)}` : `/survey/responses` %>'"
+          >
+            Cancel
+          </button>
+        </div>
+
+        <p class="danger-note">
+          Note: If you need to completely remove a survey response, use the Delete action from the Survey Responses table.
+        </p>
+      </form>
+    </div>
+  </main>
+</body>
+</html>
