@@ -269,6 +269,76 @@ app.get("/survey/thankyou", (req, res) => {
     res.render("surveyThankYou");
 }); 
 
+app.get("/survey/responses", async (req, res) => {
+  const { eventDefId } = req.query; // query param from the dropdown
+
+  try {
+    // Event definitions for the dropdown
+    const events = await knex("eventdefinition")
+      .select("eventdefid", "eventname")
+      .orderBy("eventdefid", "asc");
+
+    // Base query: survey -> event -> eventdefinition -> participant
+    let query = knex("survey as s")
+      .join("event as e", "e.eventid", "s.eventid")
+      .join("eventdefinition as ed", "ed.eventdefid", "e.eventdefid")
+      .join("participant as p", "s.participantid", "p.participantid")
+      .select(
+        "s.surveyid",
+        "s.eventid",
+        "e.eventdefid",
+        "ed.eventname",
+        "p.participantemail",
+        "s.surveysatisfactionscore",
+        "s.surveyusefulnessscore",
+        "s.surveyinstructorscore",
+        "s.surveyrecommendationscore",
+        "s.surveyoverallscore",
+        "s.surveycomments",
+        "s.surveysubmissiondate"
+      )
+      .orderBy("s.surveysubmissiondate", "desc");
+
+    // Filter by event definition if one was selected
+    if (eventDefId && eventDefId !== "") {
+      query = query.where("e.eventdefid", Number(eventDefId));
+    }
+
+    const surveys = await query;
+
+    res.render("surveyResponses", {
+      surveys,
+      events,
+      selectedEventDefId: eventDefId || ""
+    });
+  } catch (err) {
+    console.error("Survey responses error:", err);
+    res.status(500).send("Error loading survey responses");
+  }
+});
+
+
+
+app.post("/survey/:surveyid/delete", async (req, res) => {
+  const { surveyid } = req.params;
+  const { eventId } = req.query; // to preserve filter on redirect
+
+  try {
+    await knex("survey")
+      .where({ surveyid })
+      .del();
+
+    const redirectUrl = eventId
+      ? `/survey/responses?eventId=${encodeURIComponent(eventId)}`
+      : "/survey/responses";
+
+    res.redirect(redirectUrl);
+  } catch (err) {
+    console.error("Error deleting survey:", err);
+    res.status(500).send("Error deleting survey response");
+  }
+});
+
 app.get("/users", (req, res) => {
     // Check if user is logged in
     if (req.session.isLoggedIn) { 
