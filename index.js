@@ -156,17 +156,6 @@ app.get("/login", (req, res) => {
     }
 });
 
-app.get("/test", (req, res) => {
-    // Check if user is logged in
-    if (req.session.isLoggedIn) {        
-        res.render("test", {name : "BYU"});
-    } 
-    else {
-        res.render("login", { error_message: "" });
-    }
-});
-
-
 app.get("/surveys", (req, res) => {
     // Check if user is logged in
     if (req.session.isLoggedIn) {        
@@ -281,10 +270,6 @@ app.get("/logout", (req, res) => {
     });
 });
 
-app.get("/addUser", (req, res) => {
-    res.render("addUser");
-});    
-
 // Donation Routes
 app.get("/donations", (req, res) => {
     res.render("donations");
@@ -292,7 +277,261 @@ app.get("/donations", (req, res) => {
 
 // Milestone Routes
 app.get("/milestones", (req, res) => {
-    res.render("milestones");
+    if (!req.session.isLoggedIn) {
+        return res.render("login", { error_message: "" });
+    }
+
+    const limit = 100; // Number of items per page
+    const currentPage = parseInt(req.query.page) || 1;
+    const offset = (currentPage - 1) * limit;
+
+    let totalMilestones = 0;
+
+    knex('milestone')
+        .innerJoin(
+            'participant', 
+            'milestone.participantid', 
+            'participant.participantid'
+        )
+        .count('* as count')
+        .then(result => {
+            totalMilestones = parseInt(result[0].count);
+            
+            return knex
+                .select(
+                    'milestone.*',
+                    'participant.participantfirstname', 
+                    'participant.participantlastname',
+                    'participant.participantemail'
+                )
+                .from("milestone")
+                .innerJoin(
+                    'participant', 
+                    'milestone.participantid', 
+                    'participant.participantid'
+                )
+                
+                .limit(limit)
+                .offset(offset);
+        })
+        .then(milestones => {
+            console.log(`Successfully retrieved ${milestones.length} milestones for page ${currentPage}`);
+            
+            // Calculate total pages needed
+            const totalPages = Math.ceil(totalMilestones / limit);
+            
+            res.render("milestone/milestones", {
+                milestone: milestones,
+                currentPage: currentPage,
+                totalPages: totalPages,
+            });
+        })
+        .catch((err) => {
+            console.error("Database query error:", err.message);
+            res.render("milestone/milestones", {
+                milestone: [],
+                currentPage: 1, 
+                totalPages: 1,
+                error_message: `Database error: ${err.message}. Please check if the 'milestone' table exists.`
+            });
+        });
+});
+
+// Add Milestone Post Route
+app.post("/addmilestone", (req, res) => {
+    const { milestonetitle, milestonedate } = req.body;
+    let { participantIdentifier } = req.body; 
+    
+    participantIdentifier = participantIdentifier.trim();
+    
+    // validation check
+    if (!milestonetitle || !milestonedate || !participantIdentifier) {
+        return res.status(400).render("milestone/addmilestone", { 
+            message: { type: "error", text: "Milestone Title, Date, and Participant Identifier are required." }
+        });
+    }
+
+    let participantIdToInsert;
+    let lookupQuery = knex("participant").select("participantid");
+    
+    // Check if the input is a number (meaning they entered an ID)
+    if (!isNaN(parseInt(participantIdentifier))) {
+        lookupQuery = lookupQuery.where({
+            participantid: parseInt(participantIdentifier)
+        });
+        console.log(`Looking up participant by ID: ${participantIdentifier}`);
+    } else {
+        lookupQuery = lookupQuery.where({
+            participantemail: participantIdentifier
+        });
+        console.log(`Looking up participant by Email: ${participantIdentifier}`);
+    }
+    
+    // Execute the built query
+    lookupQuery.first() 
+        .then((participant) => {
+            if (!participant) {
+                throw new Error(`Participant identifier "${participantIdentifier}" not found. Please verify the ID or Email.`);
+            }
+            
+            // Store the unique ID
+            participantIdToInsert = participant.participantid;
+
+            const newMilestone = {
+                milestonetitle,
+                milestonedate,
+                participantid: participantIdToInsert
+            };
+
+            // Return the insert query to continue the promise chain
+            return knex("milestone").insert(newMilestone);
+        })
+        .then(() => {
+            // Success: Insertion complete
+            res.redirect("/milestones");
+        })
+        .catch((err) => {
+            // Error handling
+            let errorMessage = "Unable to save Milestone. Please try again.";
+            
+            if (err.message.includes("Participant identifier")) {
+                errorMessage = err.message;
+            } else {
+                console.error("Error in add Milestone process:", err.message);
+            }
+
+            res.status(500).render("addmilestone", { 
+                 message: { type: "error", text: errorMessage }
+            });
+        });
+});
+
+// add milestone get route
+app.get("/addMilestone", (req, res) => {
+    if (req.session.isLoggedIn) {
+        res.render("milestone/addmilestone");
+    }
+    else {
+        res.render("login", { error_message: "" });
+    }  
+});
+
+// edit milestone get route
+app.get("/editMilestone/:id", (req, res) => {    
+    const milestoneId = req.params.id;
+    knex("milestone")
+        .where({ milestoneid: milestoneId })
+        .first()
+        .then((milestone) => {
+            if (!milestone) {
+                return res.status(404).render("/milestones", {
+                    milestone: [],
+                    error_message: "Milestone not found."
+                });
+            }
+            res.render("editmilestone", { user, error_message: "" });
+        })
+        .catch((err) => {
+            console.error("Error fetching milestone:", err.message);
+            res.status(500).render("milestone/milestones", {
+                workshops: [],
+                error_message: "Unable to load milestone for editing."
+            });
+        });   
+});
+
+// Edit Milestone POST Route
+app.post("/editMilestone/:id", (req, res) => {
+    const milestoneID = req.params.id;
+    
+    const { milestonetitle, milestonedate } = req.body; 
+    
+    if (!milestonetitle || !milestonedate) { 
+        return knex("milestone")
+            .where({ milestoneid: milestoneID }) 
+            .first()
+            .then((milestone) => {
+                if (!milestone) {
+                    return res.status(404).render("milestone_list", {
+                        milestones: [],
+                        error_message: "Milestone not found for validation."
+                    });
+                }
+                // Render the edit form again with an error message
+                res.status(400).render("milestone/editmilestone", {
+                    milestone,
+                    error_message: "Milestone Title and Date are required."
+                });
+            })
+            .catch((err) => {
+                console.error("Error fetching milestone for validation fail:", err.message);
+                res.status(500).render("milestone_list", {
+                    milestones: [],
+                    error_message: "Unable to load milestone for editing."
+                });
+            });
+    }
+
+    // --- Prepare Update Object ---
+    const updatedMilestone = {
+        milestonetitle,
+        milestonedate
+    };
+    
+    // --- Run Update Query ---
+    knex("milestone")
+        .where({ milestoneid: milestoneID }) // Target the specific milestone
+        .update(updatedMilestone)
+        .then((rowsUpdated) => {
+            if (rowsUpdated === 0) {
+                // If 0 rows were updated, the ID was likely invalid or not found
+                return res.status(404).render("milestone_list", {
+                    milestones: [],
+                    error_message: `Milestone with ID ${milestoneID} not found or no changes were made.`
+                });
+            }
+            // Success: Redirect to the list view
+            res.redirect("/milestones");
+        })
+        .catch((err) => {
+            console.error("Error updating milestone:", err.message);
+            
+            // On update failure, refetch the original milestone data and display the error
+            knex("milestone")
+                .where({ milestoneid: milestoneID })
+                .first()
+                .then((milestone) => {
+                    if (!milestone) {
+                        return res.status(404).render("milestone_list", {
+                            milestones: [],
+                            error_message: "Milestone not found after update failure."
+                        });
+                    }
+                    // Render the edit form with the database error message
+                    res.status(500).render("editMilestone", {
+                        milestone,
+                        error_message: "Unable to update milestone due to a database error. Please check your data."
+                    });
+                })
+                .catch((fetchErr) => {
+                    console.error("Error fetching milestone after update failure:", fetchErr.message);
+                    res.status(500).render("milestone_list", {
+                        milestones: [],
+                        error_message: "A critical error occurred. Cannot update milestone."
+                    });
+                });
+        });
+})
+
+
+// delete milestone
+app.post("/deleteMilestone/:id", (req, res) => {
+    knex("milestone").where("milestoneid", req.params.id).del().then(milestone => {
+        res.redirect("/milestones");
+    }).catch(err => {
+        console.log(err);
+        res.status(500).json({err});
+    })
 });
 
 // Participant Routes
@@ -309,6 +548,7 @@ app.get("/events", (req, res) => {
 app.get("/register", (req, res) => {
     res.render("register");
 });
+
 app.post('/register', async (req, res) => {
     const { username, password, confirmPassword } = req.body;
 
@@ -373,130 +613,6 @@ app.post('/register', async (req, res) => {
         });
     }
 });
-
-app.post("/deleteUser/:id", (req, res) => {
-    knex("users").where("id", req.params.id).del().then(users => {
-        res.redirect("/users");
-    }).catch(err => {
-        console.log(err);
-        res.status(500).json({err});
-    })
-});
-app.get("/editUser/:id", (req, res) => {
-    const userId = req.params.id;
-    knex("users")
-        .where({ id: userId })
-        .first()
-        .then((user) => {
-            if (!user) {
-                return res.status(404).render("displayUsers", {
-                    users: [],
-                    error_message: "User not found."
-                });
-            }
-            res.render("editUser", { user });
-        })
-        .catch((err) => {
-            console.error("Error fetching user for edit:", err.message);
-            res.status(500).render("displayUsers", {
-                users: [],
-                error_message: "Unable to load user for editing."
-            });
-        });
-});
-
-app.post("/editUser/:id", upload.single("profileImage"), (req, res) => {
-    const userId = req.params.id;
-    const { username, password, existingImage } = req.body;
-    if (!username || !password) {
-        return knex("users")
-            .where({ id: userId })
-            .first()
-            .then((user) => {
-                if (!user) {
-                    return res.status(404).render("displayUsers", {
-                        users: [],
-                        error_message: "User not found."
-                    });
-                }
-                res.status(400).render("editUser", {
-                    user,
-                    error_message: "Username and password are required."
-                });
-            })
-            .catch((err) => {
-                console.error("Error fetching user:", err.message);
-                res.status(500).render("displayUsers", {
-                    users: [],
-                    error_message: "Unable to load user for editing."
-                });
-            });
-    }
-    const profileImagePath = req.file ? `/images/uploads/${req.file.filename}` : existingImage || null;
-    const updatedUser = {
-        username,
-        password,
-        profile_image: profileImagePath
-    };
-    knex("users")
-        .where({ id: userId })
-        .update(updatedUser)
-        .then((rowsUpdated) => {
-            if (rowsUpdated === 0) {
-                return res.status(404).render("displayUsers", {
-                    users: [],
-                    error_message: "User not found."
-                });
-            }
-            res.redirect("/users");
-        })
-        .catch((err) => {
-            console.error("Error updating user:", err.message);
-            knex("users")
-                .where({ id: userId })
-                .first()
-                .then((user) => {
-                    if (!user) {
-                        return res.status(404).render("displayUsers", {
-                            users: [],
-                            error_message: "User not found."
-                        });
-                    }
-                    res.status(500).render("editUser", {
-                        user,
-                        error_message: "Unable to update user. Please try again."
-                    });
-                })
-                .catch((fetchErr) => {
-                    console.error("Error fetching user after update failure:", fetchErr.message);
-                    res.status(500).render("displayUsers", {
-                        users: [],
-                        error_message: "Unable to update user."
-                    });
-                });
-        });
-});
-
-app.get("/displayHobbies/:userId", (req, res) => {
-    const userId = req.params.userId;
-    knex("users")
-        .where({ id: userId })
-        .first()
-        .then((user) => {
-            knex("hobbies")
-                .where({ user_id: userId })
-                .orderBy("id")
-                .then((hobbies) => {
-                    res.render("displayHobbies", {
-                        user,
-                        hobbies,
-                        error_message: "",
-                        success_message: ""
-                    });
-                })
-            });
-});
-
 
 app.listen(port, () => {
     console.log("The server is listening");
