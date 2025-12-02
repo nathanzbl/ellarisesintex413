@@ -29,24 +29,6 @@
             color: var(--dark-text); /* Use dark text for main body */
         }
 
-        /* Navigation (Existing styles remain) */
-        nav {
-            background-color: var(--pink);
-            padding: 12px 24px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-            border-bottom: 1px solid rgba(168, 192, 204, 0.3);
-            position: sticky;
-            top: 0;
-            z-index: 50;
-            width: 100%;
-        }
-        /* ... (Navigation and Hero styles from before) ... */
-        .nav-container { max-width: 72rem; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
-        .nav-logo { height: 40px; }
-        .nav-links { display: flex; gap: 32px; }
-        .nav-links a { color: var(--dark-text); text-decoration: none; font-weight: 500; transition: color 0.3s ease; padding: 8px 0; }
-        .nav-links a:hover { color: var(--flower-red); }
-
         /* Hero Section */
         /* Hero Section (Existing styles remain) */
         header {
@@ -192,18 +174,6 @@
 <body>
     <!-- Navigation -->
      <%- include('navbar.ejs') %>
-    <nav>
-        <div class="nav-container">
-            <img src="images/EllaRisesLogo.png.avif" alt="Ella Rises Logo" class="nav-logo">
-            <div class="nav-links">
-                <a href="/donations">Donate Now</a>
-                <a href="/events">Events</a>
-                <a href="/milestones">Milestones</a>
-                <a href="/participants">Participants</a>
-                <a href="/surveys">Surveys</a>
-            </div>
-        </div>
-    </nav>
 
     <header id="welcome">
         <div class="hero-container">
