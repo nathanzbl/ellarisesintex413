@@ -1035,6 +1035,448 @@ app.post('/register', async (req, res) => {
     }
 });
 
-app.listen(port, () => {
-    console.log("The server is listening");
+app.post("/deleteUser/:id", (req, res) => {
+    knex("users").where("id", req.params.id).del().then(users => {
+        res.redirect("/users");
+    }).catch(err => {
+        console.log(err);
+        res.status(500).json({err});
+    })
 });
+app.get("/editUser/:id", (req, res) => {
+    const userId = req.params.id;
+    knex("users")
+        .where({ id: userId })
+        .first()
+        .then((user) => {
+            if (!user) {
+                return res.status(404).render("displayUsers", {
+                    users: [],
+                    error_message: "User not found."
+                });
+            }
+            res.render("editUser", { user });
+        })
+        .catch((err) => {
+            console.error("Error fetching user for edit:", err.message);
+            res.status(500).render("displayUsers", {
+                users: [],
+                error_message: "Unable to load user for editing."
+            });
+        });
+});
+
+app.post("/editUser/:id", upload.single("profileImage"), (req, res) => {
+    const userId = req.params.id;
+    const { username, password, existingImage } = req.body;
+    if (!username || !password) {
+        return knex("users")
+            .where({ id: userId })
+            .first()
+            .then((user) => {
+                if (!user) {
+                    return res.status(404).render("displayUsers", {
+                        users: [],
+                        error_message: "User not found."
+                    });
+                }
+                res.status(400).render("editUser", {
+                    user,
+                    error_message: "Username and password are required."
+                });
+            })
+            .catch((err) => {
+                console.error("Error fetching user:", err.message);
+                res.status(500).render("displayUsers", {
+                    users: [],
+                    error_message: "Unable to load user for editing."
+                });
+            });
+    }
+    const profileImagePath = req.file ? `/images/uploads/${req.file.filename}` : existingImage || null;
+    const updatedUser = {
+        username,
+        password,
+        profile_image: profileImagePath
+    };
+    knex("users")
+        .where({ id: userId })
+        .update(updatedUser)
+        .then((rowsUpdated) => {
+            if (rowsUpdated === 0) {
+                return res.status(404).render("displayUsers", {
+                    users: [],
+                    error_message: "User not found."
+                });
+            }
+            res.redirect("/users");
+        })
+        .catch((err) => {
+            console.error("Error updating user:", err.message);
+            knex("users")
+                .where({ id: userId })
+                .first()
+                .then((user) => {
+                    if (!user) {
+                        return res.status(404).render("displayUsers", {
+                            users: [],
+                            error_message: "User not found."
+                        });
+                    }
+                    res.status(500).render("editUser", {
+                        user,
+                        error_message: "Unable to update user. Please try again."
+                    });
+                })
+                .catch((fetchErr) => {
+                    console.error("Error fetching user after update failure:", fetchErr.message);
+                    res.status(500).render("displayUsers", {
+                        users: [],
+                        error_message: "Unable to update user."
+                    });
+                });
+        });
+});
+
+app.get("/displayHobbies/:userId", (req, res) => {
+    const userId = req.params.userId;
+    knex("users")
+        .where({ id: userId })
+        .first()
+        .then((user) => {
+            knex("hobbies")
+                .where({ user_id: userId })
+                .orderBy("id")
+                .then((hobbies) => {
+                    res.render("displayHobbies", {
+                        user,
+                        hobbies,
+                        error_message: "",
+                        success_message: ""
+                    });
+                })
+            });
+});
+
+// -----------------------------------------------------
+//  EVENT SYSTEM ROUTES (PUBLIC + MANAGER)
+// -----------------------------------------------------
+
+// Middleware: Only allow managers
+function requireManager(req, res, next) {
+    if (!req.session.user) return res.status(403).render("403");
+
+    const role = req.session.user.role.toLowerCase().trim();
+
+    if (role === "manager" || role === "m") {
+        return next();
+    }
+
+    return res.status(403).render("403");
+}
+
+// -----------------------------------------------------
+// PUBLIC: Show next upcoming event
+// -----------------------------------------------------
+app.get("/eventspublic", async (req, res) => {
+    try {
+        const nextEvent = await knex("event")
+            .join("eventdefinition", "event.eventdefid", "eventdefinition.eventdefid")
+            .select(
+                "event.eventid",
+                "event.eventdatetimestart",
+                "event.eventlocation",
+                "eventdefinition.eventname",
+                "eventdefinition.eventdescription"
+            )
+            .orderBy("event.eventdatetimestart", "asc")
+            .first();
+
+        res.render("eventspublic", { nextEvent });
+    } catch (err) {
+        console.error("Error loading public event list:", err);
+        res.render("eventspublic", { nextEvent: null });
+    }
+});
+
+// -----------------------------------------------------
+// PUBLIC: Event Details Page
+// -----------------------------------------------------
+app.get("/events/detail/:id", async (req, res) => {
+    try {
+        const event = await knex("event")
+            .join("eventdefinition", "event.eventdefid", "eventdefinition.eventdefid")
+            .select(
+                "event.*",
+                "eventdefinition.eventname",
+                "eventdefinition.eventdescription",
+                "eventdefinition.eventtype",
+                "eventdefinition.eventrecurrencepattern"
+            )
+            .where("event.eventid", req.params.id)
+            .first();
+
+        if (!event) return res.status(404).render("404");
+
+        res.render("eventdetail", { event });
+    } catch (err) {
+        console.error("Error loading event detail:", err);
+        res.status(500).render("404");
+    }
+});
+
+// -----------------------------------------------------
+// PUBLIC: RSVP Form Page
+// -----------------------------------------------------
+app.get("/events/rsvp/:id", async (req, res) => {
+    try {
+        const event = await knex("event")
+            .join("eventdefinition", "event.eventdefid", "eventdefinition.eventdefid")
+            .select(
+                "event.eventid",
+                "event.eventdatetimestart",
+                "event.eventlocation",
+                "eventdefinition.eventname"
+            )
+            .where("event.eventid", req.params.id)
+            .first();
+
+        if (!event) return res.status(404).render("404");
+
+        res.render("eventrsvp", { event });
+    } catch (err) {
+        console.error("Error loading RSVP page:", err);
+        res.status(500).render("404");
+    }
+});
+
+// -----------------------------------------------------
+// PUBLIC: Submit RSVP (placeholder)
+// -----------------------------------------------------
+app.post("/events/rsvp/:id", async (req, res) => {
+    try {
+        // TODO: Insert RSVP row into "eventrsvp" table later
+        res.render("rsvpsuccess");
+    } catch (err) {
+        console.error("Error submitting RSVP:", err);
+        res.status(500).render("404");
+    }
+});
+
+// -----------------------------------------------------
+// ADD EVENT FOR A SPECIFIC DAY (from calendar modal)
+// MUST COME BEFORE ANY /events/:eventdefid ROUTES
+// -----------------------------------------------------
+app.post("/events/:eventdefid/day/:date/add", requireManager, async (req, res) => {
+    const { eventdefid, date } = req.params;
+
+    try {
+        const startDateTime = `${date}T${req.body.starttime}:00`;
+        const endDateTime = `${date}T${req.body.endtime}:00`;
+
+        await knex("event").insert({
+            eventdefid: eventdefid,
+            eventdatetimestart: startDateTime,
+            eventdatetimeend: endDateTime,
+            eventlocation: req.body.eventlocation,
+            eventcapacity: req.body.eventcapacity
+        });
+
+        res.redirect(`/events/${eventdefid}`);
+    } catch (err) {
+        console.error("Error adding event on selected date:", err);
+        res.status(500).render("404");
+    }
+});
+
+// -----------------------------------------------------
+// ADD EVENT (MANUAL ADD EVENT FORM)
+// -----------------------------------------------------
+
+// Show Add Event Form
+app.get("/events/add", requireManager, (req, res) => {
+    res.render("addevent", { error_message: "" });
+});
+
+// Submit Add Event
+app.post("/events/add", requireManager, async (req, res) => {
+    try {
+        const [def] = await knex("eventdefinition")
+            .insert({
+                eventname: req.body.eventname,
+                eventdescription: req.body.eventdescription,
+                eventtype: req.body.eventtype,
+                eventrecurrencepattern: req.body.eventrecurrencepattern
+            })
+            .returning("eventdefid");
+
+        await knex("event").insert({
+            eventdefid: def.eventdefid,
+            eventdatetimestart: req.body.eventdatetimestart,
+            eventdatetimeend: req.body.eventdatetimeend,
+            eventlocation: req.body.eventlocation,
+            eventcapacity: req.body.eventcapacity
+        });
+
+        res.redirect("/events");
+    } catch (err) {
+        console.error("Error adding event:", err);
+        res.render("addevent", { error_message: "Error adding event." });
+    }
+});
+
+// -----------------------------------------------------
+// EVENT LIST (UNIQUE EVENT TYPES)
+// -----------------------------------------------------
+app.get("/events", requireManager, async (req, res) => {
+    try {
+        const eventDefs = await knex("eventdefinition")
+            .select("eventdefid", "eventname", "eventdescription")
+            .orderBy("eventname");
+
+        res.render("eventlist", { eventDefs });
+    } catch (err) {
+        console.error("Error loading event definitions:", err);
+        res.render("eventlist", { eventDefs: [] });
+    }
+});
+
+// -----------------------------------------------------
+// EVENT DETAILS FOR A SPECIFIC DAY
+// -----------------------------------------------------
+app.get("/events/:eventdefid/day/:date", requireManager, async (req, res) => {
+    const { eventdefid, date } = req.params;
+
+    let events = await knex("event")
+        .join("eventdefinition", "event.eventdefid", "eventdefinition.eventdefid")
+        .select("event.*", "eventdefinition.eventname")
+        .where("event.eventdefid", eventdefid)
+        .whereRaw("DATE(eventdatetimestart AT TIME ZONE 'UTC' AT TIME ZONE 'America/Denver') = ?", [date]);
+
+    const dateFormatted = new Date(date).toLocaleDateString("en-US", {
+        month: "short", day: "numeric", year: "numeric"
+    });
+
+    events = events.map(ev => ({
+        ...ev,
+        startTimeFormatted: new Date(ev.eventdatetimestart).toLocaleTimeString([], {
+            hour: "numeric", minute: "2-digit"
+        }),
+        endTimeFormatted: new Date(ev.eventdatetimeend).toLocaleTimeString([], {
+            hour: "numeric", minute: "2-digit"
+        })
+    }));
+
+    res.render("eventdetails", { events, dateFormatted });
+});
+
+// -----------------------------------------------------
+// EVENT CALENDAR PAGE — MUST BE LAST DYNAMIC ROUTE
+// -----------------------------------------------------
+app.get("/events/:eventdefid", requireManager, async (req, res) => {
+    try {
+        const eventDef = await knex("eventdefinition")
+            .where("eventdefid", req.params.eventdefid)
+            .first();
+
+        const events = await knex("event")
+            .where("eventdefid", req.params.eventdefid)
+            .select("eventid", "eventdatetimestart");
+
+        console.log("EVENTDEFID:", req.params.eventdefid);
+        console.log("RAW EVENTS:", events);
+        events.forEach(ev => console.log(" - eventdatetimestart:", ev.eventdatetimestart));
+
+        const datesAvailable = events.map(ev => {
+            const d = new Date(ev.eventdatetimestart);
+            const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+            return local.toISOString().split("T")[0];
+        });
+
+        res.render("eventcalendar", { eventDef, datesAvailable });
+    } catch (err) {
+        console.error("Error loading calendar:", err);
+        res.status(500).render("404");
+    }
+});
+
+// -----------------------------------------------------
+// EDIT EVENT
+// -----------------------------------------------------
+
+// Load edit form
+app.get("/events/edit/:id", requireManager, async (req, res) => {
+    try {
+        const event = await knex("event")
+            .join("eventdefinition", "event.eventdefid", "eventdefinition.eventdefid")
+            .select(
+                "event.*",
+                "eventdefinition.eventname",
+                "eventdefinition.eventdescription",
+                "eventdefinition.eventtype",
+                "eventdefinition.eventrecurrencepattern"
+            )
+            .where("event.eventid", req.params.id)
+            .first();
+
+        res.render("editevent", { event });
+    } catch (err) {
+        console.error("Error loading edit event:", err);
+        res.status(500).render("404");
+    }
+});
+
+// Submit edit
+app.post("/events/edit/:id", requireManager, async (req, res) => {
+    try {
+        const event = await knex("event")
+            .where("eventid", req.params.id)
+            .first();
+
+        await knex("eventdefinition")
+            .where("eventdefid", event.eventdefid)
+            .update({
+                eventname: req.body.eventname,
+                eventdescription: req.body.eventdescription,
+                eventtype: req.body.eventtype,
+                eventrecurrencepattern: req.body.eventrecurrencepattern
+            });
+
+        await knex("event")
+            .where("eventid", req.params.id)
+            .update({
+                eventdatetimestart: req.body.eventdatetimestart,
+                eventdatetimeend: req.body.eventdatetimeend,
+                eventlocation: req.body.eventlocation,
+                eventcapacity: req.body.eventcapacity
+            });
+
+        res.redirect("/events");
+    } catch (err) {
+        console.error("Error updating event:", err);
+        res.status(500).render("404");
+    }
+});
+
+// -----------------------------------------------------
+// DELETE EVENT
+// -----------------------------------------------------
+app.post("/events/delete/:id", requireManager, async (req, res) => {
+    try {
+        await knex("event")
+            .where("eventid", req.params.id)
+            .del();
+
+        res.redirect("/events");
+    } catch (err) {
+        console.error("Error deleting event:", err);
+        res.status(500).render("404");
+    }
+});
+
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+});
+
