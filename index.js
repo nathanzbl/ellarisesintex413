@@ -349,183 +349,6 @@ app.get("/users", (req, res) => {
     }
 });
 
-async function fetchAllParticipants() {
-    try {
-        const participants = await knex('participant') // <<< CHECK THIS NAME: 'participant'
-            .select(
-                'participant.participant_id as id',
-                'participant.first_name as firstName',
-                'participant.last_name as lastName',
-                'participant.status as status',
-                'program.program_name as currentProgram' // Use 'program' if that's the program table
-            )
-            // UPDATE: Use the correct junction table name
-            .leftJoin('participant_program', 
-                      'participant.participant_id', 
-                      'participant_program.participant_id')
-            
-            // UPDATE: Use the correct program table name
-            .leftJoin('program', // <<< CHECK THIS NAME: 'program'
-                      'participant_program.program_id', 
-                      'program.program_id')
-            
-            .where('participant_program.is_current', true) 
-            
-            // Ensure GROUP BY uses the correct table names
-            .groupBy('participant.participant_id', 'participant.first_name', 'participant.last_name', 'participant.status', 'program.program_name');
-
-        return participants;
-    } catch (err) {
-        console.error("Database query error in fetchAllParticipants:", err.message);
-        return []; 
-    }
-}
-
-async function searchParticipants(query) {
-    let knexQuery = knex('participant') // <<< CHECK THIS NAME: 'participant'
-        .select(
-            'participant.participant_id as id',
-            'participant.first_name as firstName',
-            'participant.last_name as lastName',
-            'participant.status as status',
-            'program.program_name as currentProgram'
-        )
-        // Apply the same JOINs as above
-        .leftJoin('participant_program', 
-                  'participant.participant_id', 
-                  'participant_program.participant_id')
-        .leftJoin('program', 
-                  'participant_program.program_id', 
-                  'program.program_id')
-        .where('participant_program.is_current', true) 
-        .groupBy('participant.participant_id', 'participant.first_name', 'participant.last_name', 'participant.status', 'program.program_name'); 
-
-    if (query) {
-        const lowerCaseQuery = `%${query.toLowerCase()}%`;
-        
-        knexQuery.where(builder => {
-            // Ensure column names are correct: first_name, last_name, etc.
-            builder.whereRaw('LOWER(participant.first_name) LIKE ?', [lowerCaseQuery])
-                   .orWhereRaw('LOWER(participant.last_name) LIKE ?', [lowerCaseQuery])
-                   .orWhereRaw('LOWER(program.program_name) LIKE ?', [lowerCaseQuery])
-                   .orWhereRaw('participant.participant_id::text LIKE ?', [lowerCaseQuery]); 
-        });
-    }
-
-    try {
-        return await knexQuery;
-    } catch (err) {
-        console.error("Database query error in searchParticipants:", err.message);
-        return [];
-    }
-}
-
-app.get('/participants', async (req, res) => {
-    if (!req.session.user) {
-        return res.redirect('/login'); 
-    }
-    
-    req.session.user.name = req.session.user.username;
-    req.session.user.isManager = req.session.user.role === 'manager';
-
-    try {
-        // Await the asynchronous database function (NEW)
-        const allParticipants = await fetchAllParticipants(); 
-        
-        res.render('participants', { 
-            user: req.session.user,
-            participants: allParticipants, // Data from DB
-            searchQuery: '' 
-        });
-    } catch (error) {
-        console.error("Error rendering participants page:", error);
-        res.render('participants', {
-            user: req.session.user,
-            participants: [],
-            searchQuery: '',
-            error_message: "Could not load participants data." // Optional error message
-        });
-    }
-});
-
-
-
-// GET Route to handle search queries
-// index.js
-
-// Updated GET Route to handle search queries
-app.get('/participants/search', async (req, res) => {
-    if (!req.session.user) {
-        return res.redirect('/login');
-    }
-    
-    // TEMPORARY: (User setup for EJS rendering)
-    req.session.user.name = req.session.user.username;
-    req.session.user.isManager = req.session.user.role === 'manager';
-
-    const query = req.query.query || '';
-    
-    try {
-        // Await the asynchronous database search function (NEW)
-        const filteredParticipants = await searchParticipants(query); 
-
-        res.render('participants', {
-            user: req.session.user,
-            participants: filteredParticipants,
-            searchQuery: query
-        });
-    } catch (error) {
-        console.error("Error rendering search results:", error);
-        res.render('participants', {
-            user: req.session.user,
-            participants: [],
-            searchQuery: query,
-            error_message: "Could not perform search."
-        });
-    }
-});
-
-// implement once the events and milestone pages have been created
-//
-// function fetchAllMilestones() {
-//     return [
-//         { id: 1, participantId: 101, title: 'Completed Level 1 Folklorico', date: '2025-09-01' },
-//         { id: 2, participantId: 102, title: 'STEAM Certification (Basic Robotics)', date: '2025-10-20' }
-//     ];
-// }
-//
-// app.get('/milestones', (req, res) => {
-//     if (!req.session.user) {
-//         return res.redirect('/login');
-//     }
-//     req.session.user.name = req.session.user.username;
-//     req.session.user.isManager = req.session.user.role === 'manager';
-
-//     const allMilestones = fetchAllMilestones(); 
-
-//     res.render('milestones', { 
-//         user: req.session.user, 
-//         milestones: allMilestones,
-//         searchQuery: ''
-//     });
-// });
-
-// app.get('/events', (req, res) => {
-//     if (!req.session.user) {
-//         return res.redirect('/login'); 
-//     }
-//     req.session.user.name = req.session.user.username;
-//     req.session.user.isManager = req.session.user.role === 'manager';
-
-//     const allEvents = fetchAllEvents(); 
-
-//     res.render('events', { 
-//         user: req.session.user, 
-//         events: allEvents,
-//         searchQuery: ''
-//     });
-// });
-
 app.get("/", (req, res) => {
     if (req.session.isLoggedIn) {
         res.render("landing");
@@ -859,9 +682,287 @@ app.post("/deleteMilestone/:id", (req, res) => {
     })
 });
 
-// Participant Routes
-app.get("/participants", (req, res) => {
-    res.render("participants");
+// -----------------------------------------------------
+// HELPER FUNCTION: Fetch paginated participants
+// (Updated to ensure limit and offset are correctly applied)
+// -----------------------------------------------------
+const fetchAllParticipants = async (limit, offset) => {
+    try {
+        const participants = await knex("participant")
+            .select(
+                "participantid",
+                "participantfirstname",
+                "participantlastname",
+                "participantemail",
+                "participantphone" 
+            )
+            // CRITICAL: Apply LIMIT and OFFSET here
+            .limit(limit)
+            .offset(offset)
+            .orderBy("participantid", "asc");
+            
+        return participants;
+
+    } catch (error) {
+        console.error("❌ Database query error in fetchAllParticipants:", error.message);
+        // Re-throw the error so the main route can catch it
+        throw new Error("Failed to fetch participants from database.");
+    }
+};
+
+// -----------------------------------------------------
+// PARTICIPANT ROUTES
+// -----------------------------------------------------
+
+// GET /participants - Display the list of all participants with pagination
+app.get('/participants', async (req, res) => {
+    if (!req.session.isLoggedIn) {
+        return res.render("login", { error_message: "" });
+    }
+    // Setup user object for EJS rendering
+    const user = req.session.user ? {
+        ...req.session.user,
+        name: req.session.user.username,
+        isManager: req.session.user.role === 'manager'
+    } : { username: 'Guest', role: 'guest' };
+    
+    // Get and clear session message
+    const message = req.session.message;
+    delete req.session.message;
+    
+    // --- Pagination Logic (Uses 100 per page) ---
+    const limit = 100;
+    // Ensure currentPage defaults to 1 and is an integer
+    const currentPage = parseInt(req.query.page) > 0 ? parseInt(req.query.page) : 1;
+    const offset = (currentPage - 1) * limit;
+    let totalParticipants = 0;
+    // --------------------------------------------
+
+    try {
+        // 1. Get total count for pagination (required to calculate total pages)
+        const countResult = await knex('participant').count('* as count');
+        totalParticipants = parseInt(countResult[0].count, 10);
+        
+        // 2. Fetch paginated data (ONLY 100 records for the current page)
+        const allParticipants = await fetchAllParticipants(limit, offset); 
+        
+        console.log(`✅ PARTICIPANT DATA STATUS: Fetched ${allParticipants.length} participants for page ${currentPage} (Total: ${totalParticipants}).`);
+        
+        // 3. Render View
+        const totalPages = Math.ceil(totalParticipants / limit);
+        
+        res.render('participant/participants', { 
+            user: user, 
+            participants: allParticipants, 
+            searchQuery: '',
+            message: message, 
+            error_message: null,
+            currentPage: currentPage, 
+            totalPages: totalPages
+        });
+        
+    } catch (error) {
+        console.error("❌ Participant Route Render Error:", error.message);
+        // Pass error through render function
+        res.render('participant/participants', {
+            user: user, 
+            participants: [],
+            searchQuery: '',
+            message: null,
+            error_message: error.message,
+            currentPage: 1, 
+            totalPages: 1
+        });
+    }
+});
+
+// GET /addParticipant - Display the form (Create Form)
+app.get("/addParticipant", (req, res) => {
+    if (!req.session.isLoggedIn) {
+        return res.render("login", { error_message: "" });
+    }
+    const user = req.session.user ? {
+        ...req.session.user,
+        name: req.session.user.username,
+        isManager: req.session.user.role === 'manager'
+    } : { username: 'Guest', role: 'guest' };
+    
+    // Pass error_message as an empty string to prevent EJS crash
+    res.render("participant/addparticipant", { message: null, user: user, error_message: "" });
+});
+
+// POST /addParticipant - Handle form submission (Create Action)
+app.post("/addParticipant", async (req, res) => {
+    // Assuming fields like firstName, lastName, email, etc.
+    const { firstName, lastName, email } = req.body; 
+    
+    const user = req.session.user ? {
+        ...req.session.user,
+        name: req.session.user.username,
+        isManager: req.session.user.role === 'manager'
+    } : { username: 'Guest', role: 'guest' };
+    
+    // Basic Validation
+    if (!firstName || !lastName || !email) {
+        // Pass validation error via error_message
+        return res.status(400).render("participant/addparticipant", { 
+            user: user,
+            message: null, 
+            error_message: "All fields (First Name, Last Name, Email) are required."
+        });
+    }
+
+    try {
+        // Insert new participant into the 'participant' table
+        await knex("participant").insert({
+            participantfirstname: firstName,
+            participantlastname: lastName,
+            participantemail: email
+            // Add other necessary participant fields here
+        });
+
+        // Success: Redirect to the list view
+        req.session.message = { type: 'success', text: 'Participant successfully added!' };
+        res.redirect("/participants");
+    } catch (err) {
+        console.error("Error in add Participant process:", err.message);
+        
+        // Pass database error via error_message
+        res.status(500).render("participant/addparticipant", { 
+             user: user,
+             message: null,
+             error_message: "Unable to save Participant. Check for duplicate email or database constraints."
+        })
+    }
+});
+
+// GET /editParticipant/:id - Display the form for a single participant (Read Single/Update Form)
+app.get("/editParticipant/:id", (req, res) => {    
+    if (!req.session.isLoggedIn) {
+        return res.render("login", { error_message: "" });
+    }
+    const participantId = req.params.id;
+    const user = req.session.user ? {
+        ...req.session.user,
+        name: req.session.user.username,
+        isManager: req.session.user.role === 'manager'
+    } : { username: 'Guest', role: 'guest' };
+
+    knex("participant")
+        .where({ participantid: participantId })
+        .first()
+        .then((participant) => {
+            if (!participant) {
+                // Set temporary message in session before redirecting
+                req.session.message = { type: 'error', text: `Participant with ID ${participantId} not found.` };
+                return res.status(404).redirect("/participants"); 
+            }
+            // Ensure error_message is passed to edit form
+            res.render("participant/editparticipant", { participant, user, error_message: "" }); 
+        })
+        .catch((err) => {
+            console.error("Error fetching participant:", err.message);
+            // Fallback render to the list view
+             req.session.message = { type: 'error', text: 'Unable to load participant for editing.' };
+            res.status(500).redirect("/participants");
+        });   
+});
+
+// POST /editParticipant/:id - Handle form submission for editing (Update Action)
+app.post("/editParticipant/:id", async (req, res) => {
+    const participantId = req.params.id;
+    const { firstName, lastName, email } = req.body; 
+    
+    const user = req.session.user ? {
+        ...req.session.user,
+        name: req.session.user.username,
+        isManager: req.session.user.role === 'manager'
+    } : { username: 'Guest', role: 'guest' };
+    
+    // Basic Validation
+    if (!firstName || !lastName || !email) { 
+        // Need to refetch data to re-render the edit form
+        const participant = await knex("participant").where({ participantid: participantId }).first();
+        if (!participant) {
+            req.session.message = { type: 'error', text: `Participant with ID ${participantId} not found.` };
+            return res.status(404).redirect("/participants");
+        }
+
+        return res.status(400).render("participant/editparticipant", {
+            participant,
+            user,
+            error_message: "All fields are required."
+        });
+    }
+
+    // Prepare Update Object
+    const updatedParticipant = {
+        participantfirstname: firstName,
+        participantlastname: lastName,
+        participantemail: email
+        // Add other necessary participant fields here
+    };
+    
+    try {
+        // Run Update Query
+        const rowsUpdated = await knex("participant")
+            .where({ participantid: participantId }) 
+            .update(updatedParticipant);
+
+        if (rowsUpdated === 0) {
+            console.warn(`Participant ID ${participantId} not found for update.`);
+        }
+        
+        // Success: Redirect to the list view
+        req.session.message = { type: 'success', text: `Participant ID ${participantId} successfully updated!` };
+        res.redirect("/participants");
+    } catch (err) {
+        console.error("Error updating participant:", err.message);
+        
+        // On update failure, refetch the original participant data and display the error
+        const participant = await knex("participant").where({ participantid: participantId }).first();
+
+        res.status(500).render("participant/editparticipant", {
+            participant: participant || {}, // Use empty object if refetch failed
+            user,
+            error_message: "Unable to update participant due to a database error."
+        });
+    }
+});
+
+// POST /deleteParticipant/:id - Delete a participant (Delete Action)
+app.post("/deleteParticipant/:id", (req, res) => {
+    if (req.session.user.role !== 'manager') {
+        req.session.message = { type: 'error', text: 'Authorization denied.' };
+        return res.redirect("/participants");
+    }
+    
+    knex("participant")
+        .where("participantid", req.params.id)
+        .del()
+        .then(rowsDeleted => {
+            if (rowsDeleted > 0) {
+                req.session.message = { type: 'success', text: `Participant ID ${req.params.id} successfully deleted.` };
+            } else {
+                req.session.message = { type: 'error', text: `Participant ID ${req.params.id} not found.` };
+            }
+            res.redirect("/participants");
+        })
+        .catch(err => {
+            console.error("Error deleting participant:", err);
+            req.session.message = { type: 'error', text: 'A database error prevented the deletion.' };
+            res.status(500).redirect("/participants");
+        });
+});
+
+// delete participant
+app.post("/deleteParticipant/:id", (req, res) => {
+    knex("participant").where("participantid", req.params.id).del().then(participant => {
+        res.redirect("/participants");
+    }).catch(err => {
+        console.log(err);
+        res.status(500).json({err});
+    })
 });
 
 

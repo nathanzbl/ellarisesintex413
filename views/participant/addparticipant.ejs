@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Edit Milestone | Ella Rises</title>
+    <title>Add Participant | Ella Rises</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -47,7 +47,7 @@
         }
 
         .data-card {
-            max-width: 720px; 
+            max-width: 720px;
             width: 100%;
             padding: 2.5rem 2.25rem;
             border-radius: 1.5rem;
@@ -71,12 +71,12 @@
             margin-bottom: 2rem;
         }
         
-        /* FORM-SPECIFIC STYLES (MATCHES SURVEY PAGE) */
-        .mb-3 { /* Spacing for form groups */
-            margin-bottom: 2rem; 
+        /* FORM-SPECIFIC STYLES */
+        .mb-3 {
+            margin-bottom: 2rem;
         }
 
-        .field-label { /* Label styling */
+        .field-label {
             display: flex;
             justify-content: space-between;
             align-items: baseline;
@@ -87,9 +87,9 @@
             text-transform: uppercase;
         }
 
-        .text-input, /* General input field style */
+        .text-input,
         .date-input,
-        .select-input { /* Added for potential future dropdowns */
+        .select-input {
             width: 100%;
             padding: 1rem;
             border: 2px solid var(--er-blush);
@@ -98,7 +98,7 @@
             font-size: 0.9rem;
             outline: none;
             transition: border-color 0.2s ease;
-            background: #fff; /* Ensure background is white */
+            background: #fff;
         }
 
         .text-input:focus,
@@ -112,14 +112,13 @@
             color: rgba(58, 63, 59, 0.5);
         }
 
-        /* Adjust date input icon if necessary (similar to select) */
         input[type="date"]::-webkit-calendar-picker-indicator {
-            filter: invert(30%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(50%); /* Darken calendar icon */
+            filter: invert(30%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(50%);
             cursor: pointer;
         }
 
 
-        /* BUTTON STYLING*/
+        /* BUTTON STYLING */
         .btn-action {
             padding: 0.85rem 1rem;
             border-radius: 999px;
@@ -136,7 +135,7 @@
             text-align: center;
         }
 
-        .btn-save-milestone { /* Specific button for saving */
+        .btn-save-milestone {
             background: var(--er-pink);
             color: #fff;
         }
@@ -146,10 +145,10 @@
             transform: translateY(-1px);
         }
 
-        .btn-back { /* Specific button for going back */
+        .btn-back {
             background: var(--er-charcoal);
             color: #fff;
-            margin-left: 1rem; /* Spacing between buttons */
+            margin-left: 1rem;
         }
         
         .btn-back:hover {
@@ -157,7 +156,7 @@
             transform: translateY(-1px);
         }
 
-        .message-alert { /* General alert style */
+        .message-alert {
             text-align: center;
             color: var(--er-rose);
             background: rgba(206, 50, 91, 0.07);
@@ -171,7 +170,7 @@
              margin-top: 2rem;
         }
 
-        hr { 
+        hr {
             border: none;
             border-top: 1px solid var(--er-blush);
             margin: 2rem 0;
@@ -184,47 +183,49 @@
     <div class="main-content">
         <div class="data-card">
             
-            <h1 class="milestone-title">Edit Milestone</h1>
-            <p class="milestone-subtitle">Update the title and date for this milestone.</p>
+            <h1 class="milestone-title">Add New Participant</h1>
+            <p class="milestone-subtitle">Enter all required data for the new participant.</p>
             
-            <% if (typeof error_message !== 'undefined' && error_message) { %>
+            <% if (error_message) { %>
                 <div class="message-alert" style="color: var(--er-rose); background: rgba(206, 50, 91, 0.07);">
                     <%= error_message %>
-                </div>
+                 </div>
             <% } %>
 
-            <form action="/editMilestone/<%= milestone.milestoneid %>" method="post">
-                
+            <form action="/addParticipant" method="post">
+
                 <div class="mb-3">
-                    <label for="milestonetitle" class="field-label">Milestone Title:</label>
-                    <input type="text" 
-                           class="text-input" 
-                           id="milestonetitle" 
-                           name="milestonetitle" 
-                           value="<%= milestone.milestonetitle %>" 
-                           required>
+                    <label for="firstName" class="field-label">First Name:</label>
+                    <input 
+                        type="text" 
+                        class="text-input" 
+                        id="firstName" 
+                        name="firstName" 
+                        placeholder="e.g., Jane" 
+                        required
+                    >
                 </div>
                 
                 <div class="mb-3">
-                    <label for="milestonedate" class="field-label">Milestone Date:</label>
-                    <input type="date" 
-                           class="date-input" 
-                           id="milestonedate" 
-                           name="milestonedate" 
-                           value="<%= milestone.milestonedate ? new Date(milestone.milestonedate).toISOString().substring(0, 10) : '' %>" 
-                           required>
+                    <label for="lastName" class="field-label">Last Name:</label>
+                    <input type="text" class="text-input" id="lastName" name="lastName" placeholder="e.g., Doe" required>
                 </div>
-    
+                
+                <div class="mb-3">
+                    <label for="email" class="field-label">Email:</label>
+                    <input type="email" class="text-input" id="email" name="email" placeholder="e.g., jane.doe@example.com" required>
+                </div>
+                
                 <hr>
 
                 <div class="text-center-wrapper">
-                    <input type="submit" value="Update Milestone" class="btn-action btn-save-milestone">
-                    <a href="/milestones" class="btn-action btn-back">Back to Milestones</a>
+                    <input type="submit" value="Save Participant" class="btn-action btn-save-milestone">
+                    <a href="/participants" class="btn-action btn-back">Back to Participants</a>
                 </div>
-
+            
             </form>
+            
         </div>
     </div>
-    <%- include('../common/footer.ejs') %>
 </body>
 </html>
