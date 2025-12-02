@@ -497,6 +497,178 @@ app.get("/displayHobbies/:userId", (req, res) => {
             });
 });
 
+// -----------------------------------------------------
+//  EVENT SYSTEM ROUTES
+// -----------------------------------------------------
+
+// Middleware: Only allow managers
+function requireManager(req, res, next) {
+    if (req.session.user && req.session.user.role === "manager") {
+        return next();
+    }
+    return res.status(403).render("403");
+}
+
+// -----------------------------------------------------
+// PUBLIC: Show next upcoming event
+// -----------------------------------------------------
+app.get("/eventspublic", async (req, res) => {
+    try {
+        // FIXED table name ("event" not "events")
+        const nextEvent = await knex("event")
+            .orderBy("eventdatestarttime", "asc")
+            .first();
+
+        res.render("eventspublic", { nextEvent });
+    } catch (err) {
+        console.error(err);
+        res.render("eventspublic", { nextEvent: null });
+    }
+});
+
+// -----------------------------------------------------
+// PUBLIC: Event details page
+// -----------------------------------------------------
+app.get("/events/detail/:id", async (req, res) => {
+    try {
+        const event = await knex("event")
+            .where({ event_id: req.params.id })
+            .first();
+
+        if (!event) return res.status(404).render("404");
+
+        res.render("eventdetail", { event });
+    } catch (err) {
+        console.error(err);
+        res.status(500).render("404");
+    }
+});
+
+// -----------------------------------------------------
+// PUBLIC: RSVP form page
+// -----------------------------------------------------
+app.get("/events/rsvp/:id", async (req, res) => {
+    try {
+        const event = await knex("event")
+            .where({ eventid: req.params.id })
+            .first();
+
+        if (!event) return res.status(404).render("404");
+
+        res.render("eventrsvp", { event });
+    } catch (err) {
+        console.error(err);
+        res.status(500).render("404");
+    }
+});
+
+// -----------------------------------------------------
+// PUBLIC: Submit RSVP (placeholder)
+// -----------------------------------------------------
+app.post("/events/rsvp/:id", async (req, res) => {
+    try {
+        res.render("rsvpsuccess");
+    } catch (err) {
+        console.error(err);
+        res.status(500).render("404");
+    }
+});
+
+// -----------------------------------------------------
+// MANAGER: View all events
+// -----------------------------------------------------
+app.get("/events", requireManager, async (req, res) => {
+    try {
+        const events = await knex("event").orderBy("event_start_date", "asc");
+        res.render("events", { events });
+    } catch (err) {
+        console.error(err);
+        res.render("events", { events: [] });
+    }
+});
+
+// -----------------------------------------------------
+// MANAGER: Add event (form)
+// -----------------------------------------------------
+app.get("/events/add", requireManager, (req, res) => {
+    res.render("addevent");
+});
+
+// -----------------------------------------------------
+// MANAGER: Submit new event
+// -----------------------------------------------------
+app.post("/events/add", requireManager, async (req, res) => {
+    try {
+        await knex("event").insert({
+            event_name: req.body.event_name,
+            event_description: req.body.event_description,
+            event_start_date: req.body.event_start_date,
+            event_end_date: req.body.event_end_date,
+            event_location: req.body.event_location
+        });
+
+        res.redirect("/events");
+    } catch (err) {
+        console.error(err);
+        res.render("addevent", { error_message: "Error adding event." });
+    }
+});
+
+// -----------------------------------------------------
+// MANAGER: Edit event (form)
+// -----------------------------------------------------
+app.get("/events/edit/:id", requireManager, async (req, res) => {
+    try {
+        const event = await knex("event")
+            .where({ event_id: req.params.id })
+            .first();
+
+        if (!event) return res.status(404).render("404");
+
+        res.render("editevent", { event });
+    } catch (err) {
+        console.error(err);
+        res.status(500).render("404");
+    }
+});
+
+// -----------------------------------------------------
+// MANAGER: Save edited event
+// -----------------------------------------------------
+app.post("/events/edit/:id", requireManager, async (req, res) => {
+    try {
+        await knex("event")
+            .where({ event_id: req.params.id })
+            .update({
+                event_name: req.body.event_name,
+                event_description: req.body.event_description,
+                event_start_date: req.body.event_start_date,
+                event_end_date: req.body.event_end_date,
+                event_location: req.body.event_location
+            });
+
+        res.redirect("/events");
+    } catch (err) {
+        console.error(err);
+        res.status(500).render("404");
+    }
+});
+
+// -----------------------------------------------------
+// MANAGER: Delete event
+// -----------------------------------------------------
+app.get("/events/delete/:id", requireManager, async (req, res) => {
+    try {
+        await knex("event")
+            .where({ event_id: req.params.id })
+            .del();
+
+        res.redirect("/events");
+    } catch (err) {
+        console.error(err);
+        res.status(500).render("404");
+    }
+});
 
 app.listen(port, () => {
     console.log("The server is listening");
