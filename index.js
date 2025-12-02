@@ -190,6 +190,85 @@ app.get("/surveys", (req, res) => {
     }
 });
 
+app.post("/survey", async (req, res) => {
+  const {
+    SurveyEmail,
+    SurveyEventId,
+    SurveyEventDate,
+    SurveySatisfactionScore,
+    SurveyUsefulnessScore,
+    SurveyInstructorScore,
+    SurveyRecommendationScore,
+
+    SurveyComments
+  } = req.body;
+
+  try {
+    // 1) Look up participant by email using knex.raw
+    const emailResult = await knex.raw(
+      "SELECT participantid, participantemail FROM participant WHERE participantemail = ?",
+      [SurveyEmail]
+    );
+
+    // With Postgres, knex.raw returns { rows: [...] }
+    const rows = emailResult.rows || emailResult;
+
+    if (!rows || rows.length === 0) {
+      // Email not found, reload page with error
+      const events = await knex("eventdefinition")
+        .select("eventdefid", "eventname")
+        .orderBy("eventdefid", "asc");
+
+      return res.status(400).render("surveys", {
+        events,
+        error_message: "We could not find that email in our records. Please use the email you used to register."
+      });
+    }
+
+    const participantId = rows[0].participantid;
+
+    // Parse scores to integers
+    const sat = Number(SurveySatisfactionScore);
+    const useful = Number(SurveyUsefulnessScore);
+    const instr = Number(SurveyInstructorScore);
+    const recom = Number(SurveyRecommendationScore);
+
+    const overall = Math.round((sat + useful + instr + recom) / 4);
+
+    // 2) Insert into survey table
+     await knex("survey").insert({
+      participantid: participantId,
+      eventid: SurveyEventId,
+      recommendationid: recom,            // or whatever id you actually want here
+      surveysatisfactionscore: sat,
+      surveyusefulnessscore: useful,
+      surveyinstructorscore: instr,
+      surveyrecommendationscore: recom,
+      surveyoverallscore: overall,        // now an int, not 1388.75
+      surveycomments: SurveyComments || null,
+      surveysubmissiondate: knex.fn.now()
+    });
+
+    // 3) Redirect to a thank you page or something similar
+    res.redirect("/survey/thankyou");
+  } catch (err) {
+    console.error("Survey submit error:", err);
+
+    const events = await knex("eventdefinition")
+      .select("eventdefid", "eventname")
+      .orderBy("eventdefid", "asc");
+
+    res.status(500).render("surveys", {
+      events,
+      error_message: "There was a problem saving your survey. Please try again."
+    });
+  }
+});
+
+app.get("/survey/thankyou", (req, res) => {
+    res.render("surveyThankYou");
+}); 
+
 app.get("/users", (req, res) => {
     // Check if user is logged in
     if (req.session.isLoggedIn) { 
