@@ -1652,7 +1652,7 @@ app.get("/events/:eventdefid/day/:date", requireManager, async (req, res) => {
 
     let events = await knex("event")
         .join("eventdefinition", "event.eventdefid", "eventdefinition.eventdefid")
-        .select("event.*", "eventdefinition.eventname")
+        .select("event.*", "eventdefinition.eventname", "eventdefinition.eventdescription")
         .where("event.eventdefid", eventdefid)
         .whereRaw("DATE(eventdatetimestart AT TIME ZONE 'UTC' AT TIME ZONE 'America/Denver') = ?", [date]);
 
