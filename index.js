@@ -201,6 +201,32 @@ app.get("/users", (req, res) => {
     }
 });
 
+app.get('/participants', (req, res) => {
+    if (!req.session.user) {
+        return res.redirect('/login'); // Redirect to login if not logged in
+    }
+    const allParticipants = fetchAllParticipants(); 
+    res.render('participants', { 
+        user: req.session.user,
+        participants: allParticipants,
+        searchQuery: ''
+    });
+});
+
+app.get('/participants/search', (req, res) => {
+    if (!req.session.user) {
+        return res.redirect('/login');
+    }
+    const query = req.query.query;
+    const filteredParticipants = searchParticipants(query); 
+
+    res.render('participants', {
+        user: req.session.user,
+        participants: filteredParticipants,
+        searchQuery: query
+    });
+});
+
 app.get("/", (req, res) => {
     if (req.session.isLoggedIn) {
         res.render("landing");
@@ -469,6 +495,19 @@ app.get("/displayHobbies/:userId", (req, res) => {
             });
 });
 
+app.post('/participants/add', isManager, (req, res) => {
+    const newParticipantData = req.body;
+    // Logic to save new participant to the database...
+    console.log('Manager added new participant:', newParticipantData);
+    res.redirect('/participants'); // Redirect back to the list
+});
+
+app.post('/participants/delete/:id', isManager, (req, res) => {
+    const participantId = req.params.id;
+    // Logic to delete the participant from the database...
+    console.log(`Manager deleted participant ID ${participantId}`);
+    res.redirect('/participants');
+});
 
 app.listen(port, () => {
     console.log("The server is listening");
