@@ -130,7 +130,7 @@ app.use(express.urlencoded({extended: true}));
 // Global authentication middleware - runs on EVERY request
 app.use((req, res, next) => {
     // Skip authentication for login routes
-    if (req.path === '/' || req.path === '/login' || req.path === '/logout') {
+    if (req.path === '/' || req.path === '/login' || req.path === '/logout' || req.path === '/donations' || req.path === '/register') {
         //continue with the request path
         return next();
     }
@@ -156,17 +156,6 @@ app.get("/login", (req, res) => {
     }
 });
 
-app.get("/test", (req, res) => {
-    // Check if user is logged in
-    if (req.session.isLoggedIn) {        
-        res.render("test", {name : "BYU"});
-    } 
-    else {
-        res.render("login", { error_message: "" });
-    }
-});
-
-
 app.get("/surveys", (req, res) => {
     // Check if user is logged in
     if (req.session.isLoggedIn) {        
@@ -190,6 +179,155 @@ app.get("/surveys", (req, res) => {
     }
 });
 
+app.post("/survey", async (req, res) => {
+  const {
+    SurveyEmail,
+    SurveyEventId,
+    SurveyEventDate,
+    SurveySatisfactionScore,
+    SurveyUsefulnessScore,
+    SurveyInstructorScore,
+    SurveyRecommendationScore,
+
+    SurveyComments
+  } = req.body;
+
+  try {
+    // 1) Look up participant by email using knex.raw
+    const emailResult = await knex.raw(
+      "SELECT participantid, participantemail FROM participant WHERE participantemail = ?",
+      [SurveyEmail]
+    );
+
+    // With Postgres, knex.raw returns { rows: [...] }
+    const rows = emailResult.rows || emailResult;
+
+    if (!rows || rows.length === 0) {
+      // Email not found, reload page with error
+      const events = await knex("eventdefinition")
+        .select("eventdefid", "eventname")
+        .orderBy("eventdefid", "asc");
+
+      return res.status(400).render("surveys", {
+        events,
+        error_message: "We could not find that email in our records. Please use the email you used to register."
+      });
+    }
+
+    const participantId = rows[0].participantid;
+
+    // Parse scores to integers
+    const sat = Number(SurveySatisfactionScore);
+    const useful = Number(SurveyUsefulnessScore);
+    const instr = Number(SurveyInstructorScore);
+    const recom = Number(SurveyRecommendationScore);
+
+    const overall = Math.round((sat + useful + instr + recom) / 4);
+
+    // 2) Insert into survey table
+     await knex("survey").insert({
+      participantid: participantId,
+      eventid: SurveyEventId,
+      recommendationid: recom,            // or whatever id you actually want here
+      surveysatisfactionscore: sat,
+      surveyusefulnessscore: useful,
+      surveyinstructorscore: instr,
+      surveyrecommendationscore: recom,
+      surveyoverallscore: overall,        // now an int, not 1388.75
+      surveycomments: SurveyComments || null,
+      surveysubmissiondate: knex.fn.now()
+    });
+
+    // 3) Redirect to a thank you page or something similar
+    res.redirect("/survey/thankyou");
+  } catch (err) {
+    console.error("Survey submit error:", err);
+
+    const events = await knex("eventdefinition")
+      .select("eventdefid", "eventname")
+      .orderBy("eventdefid", "asc");
+
+    res.status(500).render("surveys", {
+      events,
+      error_message: "There was a problem saving your survey. Please try again."
+    });
+  }
+});
+
+app.get("/survey/thankyou", (req, res) => {
+    res.render("surveyThankYou");
+}); 
+
+app.get("/survey/responses", async (req, res) => {
+  const { eventDefId } = req.query; // query param from the dropdown
+
+  try {
+    // Event definitions for the dropdown
+    const events = await knex("eventdefinition")
+      .select("eventdefid", "eventname")
+      .orderBy("eventdefid", "asc");
+
+    // Base query: survey -> event -> eventdefinition -> participant
+    let query = knex("survey as s")
+      .join("event as e", "e.eventid", "s.eventid")
+      .join("eventdefinition as ed", "ed.eventdefid", "e.eventdefid")
+      .join("participant as p", "s.participantid", "p.participantid")
+      .select(
+        "s.surveyid",
+        "s.eventid",
+        "e.eventdefid",
+        "ed.eventname",
+        "p.participantemail",
+        "s.surveysatisfactionscore",
+        "s.surveyusefulnessscore",
+        "s.surveyinstructorscore",
+        "s.surveyrecommendationscore",
+        "s.surveyoverallscore",
+        "s.surveycomments",
+        "s.surveysubmissiondate"
+      )
+      .orderBy("s.surveysubmissiondate", "desc");
+
+    // Filter by event definition if one was selected
+    if (eventDefId && eventDefId !== "") {
+      query = query.where("e.eventdefid", Number(eventDefId));
+    }
+
+    const surveys = await query;
+
+    res.render("surveyResponses", {
+      surveys,
+      events,
+      selectedEventDefId: eventDefId || ""
+    });
+  } catch (err) {
+    console.error("Survey responses error:", err);
+    res.status(500).send("Error loading survey responses");
+  }
+});
+
+
+
+app.post("/survey/:surveyid/delete", async (req, res) => {
+  const { surveyid } = req.params;
+  const { eventId } = req.query; // to preserve filter on redirect
+
+  try {
+    await knex("survey")
+      .where({ surveyid })
+      .del();
+
+    const redirectUrl = eventId
+      ? `/survey/responses?eventId=${encodeURIComponent(eventId)}`
+      : "/survey/responses";
+
+    res.redirect(redirectUrl);
+  } catch (err) {
+    console.error("Error deleting survey:", err);
+    res.status(500).send("Error deleting survey response");
+  }
+});
+
 app.get("/users", (req, res) => {
     // Check if user is logged in
     if (req.session.isLoggedIn) { 
@@ -210,6 +348,183 @@ app.get("/users", (req, res) => {
         res.render("login", { error_message: "" });
     }
 });
+
+async function fetchAllParticipants() {
+    try {
+        const participants = await knex('participant') // <<< CHECK THIS NAME: 'participant'
+            .select(
+                'participant.participant_id as id',
+                'participant.first_name as firstName',
+                'participant.last_name as lastName',
+                'participant.status as status',
+                'program.program_name as currentProgram' // Use 'program' if that's the program table
+            )
+            // UPDATE: Use the correct junction table name
+            .leftJoin('participant_program', 
+                      'participant.participant_id', 
+                      'participant_program.participant_id')
+            
+            // UPDATE: Use the correct program table name
+            .leftJoin('program', // <<< CHECK THIS NAME: 'program'
+                      'participant_program.program_id', 
+                      'program.program_id')
+            
+            .where('participant_program.is_current', true) 
+            
+            // Ensure GROUP BY uses the correct table names
+            .groupBy('participant.participant_id', 'participant.first_name', 'participant.last_name', 'participant.status', 'program.program_name');
+
+        return participants;
+    } catch (err) {
+        console.error("Database query error in fetchAllParticipants:", err.message);
+        return []; 
+    }
+}
+
+async function searchParticipants(query) {
+    let knexQuery = knex('participant') // <<< CHECK THIS NAME: 'participant'
+        .select(
+            'participant.participant_id as id',
+            'participant.first_name as firstName',
+            'participant.last_name as lastName',
+            'participant.status as status',
+            'program.program_name as currentProgram'
+        )
+        // Apply the same JOINs as above
+        .leftJoin('participant_program', 
+                  'participant.participant_id', 
+                  'participant_program.participant_id')
+        .leftJoin('program', 
+                  'participant_program.program_id', 
+                  'program.program_id')
+        .where('participant_program.is_current', true) 
+        .groupBy('participant.participant_id', 'participant.first_name', 'participant.last_name', 'participant.status', 'program.program_name'); 
+
+    if (query) {
+        const lowerCaseQuery = `%${query.toLowerCase()}%`;
+        
+        knexQuery.where(builder => {
+            // Ensure column names are correct: first_name, last_name, etc.
+            builder.whereRaw('LOWER(participant.first_name) LIKE ?', [lowerCaseQuery])
+                   .orWhereRaw('LOWER(participant.last_name) LIKE ?', [lowerCaseQuery])
+                   .orWhereRaw('LOWER(program.program_name) LIKE ?', [lowerCaseQuery])
+                   .orWhereRaw('participant.participant_id::text LIKE ?', [lowerCaseQuery]); 
+        });
+    }
+
+    try {
+        return await knexQuery;
+    } catch (err) {
+        console.error("Database query error in searchParticipants:", err.message);
+        return [];
+    }
+}
+
+app.get('/participants', async (req, res) => {
+    if (!req.session.user) {
+        return res.redirect('/login'); 
+    }
+    
+    req.session.user.name = req.session.user.username;
+    req.session.user.isManager = req.session.user.role === 'manager';
+
+    try {
+        // Await the asynchronous database function (NEW)
+        const allParticipants = await fetchAllParticipants(); 
+        
+        res.render('participants', { 
+            user: req.session.user,
+            participants: allParticipants, // Data from DB
+            searchQuery: '' 
+        });
+    } catch (error) {
+        console.error("Error rendering participants page:", error);
+        res.render('participants', {
+            user: req.session.user,
+            participants: [],
+            searchQuery: '',
+            error_message: "Could not load participants data." // Optional error message
+        });
+    }
+});
+
+
+
+// GET Route to handle search queries
+// index.js
+
+// Updated GET Route to handle search queries
+app.get('/participants/search', async (req, res) => {
+    if (!req.session.user) {
+        return res.redirect('/login');
+    }
+    
+    // TEMPORARY: (User setup for EJS rendering)
+    req.session.user.name = req.session.user.username;
+    req.session.user.isManager = req.session.user.role === 'manager';
+
+    const query = req.query.query || '';
+    
+    try {
+        // Await the asynchronous database search function (NEW)
+        const filteredParticipants = await searchParticipants(query); 
+
+        res.render('participants', {
+            user: req.session.user,
+            participants: filteredParticipants,
+            searchQuery: query
+        });
+    } catch (error) {
+        console.error("Error rendering search results:", error);
+        res.render('participants', {
+            user: req.session.user,
+            participants: [],
+            searchQuery: query,
+            error_message: "Could not perform search."
+        });
+    }
+});
+
+// implement once the events and milestone pages have been created
+//
+// function fetchAllMilestones() {
+//     return [
+//         { id: 1, participantId: 101, title: 'Completed Level 1 Folklorico', date: '2025-09-01' },
+//         { id: 2, participantId: 102, title: 'STEAM Certification (Basic Robotics)', date: '2025-10-20' }
+//     ];
+// }
+//
+// app.get('/milestones', (req, res) => {
+//     if (!req.session.user) {
+//         return res.redirect('/login');
+//     }
+//     req.session.user.name = req.session.user.username;
+//     req.session.user.isManager = req.session.user.role === 'manager';
+
+//     const allMilestones = fetchAllMilestones(); 
+
+//     res.render('milestones', { 
+//         user: req.session.user, 
+//         milestones: allMilestones,
+//         searchQuery: ''
+//     });
+// });
+
+// app.get('/events', (req, res) => {
+//     if (!req.session.user) {
+//         return res.redirect('/login'); 
+//     }
+//     req.session.user.name = req.session.user.username;
+//     req.session.user.isManager = req.session.user.role === 'manager';
+
+//     const allEvents = fetchAllEvents(); 
+
+//     res.render('events', { 
+//         user: req.session.user, 
+//         events: allEvents,
+//         searchQuery: ''
+//     });
+// });
 
 app.get("/", (req, res) => {
     if (req.session.isLoggedIn) {
@@ -239,7 +554,6 @@ app.post('/login', async (req, res) => {
         }
 
         const user = result.rows[0];
-
         // Compare the provided password with the hashed password
         const passwordMatch = await bcrypt.compare(password, user.password);
 
@@ -281,10 +595,6 @@ app.get("/logout", (req, res) => {
     });
 });
 
-app.get("/addUser", (req, res) => {
-    res.render("addUser");
-});    
-
 // Donation Routes
 app.get("/donations", (req, res) => {
     res.render("donations");
@@ -292,7 +602,261 @@ app.get("/donations", (req, res) => {
 
 // Milestone Routes
 app.get("/milestones", (req, res) => {
-    res.render("milestones");
+    if (!req.session.isLoggedIn) {
+        return res.render("login", { error_message: "" });
+    }
+
+    const limit = 100; // Number of items per page
+    const currentPage = parseInt(req.query.page) || 1;
+    const offset = (currentPage - 1) * limit;
+
+    let totalMilestones = 0;
+
+    knex('milestone')
+        .innerJoin(
+            'participant', 
+            'milestone.participantid', 
+            'participant.participantid'
+        )
+        .count('* as count')
+        .then(result => {
+            totalMilestones = parseInt(result[0].count);
+            
+            return knex
+                .select(
+                    'milestone.*',
+                    'participant.participantfirstname', 
+                    'participant.participantlastname',
+                    'participant.participantemail'
+                )
+                .from("milestone")
+                .innerJoin(
+                    'participant', 
+                    'milestone.participantid', 
+                    'participant.participantid'
+                )
+                
+                .limit(limit)
+                .offset(offset);
+        })
+        .then(milestones => {
+            console.log(`Successfully retrieved ${milestones.length} milestones for page ${currentPage}`);
+            
+            // Calculate total pages needed
+            const totalPages = Math.ceil(totalMilestones / limit);
+            
+            res.render("milestone/milestones", {
+                milestone: milestones,
+                currentPage: currentPage,
+                totalPages: totalPages,
+            });
+        })
+        .catch((err) => {
+            console.error("Database query error:", err.message);
+            res.render("milestone/milestones", {
+                milestone: [],
+                currentPage: 1, 
+                totalPages: 1,
+                error_message: `Database error: ${err.message}. Please check if the 'milestone' table exists.`
+            });
+        });
+});
+
+// Add Milestone Post Route
+app.post("/addmilestone", (req, res) => {
+    const { milestonetitle, milestonedate } = req.body;
+    let { participantIdentifier } = req.body; 
+    
+    participantIdentifier = participantIdentifier.trim();
+    
+    // validation check
+    if (!milestonetitle || !milestonedate || !participantIdentifier) {
+        return res.status(400).render("milestone/addmilestone", { 
+            message: { type: "error", text: "Milestone Title, Date, and Participant Identifier are required." }
+        });
+    }
+
+    let participantIdToInsert;
+    let lookupQuery = knex("participant").select("participantid");
+    
+    // Check if the input is a number (meaning they entered an ID)
+    if (!isNaN(parseInt(participantIdentifier))) {
+        lookupQuery = lookupQuery.where({
+            participantid: parseInt(participantIdentifier)
+        });
+        console.log(`Looking up participant by ID: ${participantIdentifier}`);
+    } else {
+        lookupQuery = lookupQuery.where({
+            participantemail: participantIdentifier
+        });
+        console.log(`Looking up participant by Email: ${participantIdentifier}`);
+    }
+    
+    // Execute the built query
+    lookupQuery.first() 
+        .then((participant) => {
+            if (!participant) {
+                throw new Error(`Participant identifier "${participantIdentifier}" not found. Please verify the ID or Email.`);
+            }
+            
+            // Store the unique ID
+            participantIdToInsert = participant.participantid;
+
+            const newMilestone = {
+                milestonetitle,
+                milestonedate,
+                participantid: participantIdToInsert
+            };
+
+            // Return the insert query to continue the promise chain
+            return knex("milestone").insert(newMilestone);
+        })
+        .then(() => {
+            // Success: Insertion complete
+            res.redirect("/milestones");
+        })
+        .catch((err) => {
+            // Error handling
+            let errorMessage = "Unable to save Milestone. Please try again.";
+            
+            if (err.message.includes("Participant identifier")) {
+                errorMessage = err.message;
+            } else {
+                console.error("Error in add Milestone process:", err.message);
+            }
+
+            res.status(500).render("addmilestone", { 
+                 message: { type: "error", text: errorMessage }
+            });
+        });
+});
+
+// add milestone get route
+app.get("/addMilestone", (req, res) => {
+    if (req.session.isLoggedIn) {
+        res.render("milestone/addmilestone");
+    }
+    else {
+        res.render("login", { error_message: "" });
+    }  
+});
+
+// edit milestone get route
+app.get("/editMilestone/:id", (req, res) => {    
+    const milestoneId = req.params.id;
+    knex("milestone")
+        .where({ milestoneid: milestoneId })
+        .first()
+        .then((milestone) => {
+            if (!milestone) {
+                return res.status(404).render("/milestones", {
+                    milestone: [],
+                    error_message: "Milestone not found."
+                });
+            }
+            res.render("editmilestone", { user, error_message: "" });
+        })
+        .catch((err) => {
+            console.error("Error fetching milestone:", err.message);
+            res.status(500).render("milestone/milestones", {
+                workshops: [],
+                error_message: "Unable to load milestone for editing."
+            });
+        });   
+});
+
+// Edit Milestone POST Route
+app.post("/editMilestone/:id", (req, res) => {
+    const milestoneID = req.params.id;
+    
+    const { milestonetitle, milestonedate } = req.body; 
+    
+    if (!milestonetitle || !milestonedate) { 
+        return knex("milestone")
+            .where({ milestoneid: milestoneID }) 
+            .first()
+            .then((milestone) => {
+                if (!milestone) {
+                    return res.status(404).render("milestone_list", {
+                        milestones: [],
+                        error_message: "Milestone not found for validation."
+                    });
+                }
+                // Render the edit form again with an error message
+                res.status(400).render("milestone/editmilestone", {
+                    milestone,
+                    error_message: "Milestone Title and Date are required."
+                });
+            })
+            .catch((err) => {
+                console.error("Error fetching milestone for validation fail:", err.message);
+                res.status(500).render("milestone_list", {
+                    milestones: [],
+                    error_message: "Unable to load milestone for editing."
+                });
+            });
+    }
+
+    // --- Prepare Update Object ---
+    const updatedMilestone = {
+        milestonetitle,
+        milestonedate
+    };
+    
+    // --- Run Update Query ---
+    knex("milestone")
+        .where({ milestoneid: milestoneID }) // Target the specific milestone
+        .update(updatedMilestone)
+        .then((rowsUpdated) => {
+            if (rowsUpdated === 0) {
+                // If 0 rows were updated, the ID was likely invalid or not found
+                return res.status(404).render("milestone_list", {
+                    milestones: [],
+                    error_message: `Milestone with ID ${milestoneID} not found or no changes were made.`
+                });
+            }
+            // Success: Redirect to the list view
+            res.redirect("/milestones");
+        })
+        .catch((err) => {
+            console.error("Error updating milestone:", err.message);
+            
+            // On update failure, refetch the original milestone data and display the error
+            knex("milestone")
+                .where({ milestoneid: milestoneID })
+                .first()
+                .then((milestone) => {
+                    if (!milestone) {
+                        return res.status(404).render("milestone_list", {
+                            milestones: [],
+                            error_message: "Milestone not found after update failure."
+                        });
+                    }
+                    // Render the edit form with the database error message
+                    res.status(500).render("editMilestone", {
+                        milestone,
+                        error_message: "Unable to update milestone due to a database error. Please check your data."
+                    });
+                })
+                .catch((fetchErr) => {
+                    console.error("Error fetching milestone after update failure:", fetchErr.message);
+                    res.status(500).render("milestone_list", {
+                        milestones: [],
+                        error_message: "A critical error occurred. Cannot update milestone."
+                    });
+                });
+        });
+})
+
+
+// delete milestone
+app.post("/deleteMilestone/:id", (req, res) => {
+    knex("milestone").where("milestoneid", req.params.id).del().then(milestone => {
+        res.redirect("/milestones");
+    }).catch(err => {
+        console.log(err);
+        res.status(500).json({err});
+    })
 });
 
 // Participant Routes
@@ -304,6 +868,7 @@ app.get("/participants", (req, res) => {
 app.get("/register", (req, res) => {
     res.render("register");
 });
+
 app.post('/register', async (req, res) => {
     const { username, password, confirmPassword } = req.body;
 
@@ -598,6 +1163,41 @@ app.post("/events/rsvp/:id", async (req, res) => {
 });
 
 // -----------------------------------------------------
+// MANAGER: View All Events
+// -----------------------------------------------------
+app.get("/events", requireManager, async (req, res) => {
+    try {
+        let events = await knex("event")
+            .join("eventdefinition", "event.eventdefid", "eventdefinition.eventdefid")
+            .select(
+                "event.eventid",
+                "event.eventdatetimestart",
+                "event.eventlocation",
+                "eventdefinition.eventname"
+            )
+            .orderBy("event.eventdatetimestart", "asc");
+
+        // Format each event's date
+        events = events.map(ev => {
+            const date = new Date(ev.eventdatetimestart);
+
+            ev.formattedDate = date.toLocaleDateString("en-US", {
+                month: "short",  // "Nov"
+                day: "numeric",  // "7"
+                year: "numeric"  // "2021"
+            });
+
+            return ev;
+        });
+
+        res.render("events", { events });
+    } catch (err) {
+        console.error("Error loading manager event list:", err);
+        res.render("events", { events: [] });
+    }
+});
+
+// -----------------------------------------------------
 // MANAGER: Add Event Form
 // -----------------------------------------------------
 app.get("/events/add", requireManager, (req, res) => {
@@ -711,137 +1311,6 @@ app.post("/events/delete/:id", requireManager, async (req, res) => {
         console.error("Error deleting event:", err);
         res.status(500).render("404");
     }
-});
-
-// -----------------------------------------------------
-// EVENT LIST: Show all unique event definitions
-// -----------------------------------------------------
-app.get("/events", requireManager, async (req, res) => {
-    try {
-        const eventDefs = await knex("eventdefinition")
-            .select("eventdefid", "eventname", "eventdescription")
-            .orderBy("eventname");
-
-        res.render("eventlist", { eventDefs });
-    } catch (err) {
-        console.error("Error loading event definitions:", err);
-        res.render("eventlist", { eventDefs: [] });
-    }
-});
-
-// -----------------------------------------------------
-// EVENT DETAILS FOR SELECTED DATE
-// -----------------------------------------------------
-app.get("/events/:eventdefid/day/:date", requireManager, async (req, res) => {
-    const { eventdefid, date } = req.params;
-
-    // Get event info for that date
-    let events = await knex("event")
-        .join("eventdefinition", "event.eventdefid", "eventdefinition.eventdefid")
-        .select(
-            "event.*",
-            "eventdefinition.eventname"
-        )
-        .where("event.eventdefid", eventdefid)
-        .whereRaw("DATE(eventdatetimestart) = ?", [date]);
-
-    // Format date + time
-    const formattedDate = new Date(date).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric"
-    });
-
-    events = events.map(ev => ({
-        ...ev,
-        startTimeFormatted: new Date(ev.eventdatetimestart).toLocaleTimeString([], {
-            hour: "numeric",
-            minute: "2-digit"
-        }),
-        endTimeFormatted: new Date(ev.eventdatetimeend).toLocaleTimeString([], {
-            hour: "numeric",
-            minute: "2-digit"
-        })
-    }));
-
-    res.render("eventdetails", {
-        events,
-        dateFormatted: formattedDate
-    });
-});
-
-// -----------------------------------------------------
-// EVENT CALENDAR PAGE
-// -----------------------------------------------------
-app.get("/events/:eventdefid", requireManager, async (req, res) => {
-    try {
-        // Get event definition info
-        const eventDef = await knex("eventdefinition")
-            .where("eventdefid", req.params.eventdefid)
-            .first();
-
-        // Get all upcoming scheduled dates
-        const events = await knex("event")
-            .where("eventdefid", req.params.eventdefid)
-            .select("eventid", "eventdatetimestart");
-
-        // Convert event dates to LOCAL YYYY-MM-DD strings
-        const datesAvailable = events.map(ev => {
-            const d = new Date(ev.eventdatetimestart);
-            const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
-            console.log("RAW:", ev.eventdatetimestart);
-            console.log("LOCAL:", local.toISOString().split("T")[0]);
-            return local.toISOString().split("T")[0];
-        });
-        
-
-        res.render("eventcalendar", { eventDef, datesAvailable });
-    } catch (err) {
-        console.error("Error loading calendar:", err);
-        res.status(500).render("404");
-    }
-});
-
-
-// -----------------------------------------------------
-// EVENT DETAILS FOR SELECTED DATE
-// -----------------------------------------------------
-app.get("/events/:eventdefid/day/:date", requireManager, async (req, res) => {
-    const { eventdefid, date } = req.params;
-
-    // Load event instance(s) for this exact LOCAL date
-    let events = await knex("event")
-        .join("eventdefinition", "event.eventdefid", "eventdefinition.eventdefid")
-        .select(
-            "event.*",
-            "eventdefinition.eventname"
-        )
-        .where("event.eventdefid", eventdefid)
-        .whereRaw("DATE(eventdatetimestart AT TIME ZONE 'UTC' AT TIME ZONE 'America/Denver') = ?", [date]);
-
-    // Format times & keep your date pretty
-    const dateFormatted = new Date(date).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric"
-    });
-
-    events = events.map(ev => ({
-        ...ev,
-        startTimeFormatted: new Date(ev.eventdatetimestart).toLocaleTimeString([], {
-            hour: "numeric",
-            minute: "2-digit"
-        }),
-        endTimeFormatted: new Date(ev.eventdatetimeend).toLocaleTimeString([], {
-            hour: "numeric",
-            minute: "2-digit"
-        })
-    }));
-
-    res.render("eventdetails", {
-        events,
-        dateFormatted
-    });
 });
 
 const PORT = process.env.PORT || 3000;
