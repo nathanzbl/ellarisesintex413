@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error 418: I'm a Teapot</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --pink: #FFD7D1;
+            --blue: #A8C0CC;
+            --text-gray: #4A4A4A;
+            --purple-accent: #C4B7D3;
+            --flower-red: #D9414E;
+            --dark-text: #1f2937;
+            --light-bg: #f7f7f7;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background-color: var(--light-bg); font-family: 'Inter', 'Lato', sans-serif; color: var(--dark-text); display: flex; flex-direction: column; min-height: 100vh; }
+
+        .content-container {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .error-card {
+            background-color: white;
+            padding: 60px 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            max-width: 600px;
+            width: 100%;
+            border-top: 5px solid var(--purple-accent);
+        }
+
+        .error-card h1 {
+            font-size: 4rem;
+            color: var(--flower-red);
+            margin-bottom: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+        }
+
+        .error-card h2 {
+            font-size: 1.5rem;
+            color: var(--dark-text);
+            margin-bottom: 25px;
+            font-weight: 500;
+        }
+
+        .error-card p {
+            color: var(--text-gray);
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        .home-btn { 
+            background: var(--blue); 
+            color: var(--dark-text); 
+            text-decoration: none; 
+            padding: 12px 24px; 
+            border-radius: 6px; 
+            font-weight: 600; 
+            transition: background-color 0.3s ease; 
+        }
+        .home-btn:hover { background-color: #92b0c1; }
+
+                .teapot-image {
+
+            display: block; 
+            margin: 0 auto 30px auto;         
+            max-width: 100%;       
+            height: auto;
+            width: 200px;          
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        footer { 
+            background-color: var(--blue); 
+            padding: 20px; 
+            color: var(--dark-text); 
+            font-size: 0.9rem; 
+            text-align: center;
+        }
+        
+    </style>
+</head>
+<body>
+    
+    <header style="background-color: var(--pink); padding: 10px 0; text-align: center;">
+        <img src="images/EllaRisesLogo.png.avif" alt="Ella Rises Logo" style="height: 35px;">
+    </header>
+
+   <div class="content-container">
+        <div class="error-card">
+            <img src="/images/418teapot.jpg" alt="Teapot and Teacup Characters" class="teapot-image">
+            
+            <h1>418</h1>
+            <h2>I'm a Teapot 🫖</h2>
+            <p>
+                This feature is currently unavailable. The server refuses to brew coffee because it is, permanently, a teapot. 
+                This status is sometimes used as a placeholder or a novelty error.
+            </p>
+            <a href="/" class="home-btn">Go Back to Safety</a>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2025 Ella Rises. Empowering Futures.</p>
+    </footer>
+    
+</body>
+</html>

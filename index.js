@@ -130,7 +130,7 @@ app.use(express.urlencoded({extended: true}));
 // Global authentication middleware - runs on EVERY request
 app.use((req, res, next) => {
     // Skip authentication for login routes
-    if (req.path === '/' || req.path === '/login' || req.path === '/logout') {
+    if (req.path === '/' || req.path === '/login' || req.path === '/logout' || req.path === '/donations' || req.path === '/register') {
         //continue with the request path
         return next();
     }
@@ -211,6 +211,183 @@ app.get("/users", (req, res) => {
     }
 });
 
+async function fetchAllParticipants() {
+    try {
+        const participants = await knex('participant') // <<< CHECK THIS NAME: 'participant'
+            .select(
+                'participant.participant_id as id',
+                'participant.first_name as firstName',
+                'participant.last_name as lastName',
+                'participant.status as status',
+                'program.program_name as currentProgram' // Use 'program' if that's the program table
+            )
+            // UPDATE: Use the correct junction table name
+            .leftJoin('participant_program', 
+                      'participant.participant_id', 
+                      'participant_program.participant_id')
+            
+            // UPDATE: Use the correct program table name
+            .leftJoin('program', // <<< CHECK THIS NAME: 'program'
+                      'participant_program.program_id', 
+                      'program.program_id')
+            
+            .where('participant_program.is_current', true) 
+            
+            // Ensure GROUP BY uses the correct table names
+            .groupBy('participant.participant_id', 'participant.first_name', 'participant.last_name', 'participant.status', 'program.program_name');
+
+        return participants;
+    } catch (err) {
+        console.error("Database query error in fetchAllParticipants:", err.message);
+        return []; 
+    }
+}
+
+async function searchParticipants(query) {
+    let knexQuery = knex('participant') // <<< CHECK THIS NAME: 'participant'
+        .select(
+            'participant.participant_id as id',
+            'participant.first_name as firstName',
+            'participant.last_name as lastName',
+            'participant.status as status',
+            'program.program_name as currentProgram'
+        )
+        // Apply the same JOINs as above
+        .leftJoin('participant_program', 
+                  'participant.participant_id', 
+                  'participant_program.participant_id')
+        .leftJoin('program', 
+                  'participant_program.program_id', 
+                  'program.program_id')
+        .where('participant_program.is_current', true) 
+        .groupBy('participant.participant_id', 'participant.first_name', 'participant.last_name', 'participant.status', 'program.program_name'); 
+
+    if (query) {
+        const lowerCaseQuery = `%${query.toLowerCase()}%`;
+        
+        knexQuery.where(builder => {
+            // Ensure column names are correct: first_name, last_name, etc.
+            builder.whereRaw('LOWER(participant.first_name) LIKE ?', [lowerCaseQuery])
+                   .orWhereRaw('LOWER(participant.last_name) LIKE ?', [lowerCaseQuery])
+                   .orWhereRaw('LOWER(program.program_name) LIKE ?', [lowerCaseQuery])
+                   .orWhereRaw('participant.participant_id::text LIKE ?', [lowerCaseQuery]); 
+        });
+    }
+
+    try {
+        return await knexQuery;
+    } catch (err) {
+        console.error("Database query error in searchParticipants:", err.message);
+        return [];
+    }
+}
+
+app.get('/participants', async (req, res) => {
+    if (!req.session.user) {
+        return res.redirect('/login'); 
+    }
+    
+    req.session.user.name = req.session.user.username;
+    req.session.user.isManager = req.session.user.role === 'manager';
+
+    try {
+        // Await the asynchronous database function (NEW)
+        const allParticipants = await fetchAllParticipants(); 
+        
+        res.render('participants', { 
+            user: req.session.user,
+            participants: allParticipants, // Data from DB
+            searchQuery: '' 
+        });
+    } catch (error) {
+        console.error("Error rendering participants page:", error);
+        res.render('participants', {
+            user: req.session.user,
+            participants: [],
+            searchQuery: '',
+            error_message: "Could not load participants data." // Optional error message
+        });
+    }
+});
+
+
+
+// GET Route to handle search queries
+// index.js
+
+// Updated GET Route to handle search queries
+app.get('/participants/search', async (req, res) => {
+    if (!req.session.user) {
+        return res.redirect('/login');
+    }
+    
+    // TEMPORARY: (User setup for EJS rendering)
+    req.session.user.name = req.session.user.username;
+    req.session.user.isManager = req.session.user.role === 'manager';
+
+    const query = req.query.query || '';
+    
+    try {
+        // Await the asynchronous database search function (NEW)
+        const filteredParticipants = await searchParticipants(query); 
+
+        res.render('participants', {
+            user: req.session.user,
+            participants: filteredParticipants,
+            searchQuery: query
+        });
+    } catch (error) {
+        console.error("Error rendering search results:", error);
+        res.render('participants', {
+            user: req.session.user,
+            participants: [],
+            searchQuery: query,
+            error_message: "Could not perform search."
+        });
+    }
+});
+
+// implement once the events and milestone pages have been created
+//
+// function fetchAllMilestones() {
+//     return [
+//         { id: 1, participantId: 101, title: 'Completed Level 1 Folklorico', date: '2025-09-01' },
+//         { id: 2, participantId: 102, title: 'STEAM Certification (Basic Robotics)', date: '2025-10-20' }
+//     ];
+// }
+//
+// app.get('/milestones', (req, res) => {
+//     if (!req.session.user) {
+//         return res.redirect('/login');
+//     }
+//     req.session.user.name = req.session.user.username;
+//     req.session.user.isManager = req.session.user.role === 'manager';
+
+//     const allMilestones = fetchAllMilestones(); 
+
+//     res.render('milestones', { 
+//         user: req.session.user, 
+//         milestones: allMilestones,
+//         searchQuery: ''
+//     });
+// });
+
+// app.get('/events', (req, res) => {
+//     if (!req.session.user) {
+//         return res.redirect('/login'); 
+//     }
+//     req.session.user.name = req.session.user.username;
+//     req.session.user.isManager = req.session.user.role === 'manager';
+
+//     const allEvents = fetchAllEvents(); 
+
+//     res.render('events', { 
+//         user: req.session.user, 
+//         events: allEvents,
+//         searchQuery: ''
+//     });
+// });
+
 app.get("/", (req, res) => {
     if (req.session.isLoggedIn) {
         res.render("landing");
@@ -239,7 +416,6 @@ app.post('/login', async (req, res) => {
         }
 
         const user = result.rows[0];
-
         // Compare the provided password with the hashed password
         const passwordMatch = await bcrypt.compare(password, user.password);
 
