@@ -170,10 +170,20 @@ app.get("/test", (req, res) => {
 app.get("/surveys", (req, res) => {
     // Check if user is logged in
     if (req.session.isLoggedIn) {        
-        res.render("surveys" ,{
-    error_message: null,          // make sure this always exists
-    // any other data you pass in...
-  });
+        knex.select("eventdefid","eventname").from("eventdefinition")
+            .then(events => {
+                res.render("surveys", {
+                    events: events,
+                    error_message: null
+                });
+            })
+            .catch((err) => {
+                console.error("Database query error:", err.message);
+                res.render("surveys", {
+                    events: [],
+                    error_message: `Database error: ${err.message}`
+                });
+            });
     } 
     else {
         res.render("login", { error_message: "" });
@@ -275,9 +285,27 @@ app.get("/addUser", (req, res) => {
     res.render("addUser");
 });    
 
+// Donation Routes
 app.get("/donations", (req, res) => {
     res.render("donations");
 });
+
+// Milestone Routes
+app.get("/milestones", (req, res) => {
+    res.render("milestones");
+});
+
+// Participant Routes
+app.get("/participants", (req, res) => {
+    res.render("participants");
+});
+
+// Events Routes
+app.get("/events", (req, res) => {
+    res.render("events");
+});
+
+
 app.get("/register", (req, res) => {
     res.render("register");
 });
@@ -326,19 +354,19 @@ app.post('/register', async (req, res) => {
         // Insert new owner into database
         await knex.raw(
             'INSERT INTO users (username, password, role) VALUES (?, ?, ?)',
-            [username, hashedPassword, 'owner']
+            [username, hashedPassword, 'manager']
         );
 
-        console.log(`✅ New owner registered: ${username}`);
+        console.log(`✅ New manager registered: ${username}`);
 
         return res.status(200).json({ 
             success: true, 
-            message: 'Owner registration successful!', 
+            message: 'Manager registration successful!', 
             redirectTo: '/login' 
         });
 
     } catch (error) {
-        console.error('Owner registration error:', error);
+        console.error('Manager registration error:', error);
         return res.status(500).json({ 
             success: false, 
             message: 'An error occurred during registration.' 
