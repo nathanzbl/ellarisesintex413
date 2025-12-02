@@ -231,6 +231,15 @@
 
     <div class="main-content">
         <div class="data-card">
+            
+            
+            <h1 class="milestone-title">Participant Milestones</h1>
+            <p class="milestone-subtitle">A view of all milestones recorded in the system.</p>
+            
+            <div class="text-center-wrapper">
+                <a href="/addmilestone" class="btn-action btn-add-milestone">Add Milestone</a>
+            </div>
+
             <% if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
                 <div class="pagination-container">
                     <ul class="custom-pagination">
@@ -254,13 +263,6 @@
                     </ul>
                 </div>
             <% } %>
-            
-            <h1 class="milestone-title">Participant Milestones</h1>
-            <p class="milestone-subtitle">A view of all milestones recorded in the system.</p>
-
-            <div class="text-center-wrapper">
-                <a href="/addmilestone" class="btn-action btn-add-milestone">Add Milestone</a>
-            </div>
                 
             <% if (typeof error_message !== 'undefined' && error_message) { %>
                 <div class="message-alert">
@@ -343,6 +345,7 @@
             
         </div>
     </div>
+    <%- include('../common/footer.ejs') %>
 </body>
 <script>
     function confirmDeletion(event) {

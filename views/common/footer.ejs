@@ -1,0 +1,58 @@
+<style>
+    footer {
+        width: 100%;
+        background-color: #F9F5EA; 
+        color: var(--er-charcoal); /* Dark text */
+        padding: 3rem 1rem; /* Added padding to match visual height */
+        text-align: center;
+        margin-top: auto; 
+        font-family: "Montserrat", system-ui, sans-serif;
+    }
+
+    footer .section-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Social Media Icons Container */
+    .social-icons {
+        display: flex;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Individual Icon Styling (Image) */
+    .social-icons img {
+        width: 40px; /* Standard icon size */
+        height: 40px;
+        /* Ensures images are centered within links if links were block */
+        display: block; 
+    }
+
+    /* Copyright Text */
+    footer p {
+        margin: 0;
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--er-charcoal);
+    }
+</style>
+<footer>
+    <div class="section-content">
+        
+        <div class="social-icons">
+            <a href="https://www.instagram.com/ellarises/" target="_blank" aria-label="Instagram">
+                <img src="/images/instagram.avif" alt="Instagram Icon">
+            </a>
+            <a href="https://www.facebook.com/EllaRises" target="_blank" aria-label="Facebook">
+                <img src="/images/facebook.avif" alt="Facebook Icon">
+            </a>
+        </div>
+        
+        <p>&copy; 2025 Ella Rises. All Rights Reserved.</p>
+    </div>
+</footer>
