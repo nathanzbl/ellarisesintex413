@@ -19,16 +19,6 @@
         align-items: center;
     }
 
-    nav a {
-        margin: 0 20px;
-        padding: 8px 18px;
-        border-radius: 20px;
-        background-color: #ffffffcc;
-        font-weight: bold;
-        color: #333;
-        text-decoration: none;
-    }
-
     .donate-btn {
         background-color: #9bbccc;
         color: white !important;
@@ -98,17 +88,7 @@
 
 <body>
 
-<header>
-    <img src="/images/EllaRisesLogo.png.avif" height="60">
-    <nav>
-        <a href="/">Home</a>
-        <a href="/events">Events</a>
-        <a href="/participants">Participants</a>
-        <a href="/milestones">Milestones</a>
-        <a href="/surveys">Surveys</a>
-        <a href="/donations" class="donate-btn">Donations</a>
-    </nav>
-</header>
+<%- include('navbar.ejs') %>
 
 <h1 class="page-title">Manage Events</h1>
 
