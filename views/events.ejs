@@ -93,7 +93,6 @@
         border: none;
         cursor: pointer;
     }
-
 </style>
 </head>
 
@@ -101,7 +100,6 @@
 
 <header>
     <img src="/images/EllaRisesLogo.png.avif" height="60">
-
     <nav>
         <a href="/">Home</a>
         <a href="/events">Events</a>
@@ -126,6 +124,7 @@
             <th>Actions</th>
         </tr>
 
+        <!-- No events case -->
         <% if (events.length === 0) { %>
         <tr>
             <td colspan="4" style="text-align:center; padding:20px; color:#777;">
@@ -134,17 +133,25 @@
         </tr>
         <% } %>
 
+        <!-- Loop through events -->
         <% events.forEach(event => { %>
         <tr>
-            <td><%= event.event_name %></td>
-            <td><%= event.event_start_date %></td>
-            <td><%= event.event_location %></td>
+            <td><%= event.eventname %></td>
+            <td><%= event.formattedDate %></td>
+            <td><%= event.eventlocation %></td>
             <td>
 
-                <a href="/events/edit/<%= event.event_id %>" class="edit-btn">Edit</a>
+                <!-- Edit button -->
+                <a href="/events/edit/<%= event.eventid %>" class="edit-btn">Edit</a>
 
-                <form action="/events/delete/<%= event.event_id %>" method="POST" style="display:inline;">
-                    <button class="delete-btn" onclick="return confirm('Are you sure?');">Delete</button>
+                <!-- Delete POST form -->
+                <form action="/events/delete/<%= event.eventid %>" 
+                      method="POST" 
+                      style="display:inline;">
+                    <button class="delete-btn" 
+                            onclick="return confirm('Are you sure you want to delete this event?');">
+                        Delete
+                    </button>
                 </form>
 
             </td>

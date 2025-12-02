@@ -101,12 +101,12 @@
 <body>
 
 <header>
-    <img src="/images/images/EllaRisesLogo.png.avif" alt="Ella Rises" height="60">
+    <img src="/images/EllaRisesLogo.png.avif" alt="Ella Rises" height="60">
 
     <nav>
         <a href="/">About</a>
         <a href="/programs">Programs</a>
-        <a href="/events">Events</a>
+        <a href="/eventspublic">Events</a>
         <a href="/getinvolved">Get Involved</a>
         <a href="/press">Press</a>
         <a href="/contact">Contact Us</a>
@@ -118,20 +118,29 @@
 
 <% if (nextEvent) { %>
 <div class="container">
-    <h2 class="event-name"><%= nextEvent.event_name %></h2>
+    
+    <!-- Event Name -->
+    <h2 class="event-name"><%= nextEvent.eventname %></h2>
 
+    <!-- Event Date + Location -->
     <div class="event-meta">
-        <%= nextEvent.event_start_date %> • 
-        <strong><%= nextEvent.event_location %></strong>
+        <%= nextEvent.eventdatetimestart.toLocaleString() %> • 
+        <strong><%= nextEvent.eventlocation %></strong>
     </div>
 
-    <a href="/events/detail/<%= nextEvent.event_id %>" class="detail-link">More Info</a>
+    <!-- More Info -->
+    <a href="/events/detail/<%= nextEvent.eventid %>" class="detail-link">
+        More Info
+    </a>
 
-    <a href="/events/rsvp/<%= nextEvent.event_id %>" class="pink-btn">RSVP</a>
+    <!-- RSVP Button -->
+    <a href="/events/rsvp/<%= nextEvent.eventid %>" class="pink-btn">
+        RSVP
+    </a>
 </div>
 
 <% } else { %>
-<p style="text-align:center; font-size:18px; color:#666;">No events available.</p>
+<p style="text-align:center; font-size:18px; color:#666;">No upcoming events.</p>
 <% } %>
 
 </body>
