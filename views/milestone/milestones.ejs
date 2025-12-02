@@ -91,6 +91,7 @@
         }
 
         .add-button-wrapper {
+            text-align: center;
             flex-shrink: 0; 
             padding-bottom: 0.7rem; /* Vertically align with Search button */
         }
@@ -199,20 +200,19 @@
         }
 
         .btn-action {
-            padding: 0.85rem 1rem;
+            padding: 0.7rem 1rem;
             border-radius: 999px;
             border: none;
             font-weight: 600;
-            font-size: 0.95rem;
+            font-size: 0.85rem;
             letter-spacing: 0.08em;
             text-transform: uppercase;
             cursor: pointer;
             box-shadow: 0 10px 24px rgba(206, 50, 91, 0.25);
             transition: all 0.18s ease;
             text-decoration: none;
-            display: inline-block;
-            text-align: center;
-            align-self: center;
+            display: inline-block; 
+
         }
 
         .btn-add-milestone {
@@ -352,8 +352,10 @@
             
             <h1 class="milestone-title">Participant Milestones</h1>
             <p class="milestone-subtitle">A view of all milestones recorded in the system.</p>
+            <div class="add-button-wrapper">
+                <a href="/addmilestone" class="btn-action btn-add-milestone">Add Milestone</a>
+            </div>
 
-            <!-- START TOP CONTROLS BAR: SEARCH FILTERS AND ADD BUTTON -->
             <div class="controls-bar">
                 
                 <!-- Search Form occupies the majority of the space -->
@@ -412,10 +414,6 @@
 
                     </div>
                 </form>
-            </div>
-
-            <div class="add-button-wrapper">
-                <a href="/addmilestone" class="btn-action btn-add-milestone">Add Milestone</a>
             </div>
 
             <% if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
