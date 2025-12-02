@@ -130,7 +130,7 @@ app.use(express.urlencoded({extended: true}));
 // Global authentication middleware - runs on EVERY request
 app.use((req, res, next) => {
     // Skip authentication for login routes
-    if (req.path === '/' || req.path === '/login' || req.path === '/logout') {
+    if (req.path === '/' || req.path === '/login' || req.path === '/logout' || req.path === '/donations' || req.path === '/register') {
         //continue with the request path
         return next();
     }
@@ -201,29 +201,110 @@ app.get("/users", (req, res) => {
     }
 });
 
-app.get('/participants', (req, res) => {
-    if (!req.session.user) {
-        return res.redirect('/login'); // Redirect to login if not logged in
-    }
+// getting this for temporary use for participants
+// Placeholder function to simulate fetching all participants
+function fetchAllParticipants() {
+    // Replace this with your Knex query to SELECT * FROM participants_table
+    return [
+        { id: 101, firstName: 'Maria', lastName: 'Garcia', currentProgram: 'Ballet Folklorico', status: 'Active' },
+        { id: 102, firstName: 'Sofia', lastName: 'Lopez', currentProgram: 'STEAM Education', status: 'Active' },
+        { id: 103, firstName: 'Elena', lastName: 'Martinez', currentProgram: 'Mariachi Workshop', status: 'On Hold' },
+        { id: 104, firstName: 'Isabella', lastName: 'Chavez', currentProgram: 'Mariachi Workshop', status: 'Active' },
+        { id: 105, firstName: 'Luisa', lastName: 'Perez', currentProgram: 'STEAM Education', status: 'Inactive' }
+    ];
+}
+
+// Placeholder function to simulate search/filtering
+function searchParticipants(query) {
     const allParticipants = fetchAllParticipants(); 
+    
+    if (!query) {
+        return allParticipants;
+    }
+
+    const lowerCaseQuery = query.toLowerCase();
+
+    return allParticipants.filter(p => 
+        p.firstName.toLowerCase().includes(lowerCaseQuery) ||
+        p.lastName.toLowerCase().includes(lowerCaseQuery) ||
+        p.currentProgram.toLowerCase().includes(lowerCaseQuery) ||
+        String(p.id).includes(lowerCaseQuery)
+    );
+}
+
+// Ensure the user object is set during login for conditional rendering on EJS pages
+// Note: I will update the POST /login route to include isManager property for testing later
+app.get('/participants', (req, res) => {
+if (!req.session.user) {
+        return res.redirect('/login'); 
+    }
+    
+    req.session.user.name = req.session.user.username;
+    req.session.user.isManager = req.session.user.role === 'manager';
+
+    const allParticipants = fetchAllParticipants(); 
+    
     res.render('participants', { 
         user: req.session.user,
         participants: allParticipants,
-        searchQuery: ''
+        searchQuery: '' 
     });
 });
 
+// GET Route to handle search queries
 app.get('/participants/search', (req, res) => {
     if (!req.session.user) {
         return res.redirect('/login');
     }
-    const query = req.query.query;
+    req.session.user.name = req.session.user.username;
+    req.session.user.isManager = req.session.user.role === 'manager';
+
+    const query = req.query.query || '';
     const filteredParticipants = searchParticipants(query); 
 
     res.render('participants', {
         user: req.session.user,
         participants: filteredParticipants,
         searchQuery: query
+    });
+});
+
+function fetchAllMilestones() {
+    return [
+        { id: 1, participantId: 101, title: 'Completed Level 1 Folklorico', date: '2025-09-01' },
+        { id: 2, participantId: 102, title: 'STEAM Certification (Basic Robotics)', date: '2025-10-20' }
+    ];
+}
+
+app.get('/milestones', (req, res) => {
+    if (!req.session.user) {
+        return res.redirect('/login');
+    }
+    req.session.user.name = req.session.user.username;
+    req.session.user.isManager = req.session.user.role === 'manager';
+
+    const allMilestones = fetchAllMilestones(); 
+
+    res.render('milestones', { 
+        user: req.session.user, 
+        milestones: allMilestones,
+        searchQuery: ''
+    });
+});
+
+app.get('/events', (req, res) => {
+    if (!req.session.user) {
+        return res.redirect('/login'); 
+    }
+    req.session.user.name = req.session.user.username;
+    req.session.user.isManager = req.session.user.role === 'manager';
+
+    const allEvents = fetchAllEvents(); 
+
+    res.render('events', { 
+        user: req.session.user, 
+        events: allEvents,
+        searchQuery: ''
     });
 });
 
@@ -255,7 +336,6 @@ app.post('/login', async (req, res) => {
         }
 
         const user = result.rows[0];
-
         // Compare the provided password with the hashed password
         const passwordMatch = await bcrypt.compare(password, user.password);
 
@@ -495,18 +575,9 @@ app.get("/displayHobbies/:userId", (req, res) => {
             });
 });
 
-app.post('/participants/add', isManager, (req, res) => {
-    const newParticipantData = req.body;
-    // Logic to save new participant to the database...
-    console.log('Manager added new participant:', newParticipantData);
-    res.redirect('/participants'); // Redirect back to the list
-});
-
-app.post('/participants/delete/:id', isManager, (req, res) => {
-    const participantId = req.params.id;
-    // Logic to delete the participant from the database...
-    console.log(`Manager deleted participant ID ${participantId}`);
-    res.redirect('/participants');
+app.get("/teapot", (req, res) => {
+    // Teapot response
+    res.status(418).render("teapot"); 
 });
 
 app.listen(port, () => {
