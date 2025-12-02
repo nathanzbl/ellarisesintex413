@@ -54,31 +54,6 @@ app.use("/images", express.static(uploadRoot));
 // process.env.PORT is when you deploy and 3000 is for test
 const port = process.env.PORT || 3000;
 
-/* Session middleware (Middleware is code that runs between the time the request comes
-to the server and the time the response is sent back. It allows you to intercept and
-decide if the request should continue. It also allows you to parse the body request
-from the html form, handle errors, check authentication, etc.)
-
-REQUIRED parameters for session:
-secret - The only truly required parameter
-    Used to sign session cookies
-    Prevents tampering and session hijacking with session data
-
-OPTIONAL (with defaults):
-resave - Default: true
-    true = save session on every request
-    false = only save if modified (recommended)
-
-saveUninitialized - Default: true
-    true = create session for every request
-    false = only create when data is stored (recommended)
-*/
-
-function cap(s) {
-  if (!s) return s;
-  return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
-}
-
 app.use(
     session(
         {
@@ -88,6 +63,20 @@ app.use(
         }
     )
 );
+
+// session middleware
+function setViewGlobals(req, res, next) {
+    // Check if req.session.isLoggedIn is defined; if so, pass it to the views.
+    // If not logged in, isLoggedIn will be false or undefined, which EJS can check.
+    res.locals.isLoggedIn = req.session.isLoggedIn || false; 
+    
+    // Continue to the next middleware or route handler
+    next(); 
+}
+
+// Then, tell Express to use this function for all requests:
+app.use(setViewGlobals);
+
 
 // Content Security Policy middleware - allows localhost connections for development
 // This fixes the CSP violation error with Chrome DevTools
@@ -581,11 +570,7 @@ app.get("/users", (req, res) => {
 });
 
 app.get("/", (req, res) => {
-    if (req.session.isLoggedIn) {
-        res.render("landing");
-    } else {
-        res.redirect("/login");
-    }
+    res.render("landing");
 });
 
 // This creates attributes in the session object to keep track of user and if they logged in
