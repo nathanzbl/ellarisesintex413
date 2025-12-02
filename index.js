@@ -74,6 +74,11 @@ saveUninitialized - Default: true
     false = only create when data is stored (recommended)
 */
 
+function cap(s) {
+  if (!s) return s;
+  return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+}
+
 app.use(
     session(
         {
@@ -327,6 +332,232 @@ app.post("/survey/:surveyid/delete", async (req, res) => {
     res.status(500).send("Error deleting survey response");
   }
 });
+
+app.get("/survey/:surveyid/edit", async (req, res) => {
+  const { surveyid } = req.params;
+  const { eventDefId } = req.query;
+
+  try {
+    const survey = await knex("survey as s")
+      .join("event as e", "e.eventid", "s.eventid")
+      .join("eventdefinition as ed", "ed.eventdefid", "e.eventdefid")
+      .join("participant as p", "s.participantid", "p.participantid")
+      .select(
+        "s.surveyid",
+        "s.eventid",
+        "e.eventdefid",
+        "ed.eventname",
+        "p.participantemail",
+        "s.surveysatisfactionscore",
+        "s.surveyusefulnessscore",
+        "s.surveyinstructorscore",
+        "s.surveyrecommendationscore",
+        "s.surveyoverallscore",
+        "s.surveycomments",
+        "s.surveysubmissiondate"
+      )
+      .where("s.surveyid", surveyid)
+      .first();
+
+    if (!survey) {
+      return res.status(404).send("Survey response not found");
+    }
+
+    res.render("surveyEdit", {
+      survey,
+      eventDefId: eventDefId || ""
+    });
+  } catch (err) {
+    console.error("Survey edit load error:", err);
+    res.status(500).send("Error loading survey for edit");
+  }
+});
+
+app.post("/survey/:surveyid/edit", async (req, res) => {
+  const { surveyid } = req.params;
+  const { eventDefId } = req.query;
+
+  const {
+    SurveySatisfactionScore,
+    SurveyUsefulnessScore,
+    SurveyInstructorScore,
+    SurveyRecommendationScore,
+    SurveyComments
+  } = req.body;
+
+  try {
+    const sat = Number(SurveySatisfactionScore);
+    const useful = Number(SurveyUsefulnessScore);
+    const instr = Number(SurveyInstructorScore);
+    const recom = Number(SurveyRecommendationScore);
+
+    // Basic sanity check if you want to be strict
+    // if ([sat, useful, instr, recom].some(n => !Number.isInteger(n) || n < 1 || n > 5)) { ... }
+
+    const overall = Math.round((sat + useful + instr + recom) / 4);
+
+    await knex("survey")
+      .where({ surveyid })
+      .update({
+        surveysatisfactionscore: sat,
+        surveyusefulnessscore: useful,
+        surveyinstructorscore: instr,
+        surveyrecommendationscore: recom,
+        surveyoverallscore: overall,
+        surveycomments: SurveyComments || null
+      });
+
+    const redirectUrl = eventDefId
+      ? `/survey/responses?eventDefId=${encodeURIComponent(eventDefId)}`
+      : "/survey/responses";
+
+    res.redirect(redirectUrl);
+  } catch (err) {
+    console.error("Survey edit save error:", err);
+    res.status(500).send("Error saving survey changes");
+  }
+});
+
+app.post("/donations/add", async (req, res, next) => {
+  try {
+    const {
+      first_name,
+      last_name,
+      email,
+      phone,
+      amount_choice,
+      other_amount,
+      frequency,
+      designation,
+      note,
+      anonymous,
+      updates,
+    } = req.body;
+
+    // Basic required field checks
+    if (!first_name || !last_name || !email || !phone) {
+      return res.status(400).render("donations", {
+        error_message: "First name, last name, email, and phone are required.",
+      });
+    }
+
+    // 1. Figure out the actual donation amount
+    let donationAmount = 0;
+
+    const other = Number(other_amount);
+    const preset = Number(amount_choice);
+
+    if (!isNaN(other) && other > 0) {
+      donationAmount = other;
+    } else if (!isNaN(preset) && preset > 0) {
+      donationAmount = preset;
+    }
+
+    const isAnonymous = !!anonymous;
+     const ANONYMOUS_PARTICIPANT_ID = 1182;
+
+
+
+     
+    if (!donationAmount || donationAmount <= 0) {
+      return res.status(400).render("donations", {
+        error_message: "Please choose or enter a valid donation amount.",
+      });
+    }
+
+    // 2. Look up participant by email
+    let participant = await knex("participant")
+      .where({ participantemail: email })
+      .first();
+
+    let participantId;
+    let newTotalDonations;
+
+    if (isAnonymous) {
+      // Anonymous - donations tied to the anonymous participant row
+      participantIdForDonation = ANONYMOUS_PARTICIPANT_ID;
+      participantIdForTotals = ANONYMOUS_PARTICIPANT_ID;
+
+      // Update totaldonations on the anonymous row
+      const anon = await knex("participant")
+        .where({ participantid: ANONYMOUS_PARTICIPANT_ID })
+        .first();
+
+      const currentTotalAnon = anon && anon.totaldonations
+        ? Number(anon.totaldonations)
+        : 0;
+
+      const newTotalAnon = currentTotalAnon + donationAmount;
+
+      await knex("participant")
+        .where({ participantid: ANONYMOUS_PARTICIPANT_ID })
+        .update({
+          totaldonations: newTotalAnon,
+        });
+
+      // Notice: we are not creating/updating a personal participant row
+      // for the donor when they choose to be anonymous.
+    }
+
+    if (!participant) {
+      // New participant, phone required here
+      const [inserted] = await knex("participant")
+        .insert({
+          participantfirstname: cap(first_name),
+          participantlastname: cap(last_name),
+          participantemail: email,
+          participantphone: phone,               // now required
+          participantrole: "participant",
+          totaldonations: donationAmount,
+        })
+        .returning(["participantid", "totaldonations"]);
+
+      participantId = inserted.participantid;
+      newTotalDonations = inserted.totaldonations;
+    } else {
+      participantId = participant.participantid;
+      const currentTotal = Number(participant.totaldonations) || 0;
+      newTotalDonations = currentTotal + donationAmount;
+
+      await knex("participant")
+        .where({ participantid: participantId })
+        .update({
+          totaldonations: newTotalDonations,
+          // Optionally refresh phone if they changed it:
+          participantphone: phone,
+        });
+    }
+
+    // 4. Calculate donationnumber
+    const countRow = await knex("donation")
+      .where({ participantid: participantId })
+      .count("* as count")
+      .first();
+
+    const previousCount = Number(countRow.count) || 0;
+    const donationNumber = previousCount + 1;
+
+    // 5. Insert into donations
+    await knex("donation").insert({
+      participantid: participantId,
+      donationnumber: donationNumber,
+      donationamount: donationAmount,
+      donationdate: new Date(),
+      isanonymous: isAnonymous
+
+    });
+
+    res.redirect("/donations/thank-you");
+  } catch (err) {
+    console.error("Donation error:", err);
+    next(err);
+  }
+});
+
+app.get("/donations/thank-you", (req, res) => { 
+    res.render("donationThankYou");
+});
+
 
 app.get("/users", (req, res) => {
     // Check if user is logged in

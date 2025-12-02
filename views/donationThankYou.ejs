@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Thank You | Ella Rises</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:wght@400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --er-blue:     #99B7C6;
+            --er-lavender: #978EC4;
+            --er-cream:    #F9F5EA;
+            --er-blush:    #FFD8D1;
+            --er-pink:     #F9AFB1;
+            --er-sage:     #9AB59D;
+            --er-charcoal: #3A3F3B;
+            --er-peach:    #F4B89D;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Montserrat', sans-serif;
+            background: var(--er-cream);
+            color: var(--er-charcoal);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            border-radius: 16px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+
+        .hero-image {
+            width: 100%;
+            max-height: 250px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-family: 'DM Serif Display', serif;
+            font-size: 2.4rem;
+            margin-bottom: 10px;
+            color: var(--er-lavender);
+        }
+
+        p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        .amount-box {
+            margin: 20px auto;
+            display: inline-block;
+            background: var(--er-blue);
+            color: white;
+            padding: 12px 22px;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .home-btn {
+            display: inline-block;
+            margin-top: 25px;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            background: var(--er-sage);
+            color: white;
+            border-radius: 10px;
+            transition: 0.2s ease;
+        }
+
+        .home-btn:hover {
+            background: var(--er-lavender);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <img src="/images/paintingclass.avif" alt="Painting class" class="hero-image">
+        
+        <h1>Thank You for Your Donation</h1>
+
+        <p>Your support helps Ella Rises empower young women through STEAM education, creative mentorship, and leadership opportunities.</p>
+
+        <% if (typeof amount !== 'undefined') { %>
+            <div class="amount-box">
+                Donation Amount: $<%= amount %>
+            </div>
+        <% } %>
+
+        <p>We appreciate your generosity and belief in our mission.</p>
+
+        <a href="/" class="home-btn">Return Home</a>
+    </div>
+</body>
+</html>
