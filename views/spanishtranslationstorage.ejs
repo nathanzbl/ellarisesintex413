@@ -1,0 +1,234 @@
+<script>
+    // --- Translation Data (Include all keys for the navbar and all pages) ---
+    // This is the complete dictionary of all translated strings.
+    const translations = {
+        en: {
+            // General Page/Navigation/Footer
+            doc_title: "Ella Rises - Culturally Rooted, Education Focused",
+            lang_en_label: "🇺🇸 ENG", 
+            lang_es_label: "🇪🇸 SPA", 
+            nav_home: "Home",
+            nav_donations: "Donations",
+            nav_events: "Events",
+            nav_milestones: "Milestones",
+            nav_participants: "Participants",
+            nav_surveys: "Surveys",
+            nav_login: "Login",
+            footer_text: "© 2024 Ella Rises. All rights reserved.",
+
+            // LANDING PAGE KEYS
+            hero_headline: "Pursuing Higher Education. Embracing Heritage.",
+            hero_text: "Welcome to Ella Rises. Our objective is to empower the future generation of women by inviting young women to pursue higher education and embrace their heritage. We provide culturally rooted programs and educational experiences through our signature programs focusing on mariachi, ballet folklorico, and STEAM.",
+            btn_donate: "Support Our Mission (Donate)",
+            btn_impact: "View Our Impact",
+            impact_title: "Making a Lasting Impact",
+            impact_text: "Through your generous support, our signature programs and the Ella Rises Summit serve over 150 young women each year, helping them achieve educational goals and build confidence.",
+            stat_1_num: "150+",
+            stat_1_label: "Young Women Served Annually",
+            stat_2_num: "3",
+            stat_2_label: "Core Program Pillars (Mariachi, Folklorico, STEAM)",
+            stat_3_num: "100%",
+            stat_3_label: "Focus on Culturally Rooted Education",
+            programs_title: "Our Signature Programs",
+            programs_intro: "We believe in a holistic approach to empowerment. Explore the key areas where our young women thrive.",
+            card_mariachi_title: "Mariachi Workshops",
+            card_mariachi_text: "Develop musical talent, stage presence, and teamwork through the study and performance of traditional Mariachi music, deeply connecting participants with their cultural roots.",
+            card_folklorico_title: "Ballet Folklorico",
+            card_folklorico_text: "Participants learn the vibrant and historic dance traditions of Mexico, fostering discipline, pride, and an appreciation for the rich history embedded in each regional dance style.",
+            card_steam_title: "STEAM Education",
+            card_steam_text: "We provide hands-on, engaging workshops in Science, Technology, Engineering, Arts, and Math to encourage curiosity and prepare young women for future careers in these critical fields.",
+            btn_events: "View All Events & Enroll Today",
+            
+            // DONATION PAGE KEYS
+            doc_title_donate: "Ella Rises – Support Our Youth",
+            story_tagline: "Rise With Ella",
+            story_headline: "Empowering Futures, One Donation at a Time",
+            story_lead_text: "Ella Rises helps young Latinas in Utah envision themselves in college, in STEAM careers, and as leaders in their communities. Your gift fuels mentoring, creative workshops, and life-changing experiences.",
+            progress_raised_prefix: "raised",
+            progress_goal_prefix: "Goal:",
+            impact_title: "Why Your Donation Matters",
+            impact_list_1: "Funds youth summits and day camps focused on STEAM & identity.",
+            impact_list_2: "Supports campus visits to local universities and colleges.",
+            impact_list_3: "Expands arts & culture programs like mariachi and ballet folklórico.",
+            story_note: "Every dollar helps a young woman see herself in higher education and feel proud of her heritage. Thank you for investing in her story.",
+            form_title: "Choose Your Gift",
+            form_subtext: "Complete the secure form below to make a tax-deductible donation to Ella Rises.",
+            h3_donor_info: "Donor Information",
+            label_first_name: "First Name",
+            label_last_name: "Last Name",
+            label_email: "Email",
+            help_receipt: "For your receipt and updates.",
+            label_phone: "Phone (optional)",
+            label_anonymous_checkbox: "Make my donation anonymous.",
+            h3_amount: "Donation Amount",
+            label_other_amount: "Other Amount (USD)",
+            placeholder_other_amount: "Enter another amount",
+            help_other_amount: 'If you enter an "Other" amount, it will override the buttons above in your backend logic.',
+            label_frequency: "Frequency",
+            freq_one_time: "One-time",
+            freq_monthly: "Monthly",
+            freq_quarterly: "Quarterly",
+            freq_yearly: "Yearly",
+            h3_details: "Additional Details",
+            label_designation: "Designate my gift to",
+            option_general: "Where it's needed most",
+            option_summits: "Ella Rises Youth Summits",
+            option_steam: "STEAM & education programs",
+            option_arts: "Arts & culture programs",
+            label_note: "Add a note (optional)",
+            placeholder_note: "Dedication, employer match info, or a message to the Ella Rises team.",
+            label_updates_checkbox: "Email me occasional updates about Ella Rises programs and impact.",
+            btn_payment: "Continue to Payment",
+            secure_text: "This is a demo form for INTEX. In production, this would connect to a secure payment processor.",
+        },
+        es: {
+            // General Page/Navigation/Footer
+            doc_title: "Ella Rises - Con Raíces Culturales, Enfocado en la Educación",
+            lang_en_label: "🇺🇸 ING", 
+            lang_es_label: "🇪🇸 ESP",
+            nav_home: "Inicio",
+            nav_donations: "Donaciones",
+            nav_events: "Eventos",
+            nav_milestones: "Hitos",
+            nav_participants: "Participantes",
+            nav_surveys: "Encuestas",
+            nav_login: "Iniciar Sesión",
+            footer_text: "© 2024 Ella Rises. Todos los derechos reservados.",
+
+            // LANDING PAGE KEYS
+            hero_headline: "Buscando la Educación Superior. Abrazando la Herencia.",
+            hero_text: "Bienvenido a Ella Rises. Nuestro objetivo es empoderar a la futura generación de mujeres invitando a las jóvenes a buscar la educación superior y abrazar su herencia. Ofrecemos programas con raíces culturales y experiencias educativas a través de nuestros programas distintivos centrados en mariachi, ballet folclórico y STEAM.",
+            btn_donate: "Apoya Nuestra Misión (Donar)",
+            btn_impact: "Ver Nuestro Impacto",
+            impact_title: "Creando un Impacto Duradero",
+            impact_text: "Gracias a su generoso apoyo, nuestros programas distintivos y la Cumbre Ella Rises atienden a más de 150 mujeres jóvenes cada año, ayudándolas a alcanzar metas educativas y a fomentar la confianza.",
+            stat_1_num: "150+",
+            stat_1_label: "Mujeres Jóvenes Atendidas Anualmente",
+            stat_2_num: "3",
+            stat_2_label: "Pilares del Programa Principal (Mariachi, Folclórico, STEAM)",
+            stat_3_num: "100%",
+            stat_3_label: "Enfoque en Educación con Raíces Culturales",
+            programs_title: "Nuestros Programas Distintivos",
+            programs_intro: "Creemos en un enfoque holístico para el empoderamiento. Explore las áreas clave donde prosperan nuestras jóvenes.",
+            card_mariachi_title: "Talleres de Mariachi",
+            card_mariachi_text: "Desarrolle el talento musical, la presencia escénica y el trabajo en equipo a través del estudio e interpretación de la música tradicional de Mariachi, conectando profundamente a las participantes con sus raíces culturales.",
+            card_folklorico_title: "Ballet Folclórico",
+            card_folklorico_text: "Las participantes aprenden las vibrantes e históricas tradiciones de danza de México, fomentando la disciplina, el orgullo y una apreciación por la rica historia incrustada en cada estilo de danza regional.",
+            card_steam_title: "Educación STEAM",
+            card_steam_text: "Ofrecemos talleres prácticos y atractivos en Ciencia, Tecnología, Ingeniería, Artes y Matemáticas para fomentar la curiosidad y preparar a las jóvenes para futuras carreras en estos campos críticos.",
+            btn_events: "Ver Todos los Eventos e Inscribirse Hoy",
+
+            // DONATION PAGE KEYS
+            doc_title_donate: "Ella Rises – Apoya a Nuestra Juventud",
+            story_tagline: "El Resurgir de Ella",
+            story_headline: "Empoderando Futuros, Una Donación a la Vez",
+            story_lead_text: "Ella Rises ayuda a las jóvenes Latinas en Utah a imaginarse en la universidad, en carreras STEAM y como líderes en sus comunidades. Tu donación impulsa mentoría, talleres creativos y experiencias que cambian vidas.",
+            progress_raised_prefix: "recaudados",
+            progress_goal_prefix: "Meta:",
+            impact_title: "¿Por Qué Importa tu Donación?",
+            impact_list_1: "Financia cumbres juveniles y campamentos centrados en STEAM e identidad.",
+            impact_list_2: "Apoya visitas a universidades y facultades locales.",
+            impact_list_3: "Expande programas de arte y cultura como mariachi y ballet folclórico.",
+            story_note: "Cada dólar ayuda a una joven a verse en la educación superior y a sentirse orgullosa de su herencia. Gracias por invertir en su historia.",
+            form_title: "Elige tu Regalo",
+            form_subtext: "Completa el formulario seguro a continuación para hacer una donación deducible de impuestos a Ella Rises.",
+            h3_donor_info: "Información del Donante",
+            label_first_name: "Nombre",
+            label_last_name: "Apellido",
+            label_email: "Correo Electrónico",
+            help_receipt: "Para tu recibo y actualizaciones.",
+            label_phone: "Teléfono (opcional)",
+            label_anonymous_checkbox: "Hacer mi donación anónima.",
+            h3_amount: "Monto de la Donación",
+            label_other_amount: "Otro Monto (USD)",
+            placeholder_other_amount: "Ingresar otro monto",
+            help_other_amount: 'Si ingresas un monto "Otro", anulará los botones de arriba en tu lógica de backend.',
+            label_frequency: "Frecuencia",
+            freq_one_time: "Una sola vez",
+            freq_monthly: "Mensual",
+            freq_quarterly: "Trimestral",
+            freq_yearly: "Anual",
+            h3_details: "Detalles Adicionales",
+            label_designation: "Designar mi regalo a",
+            option_general: "Donde más se necesita",
+            option_summits: "Cumbres Juveniles Ella Rises",
+            option_steam: "Programas de STEAM y educación",
+            option_arts: "Programas de arte y cultura",
+            label_note: "Añadir una nota (opcional)",
+            placeholder_note: "Dedicación, información de igualación del empleador, o un mensaje al equipo de Ella Rises.",
+            label_updates_checkbox: "Envíame por correo electrónico actualizaciones ocasionales sobre los programas e impacto de Ella Rises.",
+            btn_payment: "Continuar al Pago",
+            secure_text: "Este es un formulario de demostración para INTEX. En producción, se conectaría a un procesador de pagos seguro.",
+        }
+    };
+
+    // --- Core Translation Function ---
+    function setLanguage(lang) {
+        // Select all elements with the translation key attribute
+        const elements = document.querySelectorAll('[data-i18n-key]');
+        const langData = translations[lang];
+
+        if (!langData) {
+            console.error(`Translation data not found for language: ${lang}`);
+            return;
+        }
+
+        // 1. Update all text elements (textContent)
+        elements.forEach(el => {
+            const key = el.getAttribute('data-i18n-key');
+            const translation = langData[key];
+
+            if (translation) {
+                if (key === 'doc_title' || key === 'doc_title_donate') {
+                    document.title = translation;
+                } 
+                el.textContent = translation;
+                
+            } else {
+                console.warn(`Missing translation key: ${key} for language: ${lang}`);
+            }
+        });
+        
+        // 2. Update all placeholder attributes (NEW LOGIC)
+        document.querySelectorAll('[data-i18n-placeholder-key]').forEach(el => {
+            const key = el.getAttribute('data-i18n-placeholder-key');
+            const translation = langData[key];
+            if (translation) {
+                el.placeholder = translation;
+            } else {
+                console.warn(`Missing placeholder key: ${key} for language: ${lang}`);
+            }
+        });
+
+        // 3. Update the active button style (Assumes the buttons are present in navbar.ejs)
+        document.querySelectorAll('.lang-button').forEach(button => {
+            button.classList.remove('active');
+        });
+        const activeButton = document.querySelector(`.lang-button[data-lang="${lang}"]`);
+        if (activeButton) {
+            activeButton.classList.add('active');
+        }
+
+        // 4. Save preference to localStorage and update <html> lang attribute
+        localStorage.setItem('userLang', lang);
+        document.documentElement.lang = lang;
+    }
+
+    // --- Initialization and Event Listeners (CRITICAL BLOCK - ADDED) ---
+    // This block ensures the translation runs when the page loads and when buttons are clicked.
+document.addEventListener('DOMContentLoaded', () => {
+    // Get user preference, default to English ('en')
+    const userPref = localStorage.getItem('userLang') || 'en';
+    
+    // Apply the initial language
+    setLanguage(userPref); 
+
+    // Add event listeners to the flag buttons 
+    document.querySelectorAll('.lang-button').forEach(button => {
+        button.addEventListener('click', (event) => {
+            const newLang = event.currentTarget.getAttribute('data-lang');
+            setLanguage(newLang);
+        });
+    });
+});
+</script>
