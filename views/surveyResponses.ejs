@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Survey Responses | Ella Rises</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:wght@400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --er-blue:     #99B7C6;
+      --er-lavender: #978EC4;
+      --er-cream:    #F9F5EA;
+      --er-charcoal: #3A3F3B;
+      --er-rose:     #CE325B;
+      --er-light:    #F7F7FA;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Montserrat", system-ui, sans-serif;
+      background: var(--er-cream);
+      color: var(--er-charcoal);
+    }
+
+    .page {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem 1rem 3rem;
+    }
+
+    .page-header {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .page-title {
+      font-family: "DM Serif Display", serif;
+      font-size: 2rem;
+      letter-spacing: 0.05em;
+    }
+
+    .page-subtitle {
+      font-size: 0.9rem;
+      color: rgba(0,0,0,0.65);
+    }
+
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+      margin-bottom: 1.25rem;
+      padding: 0.75rem 0.9rem;
+      border-radius: 0.75rem;
+      background: rgba(255,255,255,0.7);
+      border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .filter-bar label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .filter-select {
+      min-width: 220px;
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.5rem;
+      border: 1px solid rgba(0,0,0,0.15);
+      font-size: 0.9rem;
+      font-family: inherit;
+      background: #fff;
+      outline: none;
+    }
+
+    .filter-submit {
+      padding: 0.5rem 1rem;
+      border-radius: 999px;
+      border: none;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      background: var(--er-lavender);
+      color: #fff;
+    }
+
+    .filter-reset {
+      font-size: 0.8rem;
+      border: none;
+      background: transparent;
+      color: rgba(0,0,0,0.6);
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    
+.table-wrapper {
+  margin-top: 0.5rem;
+  border-radius: 0.9rem;
+  background: #fff;
+  box-shadow: 0 10px 28px rgba(0,0,0,0.08);
+  overflow-x: auto; /* allow horizontal scroll if needed */
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+  table-layout: auto; /* let the browser size columns based on content */
+}
+
+/* Base cell styles */
+th, td {
+  padding: 0.6rem 0.5rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(0,0,0,0.04);
+  vertical-align: top;
+  white-space: normal;
+  word-break: normal;
+}
+
+
+/* Optional: narrow some columns explicitly */
+th:nth-child(1),
+td:nth-child(1) {  /* ID */
+  width: 55px;
+}
+
+th:nth-child(3),
+td:nth-child(3) {  /* Email */
+  width: 140px;
+}
+
+th:nth-child(4),
+th:nth-child(5),
+th:nth-child(6),
+th:nth-child(7),
+th:nth-child(8),
+td:nth-child(4),
+td:nth-child(5),
+td:nth-child(6),
+td:nth-child(7),
+td:nth-child(8) {  /* score columns */
+  width: 55px;
+  text-align: center;
+}
+
+.comment-cell {
+  max-width: 180px;            /* tighten comments */
+  white-space: normal;
+}
+
+    
+
+    
+    .score-pill {
+      display: inline-block;
+      padding: 0.15rem 0.55rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: rgba(153,183,198,0.18);
+    }
+
+    .overall-pill {
+      background: rgba(206,50,91,0.1);
+      color: #B3264A;
+    }
+
+    .comment-cell {
+      max-width: 260px;
+      white-space: pre-wrap;
+    }
+
+    .empty-state {
+      margin-top: 1.5rem;
+      font-size: 0.9rem;
+      color: rgba(0,0,0,0.6);
+    }
+
+    @media (max-width: 700px) {
+      .page-title {
+        font-size: 1.6rem;
+      }
+    }
+    .comment-cell {
+  max-width: 260px;
+  white-space: normal;
+}
+
+.comment-preview {
+  font-size: 0.82rem;
+}
+
+.comment-toggle {
+  margin-left: 0.3rem;
+  padding: 0;
+  border: none;
+  background: none;
+  font-size: 0.78rem;
+  color: #3366bb;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.comment-toggle:hover {
+  text-decoration: none;
+}
+
+.comment-empty {
+  font-size: 0.8rem;
+  color: rgba(0,0,0,0.4);
+}
+.delete-button {
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(180, 40, 40, 0.3);
+  background: rgba(220, 60, 60, 0.08);
+  color: #b01919;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+
+.delete-button:hover {
+  background: rgba(220, 60, 60, 0.18);
+}
+.score-col {
+  text-align: center;
+  white-space: nowrap; /* header and score will not wrap */
+}
+
+
+  </style>
+</head>
+<body>
+  <%- include("navbar.ejs") %>
+
+  <main class="page">
+    <header class="page-header">
+      <h1 class="page-title">Survey Responses</h1>
+      <p class="page-subtitle">
+        View individual survey submissions, scores, and comments. Use the filter to narrow by event.
+      </p>
+    </header>
+
+    <form class="filter-bar" method="GET" action="/survey/responses">
+  <label for="eventFilter">Filter by event</label>
+  <select id="eventFilter" name="eventDefId" class="filter-select">
+    <option value="">All events</option>
+    <% if (Array.isArray(events)) { %>
+      <% events.forEach(function(evt) { %>
+        <option
+          value="<%= evt.eventdefid %>"
+          <%= String(selectedEventDefId || "") === String(evt.eventdefid) ? "selected" : "" %>
+        >
+          <%= evt.eventdefid %> - <%= evt.eventname %>
+        </option>
+      <% }); %>
+    <% } %>
+  </select>
+
+  <button type="submit" class="filter-submit">Apply</button>
+
+  <% if (selectedEventDefId) { %>
+    <button
+      type="button"
+      class="filter-reset"
+      onclick="window.location.href='/survey/responses'"
+    >
+      Clear filter
+    </button>
+  <% } %>
+</form>
+
+
+    <% if (surveys && surveys.length > 0) { %>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+  <tr>
+    <th>ID</th>
+    <th>Event</th>
+    <th>Participant Email</th>
+    <th class="score-col">Satisfaction</th>
+<th class="score-col">Useful</th>
+<th class="score-col">Instructor</th>
+<th class="score-col">Recommend</th>
+<th class="score-col">Overall</th>
+
+    <th>Comments</th>
+    <th>Submitted</th>
+    <th>Actions</th>
+  </tr>
+</thead>
+
+          <tbody>
+            <% surveys.forEach(function(s) { %>
+              <tr>
+                <td>#<%= s.surveyid %></td>
+                <td>
+                  <strong><%= s.eventname || ("Event " + s.eventid) %></strong><br />
+                  <small>ID: <%= s.eventid %></small>
+                </td>
+                <td><%= s.participantemail %></td>
+                <td class="score-col"><span class="score-pill"><%= s.surveysatisfactionscore %></span></td>
+<td class="score-col"><span class="score-pill"><%= s.surveyusefulnessscore %></span></td>
+<td class="score-col"><span class="score-pill"><%= s.surveyinstructorscore %></span></td>
+<td class="score-col"><span class="score-pill"><%= s.surveyrecommendationscore %></span></td>
+<td class="score-col"><span class="score-pill overall-pill"><%= s.surveyoverallscore %></span></td>
+
+                <td class="comment-cell">
+  <% if (s.surveycomments) { %>
+    <span
+      class="comment-preview"
+      data-full="<%= s.surveycomments %>"
+    ></span>
+    <button type="button" class="comment-toggle">More</button>
+  <% } else { %>
+    <span class="comment-empty">—</span>
+  <% } %>
+</td>
+
+                <td>
+                  <%= new Date(s.surveysubmissiondate).toLocaleString("en-US", {
+                    month: "short",
+                    day: "2-digit",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit"
+                  }) %>
+                </td>
+                <td>
+  <form
+    action="/survey/<%= s.surveyid %>/delete?<%=
+      selectedEventDefId ? 'eventId=' + encodeURIComponent(selectedEventDefId) : ''
+    %>"
+    method="POST"
+    onsubmit="return confirm('Delete this survey response?');"
+  >
+    <button type="submit" class="delete-button">Delete</button>
+  </form>
+</td>
+
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } else { %>
+      <p class="empty-state">
+        No survey responses found for the current filter.
+      </p>
+    <% } %>
+  </main>
+  <script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const maxLen = 60; // chars before truncation
+
+    document.querySelectorAll(".comment-cell").forEach(function (cell) {
+      const previewEl = cell.querySelector(".comment-preview");
+      const toggleBtn = cell.querySelector(".comment-toggle");
+      if (!previewEl || !toggleBtn) return;
+
+      const full = previewEl.dataset.full || "";
+      if (full.length <= maxLen) {
+        previewEl.textContent = full;
+        toggleBtn.style.display = "none";
+        return;
+      }
+
+      const short = full.slice(0, maxLen).trim() + "…";
+      previewEl.textContent = short;
+
+      let expanded = false;
+      toggleBtn.addEventListener("click", function () {
+        expanded = !expanded;
+        previewEl.textContent = expanded ? full : short;
+        toggleBtn.textContent = expanded ? "Less" : "More";
+      });
+    });
+  });
+</script>
+
+</body>
+</html>
