@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Thank You | Ella Rises</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:wght@400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --er-blue:     #99B7C6;
+      --er-lavender: #978EC4;
+      --er-cream:    #F9F5EA;
+      --er-rose:     #E9B7C7;
+      --er-navy:     #1F3140;
+      --er-dark:     #333333;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Montserrat", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(135deg, var(--er-cream), var(--er-blue));
+      color: var(--er-dark);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .thankyou-container {
+      background-color: white;
+      max-width: 700px;
+      width: 100%;
+      border-radius: 18px;
+      padding: 32px 28px 28px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
+      border: 1px solid rgba(0, 0, 0, 0.04);
+      text-align: center;
+    }
+
+    .thankyou-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: rgba(153, 183, 198, 0.12);
+      color: var(--er-navy);
+      margin-bottom: 18px;
+    }
+
+    .thankyou-title {
+      font-family: "DM Serif Display", "Times New Roman", serif;
+      font-size: 2rem;
+      margin-bottom: 12px;
+      color: var(--er-navy);
+    }
+
+    .thankyou-subtitle {
+      font-size: 0.98rem;
+      line-height: 1.6;
+      color: #555555;
+      margin-bottom: 24px;
+    }
+
+    .impact-box {
+      background: linear-gradient(135deg, rgba(151, 142, 196, 0.08), rgba(233, 183, 199, 0.16));
+      border-radius: 14px;
+      padding: 16px 18px;
+      margin-bottom: 26px;
+      font-size: 0.92rem;
+      line-height: 1.5;
+      color: #3b3b3b;
+    }
+
+    .impact-box strong {
+      color: var(--er-navy);
+    }
+
+    .redirect-info {
+      font-size: 0.85rem;
+      color: #777777;
+      margin-bottom: 18px;
+    }
+
+    .redirect-info span {
+      font-weight: 600;
+    }
+
+    .button-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 10px;
+    }
+
+    .er-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 18px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform 0.08s ease, box-shadow 0.08s ease, background-color 0.08s ease, border-color 0.08s ease;
+      white-space: nowrap;
+    }
+
+    .er-button.primary {
+      background: var(--er-lavender);
+      color: white;
+      box-shadow: 0 8px 18px rgba(151, 142, 196, 0.45);
+    }
+
+    .er-button.primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 22px rgba(151, 142, 196, 0.55);
+    }
+
+    .er-button.secondary {
+      background: white;
+      border-color: rgba(31, 49, 64, 0.18);
+      color: var(--er-navy);
+    }
+
+    .er-button.secondary:hover {
+      background: rgba(153, 183, 198, 0.06);
+    }
+
+    .er-button.ghost {
+      background: transparent;
+      border-color: transparent;
+      color: #666666;
+      font-size: 0.85rem;
+    }
+
+    .er-button.ghost:hover {
+      background: rgba(0, 0, 0, 0.03);
+    }
+
+    .small-note {
+      font-size: 0.8rem;
+      color: #888888;
+      margin-top: 6px;
+    }
+
+    @media (max-width: 600px) {
+      .thankyou-container {
+        padding: 24px 18px 20px;
+      }
+
+      .thankyou-title {
+        font-size: 1.6rem;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+
+      .er-button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="thankyou-container">
+    <div class="thankyou-badge">Survey submitted</div>
+
+    <h1 class="thankyou-title">Thank you for your feedback</h1>
+
+    <p class="thankyou-subtitle">
+      Your responses help Ella Rises improve future events and better support young women in STEAM fields.
+      We are grateful you took the time to share your experience.
+    </p>
+
+    <div class="impact-box">
+      <strong>What happens next</strong><br />
+      Your survey will be included in reports for donors, mentors, and program leaders so they can see which
+      activities are most impactful and where we can keep improving.
+    </div>
+
+    <% if (typeof redirectUrl !== "undefined" && redirectUrl) { %>
+      <p class="redirect-info">
+        You will be redirected in a few seconds.
+        <span>If nothing happens, choose one of the options below.</span>
+      </p>
+    <% } else { %>
+      <p class="redirect-info">
+        You can choose where to go next using the options below.
+      </p>
+    <% } %>
+
+    <div class="button-group">
+      <!-- Primary redirect option - usually your app home or events page -->
+      <a href="<%= typeof redirectUrl !== 'undefined' && redirectUrl ? redirectUrl : '/' %>" class="er-button primary">
+        Return to Ella Rises app
+      </a>
+
+      <!-- Internal route examples - adjust to match your app -->
+      <a href="/events" class="er-button secondary">
+        View upcoming events
+      </a>
+
+      <a href="/surveys" class="er-button secondary">
+        Take another survey
+      </a>
+    </div>
+
+    <a
+      href="https://www.ellarises.org/"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="er-button ghost"
+    >
+      Visit EllaRises.org
+    </a>
+
+    <p class="small-note">
+      Thank you for helping us lift and mentor the rising generation.
+    </p>
+  </main>
+
+  <% if (typeof redirectUrl !== "undefined" && redirectUrl) { %>
+    <script>
+      const AUTO_REDIRECT_SECONDS = 8;
+
+      setTimeout(function () {
+        window.location.href = "<%= redirectUrl %>";
+      }, AUTO_REDIRECT_SECONDS * 1000);
+    </script>
+  <% } %>
+</body>
+</html>
