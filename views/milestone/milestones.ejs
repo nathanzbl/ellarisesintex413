@@ -87,18 +87,13 @@
             flex-wrap: wrap; /* Allows wrapping on mobile */
             gap: 1rem;
             align-items: flex-end;
-            /* Ensures the search inputs take available space */
-            max-width: calc(100% - 150px); 
+            max-width: 100%; /* Fill container from the left */
         }
 
         .add-button-wrapper {
-            /* Keeps the button aligned to the right */
             flex-shrink: 0; 
-            margin-left: 1rem; 
             padding-bottom: 0.7rem; /* Vertically align with Search button */
         }
-        /* --- END NEW CONTROL BAR STYLING --- */
-
 
         /* --- SEARCH AND FILTER STYLES --- */
         .search-group {
@@ -165,6 +160,18 @@
         }
         /* --- END SEARCH STYLES --- */
 
+        /* Group for Search + Clear (column) and Add (right) */
+        .controls-actions-group {
+            display: flex;
+            gap: 0.75rem;
+            align-items: flex;
+        }
+
+        .search-controls {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
 
         .table-custom {
             width: 100%;
@@ -205,6 +212,7 @@
             text-decoration: none;
             display: inline-block;
             text-align: center;
+            align-self: center;
         }
 
         .btn-add-milestone {
@@ -386,28 +394,29 @@
                         >
                     </div>
 
-                    <div class="search-group" style="flex-basis: 15%; flex-grow: 0;">
-                        <button type="submit" class="btn-search">Search</button>
-                        
-                        <% 
-                            // Check the three unique variables: search_name, search_milestone, date
-                            const isSearching = (typeof search_name !== 'undefined' && search_name) || 
-                                                (typeof search_milestone !== 'undefined' && search_milestone) ||
-                                                (typeof date !== 'undefined' && date);
-                        %>
+                    <div class="search-group controls-actions-group" style="flex-basis: 20%; flex-grow: 0;">
+                        <div class="search-controls">
+                            <button type="submit" class="btn-search">Search</button>
+                            
+                            <% 
+                                // Check the three unique variables: search_name, search_milestone, date
+                                const isSearching = (typeof search_name !== 'undefined' && search_name) || 
+                                                    (typeof search_milestone !== 'undefined' && search_milestone) ||
+                                                    (typeof date !== 'undefined' && date);
+                            %>
 
-                        <% if (isSearching) { %>
-                            <a href="/milestones" class="btn-clear">Clear Filters</a>
-                        <% } %>
+                            <% if (isSearching) { %>
+                                <a href="/milestones" class="btn-clear">Clear Filters</a>
+                            <% } %>
+                        </div>
+
                     </div>
                 </form>
-                
-                <!-- Add Milestone Button aligned to the right -->
-                <div class="add-button-wrapper">
-                    <a href="/addmilestone" class="btn-action btn-add-milestone">Add Milestone</a>
-                </div>
             </div>
-            <!-- END TOP CONTROLS BAR -->
+
+            <div class="add-button-wrapper">
+                <a href="/addmilestone" class="btn-action btn-add-milestone">Add Milestone</a>
+            </div>
 
             <% if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
                 <div class="pagination-container">
@@ -521,7 +530,6 @@
         </div>
     </div>
     <%- include('../common/footer.ejs') %>
-    
 </body>
 <script>
     function confirmDeletion(event) {
