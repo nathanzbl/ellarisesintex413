@@ -598,41 +598,6 @@ app.post("/events/rsvp/:id", async (req, res) => {
 });
 
 // -----------------------------------------------------
-// MANAGER: View All Events
-// -----------------------------------------------------
-app.get("/events", requireManager, async (req, res) => {
-    try {
-        let events = await knex("event")
-            .join("eventdefinition", "event.eventdefid", "eventdefinition.eventdefid")
-            .select(
-                "event.eventid",
-                "event.eventdatetimestart",
-                "event.eventlocation",
-                "eventdefinition.eventname"
-            )
-            .orderBy("event.eventdatetimestart", "asc");
-
-        // Format each event's date
-        events = events.map(ev => {
-            const date = new Date(ev.eventdatetimestart);
-
-            ev.formattedDate = date.toLocaleDateString("en-US", {
-                month: "short",  // "Nov"
-                day: "numeric",  // "7"
-                year: "numeric"  // "2021"
-            });
-
-            return ev;
-        });
-
-        res.render("events", { events });
-    } catch (err) {
-        console.error("Error loading manager event list:", err);
-        res.render("events", { events: [] });
-    }
-});
-
-// -----------------------------------------------------
 // MANAGER: Add Event Form
 // -----------------------------------------------------
 app.get("/events/add", requireManager, (req, res) => {
@@ -746,6 +711,137 @@ app.post("/events/delete/:id", requireManager, async (req, res) => {
         console.error("Error deleting event:", err);
         res.status(500).render("404");
     }
+});
+
+// -----------------------------------------------------
+// EVENT LIST: Show all unique event definitions
+// -----------------------------------------------------
+app.get("/events", requireManager, async (req, res) => {
+    try {
+        const eventDefs = await knex("eventdefinition")
+            .select("eventdefid", "eventname", "eventdescription")
+            .orderBy("eventname");
+
+        res.render("eventlist", { eventDefs });
+    } catch (err) {
+        console.error("Error loading event definitions:", err);
+        res.render("eventlist", { eventDefs: [] });
+    }
+});
+
+// -----------------------------------------------------
+// EVENT DETAILS FOR SELECTED DATE
+// -----------------------------------------------------
+app.get("/events/:eventdefid/day/:date", requireManager, async (req, res) => {
+    const { eventdefid, date } = req.params;
+
+    // Get event info for that date
+    let events = await knex("event")
+        .join("eventdefinition", "event.eventdefid", "eventdefinition.eventdefid")
+        .select(
+            "event.*",
+            "eventdefinition.eventname"
+        )
+        .where("event.eventdefid", eventdefid)
+        .whereRaw("DATE(eventdatetimestart) = ?", [date]);
+
+    // Format date + time
+    const formattedDate = new Date(date).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric"
+    });
+
+    events = events.map(ev => ({
+        ...ev,
+        startTimeFormatted: new Date(ev.eventdatetimestart).toLocaleTimeString([], {
+            hour: "numeric",
+            minute: "2-digit"
+        }),
+        endTimeFormatted: new Date(ev.eventdatetimeend).toLocaleTimeString([], {
+            hour: "numeric",
+            minute: "2-digit"
+        })
+    }));
+
+    res.render("eventdetails", {
+        events,
+        dateFormatted: formattedDate
+    });
+});
+
+// -----------------------------------------------------
+// EVENT CALENDAR PAGE
+// -----------------------------------------------------
+app.get("/events/:eventdefid", requireManager, async (req, res) => {
+    try {
+        // Get event definition info
+        const eventDef = await knex("eventdefinition")
+            .where("eventdefid", req.params.eventdefid)
+            .first();
+
+        // Get all upcoming scheduled dates
+        const events = await knex("event")
+            .where("eventdefid", req.params.eventdefid)
+            .select("eventid", "eventdatetimestart");
+
+        // Convert event dates to LOCAL YYYY-MM-DD strings
+        const datesAvailable = events.map(ev => {
+            const d = new Date(ev.eventdatetimestart);
+            const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+            console.log("RAW:", ev.eventdatetimestart);
+            console.log("LOCAL:", local.toISOString().split("T")[0]);
+            return local.toISOString().split("T")[0];
+        });
+        
+
+        res.render("eventcalendar", { eventDef, datesAvailable });
+    } catch (err) {
+        console.error("Error loading calendar:", err);
+        res.status(500).render("404");
+    }
+});
+
+
+// -----------------------------------------------------
+// EVENT DETAILS FOR SELECTED DATE
+// -----------------------------------------------------
+app.get("/events/:eventdefid/day/:date", requireManager, async (req, res) => {
+    const { eventdefid, date } = req.params;
+
+    // Load event instance(s) for this exact LOCAL date
+    let events = await knex("event")
+        .join("eventdefinition", "event.eventdefid", "eventdefinition.eventdefid")
+        .select(
+            "event.*",
+            "eventdefinition.eventname"
+        )
+        .where("event.eventdefid", eventdefid)
+        .whereRaw("DATE(eventdatetimestart AT TIME ZONE 'UTC' AT TIME ZONE 'America/Denver') = ?", [date]);
+
+    // Format times & keep your date pretty
+    const dateFormatted = new Date(date).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric"
+    });
+
+    events = events.map(ev => ({
+        ...ev,
+        startTimeFormatted: new Date(ev.eventdatetimestart).toLocaleTimeString([], {
+            hour: "numeric",
+            minute: "2-digit"
+        }),
+        endTimeFormatted: new Date(ev.eventdatetimeend).toLocaleTimeString([], {
+            hour: "numeric",
+            minute: "2-digit"
+        })
+    }));
+
+    res.render("eventdetails", {
+        events,
+        dateFormatted
+    });
 });
 
 const PORT = process.env.PORT || 3000;
