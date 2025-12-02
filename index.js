@@ -1163,53 +1163,43 @@ app.post("/events/rsvp/:id", async (req, res) => {
 });
 
 // -----------------------------------------------------
-// MANAGER: View All Events
+// ADD EVENT FOR A SPECIFIC DAY (from calendar modal)
+// MUST COME BEFORE ANY /events/:eventdefid ROUTES
 // -----------------------------------------------------
-app.get("/events", requireManager, async (req, res) => {
+app.post("/events/:eventdefid/day/:date/add", requireManager, async (req, res) => {
+    const { eventdefid, date } = req.params;
+
     try {
-        let events = await knex("event")
-            .join("eventdefinition", "event.eventdefid", "eventdefinition.eventdefid")
-            .select(
-                "event.eventid",
-                "event.eventdatetimestart",
-                "event.eventlocation",
-                "eventdefinition.eventname"
-            )
-            .orderBy("event.eventdatetimestart", "asc");
+        const startDateTime = `${date}T${req.body.starttime}:00`;
+        const endDateTime = `${date}T${req.body.endtime}:00`;
 
-        // Format each event's date
-        events = events.map(ev => {
-            const date = new Date(ev.eventdatetimestart);
-
-            ev.formattedDate = date.toLocaleDateString("en-US", {
-                month: "short",  // "Nov"
-                day: "numeric",  // "7"
-                year: "numeric"  // "2021"
-            });
-
-            return ev;
+        await knex("event").insert({
+            eventdefid: eventdefid,
+            eventdatetimestart: startDateTime,
+            eventdatetimeend: endDateTime,
+            eventlocation: req.body.eventlocation,
+            eventcapacity: req.body.eventcapacity
         });
 
-        res.render("events", { events });
+        res.redirect(`/events/${eventdefid}`);
     } catch (err) {
-        console.error("Error loading manager event list:", err);
-        res.render("events", { events: [] });
+        console.error("Error adding event on selected date:", err);
+        res.status(500).render("404");
     }
 });
 
 // -----------------------------------------------------
-// MANAGER: Add Event Form
+// ADD EVENT (MANUAL ADD EVENT FORM)
 // -----------------------------------------------------
+
+// Show Add Event Form
 app.get("/events/add", requireManager, (req, res) => {
     res.render("addevent", { error_message: "" });
 });
 
-// -----------------------------------------------------
-// MANAGER: Submit Add Event
-// -----------------------------------------------------
+// Submit Add Event
 app.post("/events/add", requireManager, async (req, res) => {
     try {
-        // Step 1: Create event definition entry
         const [def] = await knex("eventdefinition")
             .insert({
                 eventname: req.body.eventname,
@@ -1219,7 +1209,6 @@ app.post("/events/add", requireManager, async (req, res) => {
             })
             .returning("eventdefid");
 
-        // Step 2: Create event entry linked to definition
         await knex("event").insert({
             eventdefid: def.eventdefid,
             eventdatetimestart: req.body.eventdatetimestart,
@@ -1236,8 +1225,85 @@ app.post("/events/add", requireManager, async (req, res) => {
 });
 
 // -----------------------------------------------------
-// MANAGER: Edit Event Form
+// EVENT LIST (UNIQUE EVENT TYPES)
 // -----------------------------------------------------
+app.get("/events", requireManager, async (req, res) => {
+    try {
+        const eventDefs = await knex("eventdefinition")
+            .select("eventdefid", "eventname", "eventdescription")
+            .orderBy("eventname");
+
+        res.render("eventlist", { eventDefs });
+    } catch (err) {
+        console.error("Error loading event definitions:", err);
+        res.render("eventlist", { eventDefs: [] });
+    }
+});
+
+// -----------------------------------------------------
+// EVENT DETAILS FOR A SPECIFIC DAY
+// -----------------------------------------------------
+app.get("/events/:eventdefid/day/:date", requireManager, async (req, res) => {
+    const { eventdefid, date } = req.params;
+
+    let events = await knex("event")
+        .join("eventdefinition", "event.eventdefid", "eventdefinition.eventdefid")
+        .select("event.*", "eventdefinition.eventname")
+        .where("event.eventdefid", eventdefid)
+        .whereRaw("DATE(eventdatetimestart AT TIME ZONE 'UTC' AT TIME ZONE 'America/Denver') = ?", [date]);
+
+    const dateFormatted = new Date(date).toLocaleDateString("en-US", {
+        month: "short", day: "numeric", year: "numeric"
+    });
+
+    events = events.map(ev => ({
+        ...ev,
+        startTimeFormatted: new Date(ev.eventdatetimestart).toLocaleTimeString([], {
+            hour: "numeric", minute: "2-digit"
+        }),
+        endTimeFormatted: new Date(ev.eventdatetimeend).toLocaleTimeString([], {
+            hour: "numeric", minute: "2-digit"
+        })
+    }));
+
+    res.render("eventdetails", { events, dateFormatted });
+});
+
+// -----------------------------------------------------
+// EVENT CALENDAR PAGE — MUST BE LAST DYNAMIC ROUTE
+// -----------------------------------------------------
+app.get("/events/:eventdefid", requireManager, async (req, res) => {
+    try {
+        const eventDef = await knex("eventdefinition")
+            .where("eventdefid", req.params.eventdefid)
+            .first();
+
+        const events = await knex("event")
+            .where("eventdefid", req.params.eventdefid)
+            .select("eventid", "eventdatetimestart");
+
+        console.log("EVENTDEFID:", req.params.eventdefid);
+        console.log("RAW EVENTS:", events);
+        events.forEach(ev => console.log(" - eventdatetimestart:", ev.eventdatetimestart));
+
+        const datesAvailable = events.map(ev => {
+            const d = new Date(ev.eventdatetimestart);
+            const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+            return local.toISOString().split("T")[0];
+        });
+
+        res.render("eventcalendar", { eventDef, datesAvailable });
+    } catch (err) {
+        console.error("Error loading calendar:", err);
+        res.status(500).render("404");
+    }
+});
+
+// -----------------------------------------------------
+// EDIT EVENT
+// -----------------------------------------------------
+
+// Load edit form
 app.get("/events/edit/:id", requireManager, async (req, res) => {
     try {
         const event = await knex("event")
@@ -1252,25 +1318,20 @@ app.get("/events/edit/:id", requireManager, async (req, res) => {
             .where("event.eventid", req.params.id)
             .first();
 
-        if (!event) return res.status(404).render("404");
-
         res.render("editevent", { event });
     } catch (err) {
-        console.error("Error loading edit form:", err);
+        console.error("Error loading edit event:", err);
         res.status(500).render("404");
     }
 });
 
-// -----------------------------------------------------
-// MANAGER: Submit Edit Event
-// -----------------------------------------------------
+// Submit edit
 app.post("/events/edit/:id", requireManager, async (req, res) => {
     try {
         const event = await knex("event")
             .where("eventid", req.params.id)
             .first();
 
-        // Update eventdefinition
         await knex("eventdefinition")
             .where("eventdefid", event.eventdefid)
             .update({
@@ -1280,7 +1341,6 @@ app.post("/events/edit/:id", requireManager, async (req, res) => {
                 eventrecurrencepattern: req.body.eventrecurrencepattern
             });
 
-        // Update event
         await knex("event")
             .where("eventid", req.params.id)
             .update({
@@ -1292,13 +1352,13 @@ app.post("/events/edit/:id", requireManager, async (req, res) => {
 
         res.redirect("/events");
     } catch (err) {
-        console.error("Error saving event edits:", err);
+        console.error("Error updating event:", err);
         res.status(500).render("404");
     }
 });
 
 // -----------------------------------------------------
-// MANAGER: Delete Event
+// DELETE EVENT
 // -----------------------------------------------------
 app.post("/events/delete/:id", requireManager, async (req, res) => {
     try {
@@ -1312,6 +1372,7 @@ app.post("/events/delete/:id", requireManager, async (req, res) => {
         res.status(500).render("404");
     }
 });
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
