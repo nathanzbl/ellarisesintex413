@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Edit Event | Ella Rises</title>
+
+<style>
+    body {
+        background-color: #faf6ef;
+        font-family: Arial, sans-serif;
+        margin: 0;
+    }
+
+    header {
+        background-color: #f7cfd5;
+        padding: 20px 50px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    nav a {
+        margin: 0 20px;
+        padding: 8px 18px;
+        border-radius: 20px;
+        background-color: #ffffffcc;
+        font-weight: bold;
+        color: #333;
+        text-decoration: none;
+    }
+
+    .donate-btn {
+        background-color: #9bbccc;
+        color: white !important;
+    }
+
+    .page-title {
+        text-align: center;
+        margin: 35px 0;
+        font-size: 40px;
+        font-family: 'Georgia', serif;
+        color: #333;
+    }
+
+    .container {
+        width: 65%;
+        margin: auto;
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        border-top: 10px solid #f7cfd5;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    }
+
+    label {
+        font-weight: bold;
+        display: block;
+        margin-top: 20px;
+        color: #444;
+    }
+
+    input, textarea, select {
+        width: 100%;
+        padding: 12px;
+        margin-top: 5px;
+        border-radius: 10px;
+        border: 1px solid #ccc;
+        font-size: 16px;
+    }
+
+    textarea {
+        height: 100px;
+    }
+
+    .btn-save {
+        background-color: #9bbccc;
+        color: white;
+        padding: 14px 30px;
+        border-radius: 20px;
+        font-size: 18px;
+        border: none;
+        margin-top: 30px;
+        cursor: pointer;
+    }
+
+    .btn-cancel {
+        background-color: #ccc;
+        padding: 14px 30px;
+        border-radius: 20px;
+        font-size: 18px;
+        border: none;
+        margin-left: 15px;
+        cursor: pointer;
+    }
+</style>
+</head>
+
+<body>
+
+<header>
+    <img src="/images/EllaRisesLogo.png.avif" height="60">
+    <nav>
+        <a href="/">Home</a>
+        <a href="/events">Events</a>
+        <a href="/participants">Participants</a>
+        <a href="/milestones">Milestones</a>
+        <a href="/surveys">Surveys</a>
+        <a href="/donations" class="donate-btn">Donations</a>
+    </nav>
+</header>
+
+<h1 class="page-title">Edit Event</h1>
+
+<div class="container">
+
+    <form action="/events/edit/<%= event.eventid %>" method="POST">
+
+        <!-- EVENT NAME -->
+        <label>Event Name</label>
+        <input type="text" name="eventname" value="<%= event.eventname %>" required>
+
+        <!-- EVENT DESCRIPTION -->
+        <label>Description</label>
+        <textarea name="eventdescription" required><%= event.eventdescription %></textarea>
+
+        <!-- EVENT TYPE -->
+        <label>Event Type</label>
+        <input type="text" name="eventtype" value="<%= event.eventtype %>" required>
+
+        <!-- RECURRENCE -->
+        <label>Recurrence Pattern</label>
+        <input type="text" name="eventrecurrencepattern" value="<%= event.eventrecurrencepattern %>">
+
+        <!-- START DATETIME -->
+        <label>Start Date & Time</label>
+        <input type="datetime-local"
+               name="eventdatetimestart"
+               value="<%= new Date(event.eventdatetimestart).toISOString().slice(0,16) %>"
+               required>
+
+        <!-- END DATETIME -->
+        <label>End Date & Time</label>
+        <input type="datetime-local"
+               name="eventdatetimeend"
+               value="<%= new Date(event.eventdatetimeend).toISOString().slice(0,16) %>"
+               required>
+
+        <!-- LOCATION -->
+        <label>Location</label>
+        <input type="text" name="eventlocation" value="<%= event.eventlocation %>" required>
+
+        <!-- CAPACITY -->
+        <label>Capacity</label>
+        <input type="number" name="eventcapacity" value="<%= event.eventcapacity %>" required>
+
+        <!-- BUTTONS -->
+        <button type="submit" class="btn-save">Save Changes</button>
+        <a href="/events"><button type="button" class="btn-cancel">Cancel</button></a>
+
+    </form>
+
+</div>
+
+</body>
+</html>

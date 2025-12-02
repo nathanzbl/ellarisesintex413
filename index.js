@@ -54,26 +54,6 @@ app.use("/images", express.static(uploadRoot));
 // process.env.PORT is when you deploy and 3000 is for test
 const port = process.env.PORT || 3000;
 
-/* Session middleware (Middleware is code that runs between the time the request comes
-to the server and the time the response is sent back. It allows you to intercept and
-decide if the request should continue. It also allows you to parse the body request
-from the html form, handle errors, check authentication, etc.)
-
-REQUIRED parameters for session:
-secret - The only truly required parameter
-    Used to sign session cookies
-    Prevents tampering and session hijacking with session data
-
-OPTIONAL (with defaults):
-resave - Default: true
-    true = save session on every request
-    false = only save if modified (recommended)
-
-saveUninitialized - Default: true
-    true = create session for every request
-    false = only create when data is stored (recommended)
-*/
-
 app.use(
     session(
         {
@@ -83,6 +63,20 @@ app.use(
         }
     )
 );
+
+// session middleware
+function setViewGlobals(req, res, next) {
+    // Check if req.session.isLoggedIn is defined; if so, pass it to the views.
+    // If not logged in, isLoggedIn will be false or undefined, which EJS can check.
+    res.locals.isLoggedIn = req.session.isLoggedIn || false; 
+    
+    // Continue to the next middleware or route handler
+    next(); 
+}
+
+// Then, tell Express to use this function for all requests:
+app.use(setViewGlobals);
+
 
 // Content Security Policy middleware - allows localhost connections for development
 // This fixes the CSP violation error with Chrome DevTools
@@ -259,7 +253,10 @@ app.get("/survey/thankyou", (req, res) => {
 }); 
 
 app.get("/survey/responses", async (req, res) => {
-  const { eventDefId } = req.query; // query param from the dropdown
+  const { eventDefId } = req.query;
+  const pageSize = 25;
+  const rawPage = parseInt(req.query.page, 10) || 1;
+  const page = Math.max(rawPage, 1);
 
   try {
     // Event definitions for the dropdown
@@ -267,11 +264,30 @@ app.get("/survey/responses", async (req, res) => {
       .select("eventdefid", "eventname")
       .orderBy("eventdefid", "asc");
 
-    // Base query: survey -> event -> eventdefinition -> participant
-    let query = knex("survey as s")
+    // Base query
+    let baseQuery = knex("survey as s")
       .join("event as e", "e.eventid", "s.eventid")
       .join("eventdefinition as ed", "ed.eventdefid", "e.eventdefid")
-      .join("participant as p", "s.participantid", "p.participantid")
+      .join("participant as p", "s.participantid", "p.participantid");
+
+    if (eventDefId && eventDefId !== "") {
+      baseQuery = baseQuery.where("e.eventdefid", Number(eventDefId));
+    }
+
+    // Count
+    const countRow = await baseQuery
+      .clone()
+      .countDistinct({ total: "s.surveyid" })
+      .first();
+
+    const totalCount = parseInt(countRow.total, 10) || 0;
+    const totalPages = totalCount === 0 ? 1 : Math.ceil(totalCount / pageSize);
+    const currentPage = Math.min(page, totalPages);
+    const offset = (currentPage - 1) * pageSize;
+
+    // Data
+    const surveys = await baseQuery
+      .clone()
       .select(
         "s.surveyid",
         "s.eventid",
@@ -286,25 +302,41 @@ app.get("/survey/responses", async (req, res) => {
         "s.surveycomments",
         "s.surveysubmissiondate"
       )
-      .orderBy("s.surveysubmissiondate", "desc");
+      .orderBy("s.surveysubmissiondate", "desc")
+      .limit(pageSize)
+      .offset(offset);
 
-    // Filter by event definition if one was selected
-    if (eventDefId && eventDefId !== "") {
-      query = query.where("e.eventdefid", Number(eventDefId));
-    }
+    const firstItem = totalCount === 0 ? 0 : offset + 1;
+    const lastItem = offset + surveys.length;
 
-    const surveys = await query;
+    // Sliding window: 10 pages at a time
+    const windowSize = 10;
+    const windowStart =
+      Math.floor((currentPage - 1) / windowSize) * windowSize + 1;
+    const windowEnd = Math.min(windowStart + windowSize - 1, totalPages);
 
     res.render("surveyResponses", {
       surveys,
       events,
-      selectedEventDefId: eventDefId || ""
+      selectedEventDefId: eventDefId || "",
+      pagination: {
+        currentPage,
+        totalPages,
+        totalCount,
+        pageSize,
+        firstItem,
+        lastItem,
+        windowSize,
+        windowStart,
+        windowEnd
+      }
     });
   } catch (err) {
     console.error("Survey responses error:", err);
     res.status(500).send("Error loading survey responses");
   }
 });
+
 
 
 
@@ -325,6 +357,327 @@ app.post("/survey/:surveyid/delete", async (req, res) => {
   } catch (err) {
     console.error("Error deleting survey:", err);
     res.status(500).send("Error deleting survey response");
+  }
+});
+
+app.get("/survey/:surveyid/edit", async (req, res) => {
+  const { surveyid } = req.params;
+  const { eventDefId } = req.query;
+
+  try {
+    const survey = await knex("survey as s")
+      .join("event as e", "e.eventid", "s.eventid")
+      .join("eventdefinition as ed", "ed.eventdefid", "e.eventdefid")
+      .join("participant as p", "s.participantid", "p.participantid")
+      .select(
+        "s.surveyid",
+        "s.eventid",
+        "e.eventdefid",
+        "ed.eventname",
+        "p.participantemail",
+        "s.surveysatisfactionscore",
+        "s.surveyusefulnessscore",
+        "s.surveyinstructorscore",
+        "s.surveyrecommendationscore",
+        "s.surveyoverallscore",
+        "s.surveycomments",
+        "s.surveysubmissiondate"
+      )
+      .where("s.surveyid", surveyid)
+      .first();
+
+    if (!survey) {
+      return res.status(404).send("Survey response not found");
+    }
+
+    res.render("surveyEdit", {
+      survey,
+      eventDefId: eventDefId || ""
+    });
+  } catch (err) {
+    console.error("Survey edit load error:", err);
+    res.status(500).send("Error loading survey for edit");
+  }
+});
+
+app.post("/survey/:surveyid/edit", async (req, res) => {
+  const { surveyid } = req.params;
+  const { eventDefId } = req.query;
+
+  const {
+    SurveySatisfactionScore,
+    SurveyUsefulnessScore,
+    SurveyInstructorScore,
+    SurveyRecommendationScore,
+    SurveyComments
+  } = req.body;
+
+  try {
+    const sat = Number(SurveySatisfactionScore);
+    const useful = Number(SurveyUsefulnessScore);
+    const instr = Number(SurveyInstructorScore);
+    const recom = Number(SurveyRecommendationScore);
+
+    // Basic sanity check if you want to be strict
+    // if ([sat, useful, instr, recom].some(n => !Number.isInteger(n) || n < 1 || n > 5)) { ... }
+
+    const overall = Math.round((sat + useful + instr + recom) / 4);
+
+    await knex("survey")
+      .where({ surveyid })
+      .update({
+        surveysatisfactionscore: sat,
+        surveyusefulnessscore: useful,
+        surveyinstructorscore: instr,
+        surveyrecommendationscore: recom,
+        surveyoverallscore: overall,
+        surveycomments: SurveyComments || null
+      });
+
+    const redirectUrl = eventDefId
+      ? `/survey/responses?eventDefId=${encodeURIComponent(eventDefId)}`
+      : "/survey/responses";
+
+    res.redirect(redirectUrl);
+  } catch (err) {
+    console.error("Survey edit save error:", err);
+    res.status(500).send("Error saving survey changes");
+  }
+});
+
+app.post("/donations/add", async (req, res, next) => {
+  try {
+    const {
+      first_name,
+      last_name,
+      email,
+      phone,
+      amount_choice,
+      other_amount,
+      frequency,
+      designation,
+      note,
+      anonymous,
+      updates,
+    } = req.body;
+
+    // Basic required field checks
+    if (!first_name || !last_name || !email || !phone) {
+      return res.status(400).render("donations", {
+        error_message: "First name, last name, email, and phone are required.",
+      });
+    }
+
+    // 1. Figure out the actual donation amount
+    let donationAmount = 0;
+
+    const other = Number(other_amount);
+    const preset = Number(amount_choice);
+
+    if (!isNaN(other) && other > 0) {
+      donationAmount = other;
+    } else if (!isNaN(preset) && preset > 0) {
+      donationAmount = preset;
+    }
+
+    const isAnonymous = !!anonymous;
+     const ANONYMOUS_PARTICIPANT_ID = 1182;
+
+
+
+     
+    if (!donationAmount || donationAmount <= 0) {
+      return res.status(400).render("donations", {
+        error_message: "Please choose or enter a valid donation amount.",
+      });
+    }
+
+    // 2. Look up participant by email
+    let participant = await knex("participant")
+      .where({ participantemail: email })
+      .first();
+
+    let participantId;
+    let newTotalDonations;
+
+    if (isAnonymous) {
+      // Anonymous - donations tied to the anonymous participant row
+      participantIdForDonation = ANONYMOUS_PARTICIPANT_ID;
+      participantIdForTotals = ANONYMOUS_PARTICIPANT_ID;
+
+      // Update totaldonations on the anonymous row
+      const anon = await knex("participant")
+        .where({ participantid: ANONYMOUS_PARTICIPANT_ID })
+        .first();
+
+      const currentTotalAnon = anon && anon.totaldonations
+        ? Number(anon.totaldonations)
+        : 0;
+
+      const newTotalAnon = currentTotalAnon + donationAmount;
+
+      await knex("participant")
+        .where({ participantid: ANONYMOUS_PARTICIPANT_ID })
+        .update({
+          totaldonations: newTotalAnon,
+        });
+
+      // Notice: we are not creating/updating a personal participant row
+      // for the donor when they choose to be anonymous.
+    }
+
+    if (!participant) {
+      // New participant, phone required here
+      const [inserted] = await knex("participant")
+        .insert({
+          participantfirstname: cap(first_name),
+          participantlastname: cap(last_name),
+          participantemail: email,
+          participantphone: phone,               // now required
+          participantrole: "participant",
+          totaldonations: donationAmount,
+        })
+        .returning(["participantid", "totaldonations"]);
+
+      participantId = inserted.participantid;
+      newTotalDonations = inserted.totaldonations;
+    } else {
+      participantId = participant.participantid;
+      const currentTotal = Number(participant.totaldonations) || 0;
+      newTotalDonations = currentTotal + donationAmount;
+
+      await knex("participant")
+        .where({ participantid: participantId })
+        .update({
+          totaldonations: newTotalDonations,
+          // Optionally refresh phone if they changed it:
+          participantphone: phone,
+        });
+    }
+
+    // 4. Calculate donationnumber
+    const countRow = await knex("donation")
+      .where({ participantid: participantId })
+      .count("* as count")
+      .first();
+
+    const previousCount = Number(countRow.count) || 0;
+    const donationNumber = previousCount + 1;
+
+    // 5. Insert into donations
+    await knex("donation").insert({
+      participantid: participantId,
+      donationnumber: donationNumber,
+      donationamount: donationAmount,
+      donationdate: new Date(),
+      isanonymous: isAnonymous
+
+    });
+
+    res.redirect("/donations/thank-you");
+  } catch (err) {
+    console.error("Donation error:", err);
+    next(err);
+  }
+});
+
+app.get("/donations/thank-you", (req, res) => { 
+    res.render("donationThankYou");
+});
+
+
+
+// GET /donations
+app.get('/donations/view', async (req, res) => {
+  try {
+    // RBAC here if you want
+    // if (!req.user || !req.user.isadmin) return res.status(403).render('403');
+
+    const pageSize = 25;
+    const currentPage = Number(req.query.page) > 0 ? Number(req.query.page) : 1;
+
+    const {
+      participantSearch,
+      eventSearch,
+      minAmount,
+      maxAmount
+    } = req.query;
+
+    // Base query with Participant + PrimaryKey + Event + EventDefinition
+    const baseQuery = knex('donation as d')
+      .leftJoin('participant as p', 'd.participantid', 'p.participantid')
+      .leftJoin('primarykey as pk', 'd.donationid', 'pk.donationid')
+      .leftJoin('event as ev', 'pk.eventid', 'ev.eventid')
+      .leftJoin('eventdefinition as ed', 'ev.eventdefid', 'ed.eventdefid');
+
+    const applyFilters = (q) => {
+      if (participantSearch && participantSearch.trim() !== '') {
+        const term = participantSearch.trim();
+        q.where(function () {
+          this.whereILike('p.participantfirstname', `%${term}%`)
+            .orWhereILike('p.participantlastname', `%${term}%`)
+            .orWhereILike('p.participantemail', `%${term}%`);
+        });
+      }
+
+      if (eventSearch && eventSearch.trim() !== '') {
+        q.whereILike('ed.eventname', `%${eventSearch.trim()}%`);
+      }
+
+      if (minAmount && minAmount !== '') {
+        q.where('d.donationamount', '>=', Number(minAmount));
+      }
+
+      if (maxAmount && maxAmount !== '') {
+        q.where('d.donationamount', '<=', Number(maxAmount));
+      }
+    };
+
+    // Count query
+    const countQuery = baseQuery.clone();
+    applyFilters(countQuery);
+
+    const countResult = await countQuery.countDistinct({ total: 'd.donationid' });
+    const totalRows = Number(countResult[0].total || 0);
+    const totalPages = totalRows === 0 ? 1 : Math.ceil(totalRows / pageSize);
+
+    const safePage =
+      currentPage > totalPages ? totalPages : currentPage < 1 ? 1 : currentPage;
+
+    // Data query
+    const dataQuery = baseQuery.clone();
+    applyFilters(dataQuery);
+
+    const donations = await dataQuery
+      .select(
+        'd.donationid',
+        'd.donationnumber',
+        'd.donationamount',
+        'd.donationdate',
+        'p.participantemail',
+        'ed.eventname as eventname',
+        knex.raw(
+          "coalesce(p.participantfirstname, '') || " +
+          "case when p.participantfirstname is not null and p.participantlastname is not null then ' ' else '' end || " +
+          "coalesce(p.participantlastname, '') as participantname"
+        )
+      )
+      .orderBy('d.donationdate', 'desc')
+      .limit(pageSize)
+      .offset((safePage - 1) * pageSize);
+
+    res.render('viewDonations', {
+      donations,
+      participantSearch: participantSearch || '',
+      eventSearch: eventSearch || '',
+      minAmount: minAmount || '',
+      maxAmount: maxAmount || '',
+      currentPage: safePage,
+      totalPages
+    });
+  } catch (err) {
+    console.error('Error loading donations:', err);
+    res.status(500).send('Error loading donations');
   }
 });
 
@@ -350,11 +703,7 @@ app.get("/users", (req, res) => {
 });
 
 app.get("/", (req, res) => {
-    if (req.session.isLoggedIn) {
-        res.render("landing");
-    } else {
-        res.redirect("/login");
-    }
+    res.render("landing");
 });
 
 // This creates attributes in the session object to keep track of user and if they logged in
@@ -429,60 +778,132 @@ app.get("/milestones", (req, res) => {
         return res.render("login", { error_message: "" });
     }
 
-    const limit = 100; // Number of items per page
+    const limit = 100;
     const currentPage = parseInt(req.query.page) || 1;
     const offset = (currentPage - 1) * limit;
 
+    // --- Search Parameters ---
+    const { search_name, search_milestone, date } = req.query;
+
     let totalMilestones = 0;
 
-    knex('milestone')
+    // Base query setup for COUNT and DATA queries
+    const createBaseQuery = () => {
+        return knex
+            .select(
+                'milestone.*',
+                'participant.participantfirstname',
+                'participant.participantlastname',
+                'participant.participantemail'
+            )
+            .from("milestone")
+            .innerJoin(
+                'participant',
+                'milestone.participantid',
+                'participant.participantid'
+            );
+    };
+    
+    // Function to apply filtering logic to the query builder
+    const applyFilters = (queryBuilder) => {
+        
+        // Use a single top-level WHERE clause to contain all filters
+        queryBuilder.where(function() {
+            const builder = this; // Alias for the Knex query builder
+            let firstCondition = true; // Flag to manage the initial WHERE/AND
+
+            // --- 1. Participant Name Filter (OR logic for first/last name) ---
+            if (search_name) {
+                const wildCardSearch = `%${search_name.toLowerCase()}%`;
+                
+                // Nest the OR block inside a WHERE
+                builder.where(function() {
+                    this.whereRaw('LOWER(participant.participantfirstname) LIKE ?', [wildCardSearch])
+                        .orWhereRaw('LOWER(participant.participantlastname) LIKE ?', [wildCardSearch]);
+                });
+                firstCondition = false;
+            }
+
+            // --- 2. Milestone Title Filter (AND condition) ---
+            if (search_milestone) {
+                const wildCardSearch = `%${search_milestone.toLowerCase()}%`;
+                
+                if (firstCondition) {
+                    builder.whereRaw('LOWER(milestonetitle) LIKE ?', [wildCardSearch]);
+                    firstCondition = false;
+                } else {
+                    // Use AND if a previous condition (like search_name) was set
+                    builder.andWhereRaw('LOWER(milestonetitle) LIKE ?', [wildCardSearch]);
+                }
+            }
+
+            // --- 3. Date Filter (To Date, AND condition) ---
+            if (date) {
+                if (firstCondition) {
+                    builder.where('milestonedate', '<=', date);
+                } else {
+                    // Use AND if any previous condition was set
+                    builder.andWhere('milestonedate', '<=', date);
+                }
+            }
+        });
+        
+        return queryBuilder;
+    };
+
+
+    // Step 1: Count the total number of records that match the search filter
+    let countQuery = knex('milestone')
         .innerJoin(
             'participant', 
             'milestone.participantid', 
             'participant.participantid'
-        )
-        .count('* as count')
-        .then(result => {
-            totalMilestones = parseInt(result[0].count);
-            
-            return knex
-                .select(
-                    'milestone.*',
-                    'participant.participantfirstname', 
-                    'participant.participantlastname',
-                    'participant.participantemail'
-                )
-                .from("milestone")
-                .innerJoin(
-                    'participant', 
-                    'milestone.participantid', 
-                    'participant.participantid'
-                )
-                
-                .limit(limit)
-                .offset(offset);
-        })
-        .then(milestones => {
-            console.log(`Successfully retrieved ${milestones.length} milestones for page ${currentPage}`);
-            
-            // Calculate total pages needed
-            const totalPages = Math.ceil(totalMilestones / limit);
-            
-            res.render("milestone/milestones", {
-                milestone: milestones,
-                currentPage: currentPage,
-                totalPages: totalPages,
-            });
-        })
-        .catch((err) => {
-            console.error("Database query error:", err.message);
-            res.render("milestone/milestones", {
-                milestone: [],
-                currentPage: 1, 
-                totalPages: 1,
-                error_message: `Database error: ${err.message}. Please check if the 'milestone' table exists.`
-            });
+        );
+    
+    // Apply filters to the base query
+    countQuery = applyFilters(countQuery);
+
+    // Execute count query
+    countQuery.count('* as count')
+    .then(result => {
+        totalMilestones = parseInt(result[0].count);
+        
+        // Step 2: Build the main data query
+        let dataQuery = createBaseQuery();
+
+        // Apply the exact same search filters to the data query
+        dataQuery = applyFilters(dataQuery);
+
+        // Apply pagination limits to the filtered results
+        return dataQuery
+            .limit(limit)
+            .offset(offset);
+    })
+    .then(milestones => {
+        console.log(`Successfully retrieved ${milestones.length} milestones for page ${currentPage}. Total filtered: ${totalMilestones}`);
+        
+        const totalPages = Math.ceil(totalMilestones / limit);
+        
+        // Render the view, passing back the search terms for sticky fields
+        res.render("milestone/milestones", {
+            milestone: milestones,
+            currentPage: currentPage,
+            totalPages: totalPages,
+            // Pass search terms back to the view
+            search_name,
+            search_milestone,
+            date
         });
+    })
+    .catch((err) => {
+        console.error("Database query error:", err.message);
+        res.render("milestone/milestones", {
+            milestone: [],
+            currentPage: 1, 
+            totalPages: 1,
+            error_message: `Database error: ${err.message}.`
+        });
+    });
 });
 
 // Add Milestone Post Route
@@ -548,7 +969,7 @@ app.post("/addmilestone", (req, res) => {
                 console.error("Error in add Milestone process:", err.message);
             }
 
-            res.status(500).render("addmilestone", { 
+            res.status(500).render("milestone/addmilestone", { 
                  message: { type: "error", text: errorMessage }
             });
         });
@@ -1035,6 +1456,445 @@ app.post('/register', async (req, res) => {
     }
 });
 
-app.listen(port, () => {
-    console.log("The server is listening");
+app.post("/deleteUser/:id", (req, res) => {
+    knex("users").where("id", req.params.id).del().then(users => {
+        res.redirect("/users");
+    }).catch(err => {
+        console.log(err);
+        res.status(500).json({err});
+    })
 });
+app.get("/editUser/:id", (req, res) => {
+    const userId = req.params.id;
+    knex("users")
+        .where({ id: userId })
+        .first()
+        .then((user) => {
+            if (!user) {
+                return res.status(404).render("displayUsers", {
+                    users: [],
+                    error_message: "User not found."
+                });
+            }
+            res.render("editUser", { user });
+        })
+        .catch((err) => {
+            console.error("Error fetching user for edit:", err.message);
+            res.status(500).render("displayUsers", {
+                users: [],
+                error_message: "Unable to load user for editing."
+            });
+        });
+});
+
+app.post("/editUser/:id", upload.single("profileImage"), (req, res) => {
+    const userId = req.params.id;
+    const { username, password, existingImage } = req.body;
+    if (!username || !password) {
+        return knex("users")
+            .where({ id: userId })
+            .first()
+            .then((user) => {
+                if (!user) {
+                    return res.status(404).render("displayUsers", {
+                        users: [],
+                        error_message: "User not found."
+                    });
+                }
+                res.status(400).render("editUser", {
+                    user,
+                    error_message: "Username and password are required."
+                });
+            })
+            .catch((err) => {
+                console.error("Error fetching user:", err.message);
+                res.status(500).render("displayUsers", {
+                    users: [],
+                    error_message: "Unable to load user for editing."
+                });
+            });
+    }
+    const profileImagePath = req.file ? `/images/uploads/${req.file.filename}` : existingImage || null;
+    const updatedUser = {
+        username,
+        password,
+        profile_image: profileImagePath
+    };
+    knex("users")
+        .where({ id: userId })
+        .update(updatedUser)
+        .then((rowsUpdated) => {
+            if (rowsUpdated === 0) {
+                return res.status(404).render("displayUsers", {
+                    users: [],
+                    error_message: "User not found."
+                });
+            }
+            res.redirect("/users");
+        })
+        .catch((err) => {
+            console.error("Error updating user:", err.message);
+            knex("users")
+                .where({ id: userId })
+                .first()
+                .then((user) => {
+                    if (!user) {
+                        return res.status(404).render("displayUsers", {
+                            users: [],
+                            error_message: "User not found."
+                        });
+                    }
+                    res.status(500).render("editUser", {
+                        user,
+                        error_message: "Unable to update user. Please try again."
+                    });
+                })
+                .catch((fetchErr) => {
+                    console.error("Error fetching user after update failure:", fetchErr.message);
+                    res.status(500).render("displayUsers", {
+                        users: [],
+                        error_message: "Unable to update user."
+                    });
+                });
+        });
+});
+
+app.get("/displayHobbies/:userId", (req, res) => {
+    const userId = req.params.userId;
+    knex("users")
+        .where({ id: userId })
+        .first()
+        .then((user) => {
+            knex("hobbies")
+                .where({ user_id: userId })
+                .orderBy("id")
+                .then((hobbies) => {
+                    res.render("displayHobbies", {
+                        user,
+                        hobbies,
+                        error_message: "",
+                        success_message: ""
+                    });
+                })
+            });
+});
+
+// -----------------------------------------------------
+//  EVENT SYSTEM ROUTES (PUBLIC + MANAGER)
+// -----------------------------------------------------
+
+// Middleware: Only allow managers
+function requireManager(req, res, next) {
+    if (!req.session.user) return res.status(403).render("403");
+
+    const role = req.session.user.role.toLowerCase().trim();
+
+    if (role === "manager" || role === "m") {
+        return next();
+    }
+
+    return res.status(403).render("403");
+}
+
+// -----------------------------------------------------
+// PUBLIC: Show next upcoming event
+// -----------------------------------------------------
+app.get("/eventspublic", async (req, res) => {
+    try {
+        const nextEvent = await knex("event")
+            .join("eventdefinition", "event.eventdefid", "eventdefinition.eventdefid")
+            .select(
+                "event.eventid",
+                "event.eventdatetimestart",
+                "event.eventlocation",
+                "eventdefinition.eventname",
+                "eventdefinition.eventdescription"
+            )
+            .orderBy("event.eventdatetimestart", "asc")
+            .first();
+
+        res.render("eventspublic", { nextEvent });
+    } catch (err) {
+        console.error("Error loading public event list:", err);
+        res.render("eventspublic", { nextEvent: null });
+    }
+});
+
+// -----------------------------------------------------
+// PUBLIC: Event Details Page
+// -----------------------------------------------------
+app.get("/events/detail/:id", async (req, res) => {
+    try {
+        const event = await knex("event")
+            .join("eventdefinition", "event.eventdefid", "eventdefinition.eventdefid")
+            .select(
+                "event.*",
+                "eventdefinition.eventname",
+                "eventdefinition.eventdescription",
+                "eventdefinition.eventtype",
+                "eventdefinition.eventrecurrencepattern"
+            )
+            .where("event.eventid", req.params.id)
+            .first();
+
+        if (!event) return res.status(404).render("404");
+
+        res.render("eventdetail", { event });
+    } catch (err) {
+        console.error("Error loading event detail:", err);
+        res.status(500).render("404");
+    }
+});
+
+// -----------------------------------------------------
+// PUBLIC: RSVP Form Page
+// -----------------------------------------------------
+app.get("/events/rsvp/:id", async (req, res) => {
+    try {
+        const event = await knex("event")
+            .join("eventdefinition", "event.eventdefid", "eventdefinition.eventdefid")
+            .select(
+                "event.eventid",
+                "event.eventdatetimestart",
+                "event.eventlocation",
+                "eventdefinition.eventname"
+            )
+            .where("event.eventid", req.params.id)
+            .first();
+
+        if (!event) return res.status(404).render("404");
+
+        res.render("eventrsvp", { event });
+    } catch (err) {
+        console.error("Error loading RSVP page:", err);
+        res.status(500).render("404");
+    }
+});
+
+// -----------------------------------------------------
+// PUBLIC: Submit RSVP (placeholder)
+// -----------------------------------------------------
+app.post("/events/rsvp/:id", async (req, res) => {
+    try {
+        // TODO: Insert RSVP row into "eventrsvp" table later
+        res.render("rsvpsuccess");
+    } catch (err) {
+        console.error("Error submitting RSVP:", err);
+        res.status(500).render("404");
+    }
+});
+
+// -----------------------------------------------------
+// ADD EVENT FOR A SPECIFIC DAY (from calendar modal)
+// MUST COME BEFORE ANY /events/:eventdefid ROUTES
+// -----------------------------------------------------
+app.post("/events/:eventdefid/day/:date/add", requireManager, async (req, res) => {
+    const { eventdefid, date } = req.params;
+
+    try {
+        const startDateTime = `${date}T${req.body.starttime}:00`;
+        const endDateTime = `${date}T${req.body.endtime}:00`;
+
+        await knex("event").insert({
+            eventdefid: eventdefid,
+            eventdatetimestart: startDateTime,
+            eventdatetimeend: endDateTime,
+            eventlocation: req.body.eventlocation,
+            eventcapacity: req.body.eventcapacity
+        });
+
+        res.redirect(`/events/${eventdefid}`);
+    } catch (err) {
+        console.error("Error adding event on selected date:", err);
+        res.status(500).render("404");
+    }
+});
+
+// -----------------------------------------------------
+// ADD EVENT (MANUAL ADD EVENT FORM)
+// -----------------------------------------------------
+
+// Show Add Event Form
+app.get("/events/add", requireManager, (req, res) => {
+    res.render("events/addevent", { error_message: "" });
+});
+
+// Submit Add Event
+app.post("/events/add", requireManager, async (req, res) => {
+    try {
+        const [def] = await knex("eventdefinition")
+            .insert({
+                eventname: req.body.eventname,
+                eventdescription: req.body.eventdescription,
+                eventtype: req.body.eventtype,
+                eventrecurrencepattern: req.body.eventrecurrencepattern
+            })
+            .returning("eventdefid");
+
+        await knex("event").insert({
+            eventdefid: def.eventdefid,
+            eventdatetimestart: req.body.eventdatetimestart,
+            eventdatetimeend: req.body.eventdatetimeend,
+            eventlocation: req.body.eventlocation,
+            eventcapacity: req.body.eventcapacity
+        });
+
+        res.redirect("/events");
+    } catch (err) {
+        console.error("Error adding event:", err);
+        res.render("events/addevent", { error_message: "Error adding event." });
+    }
+});
+
+// -----------------------------------------------------
+// EVENT LIST (UNIQUE EVENT TYPES)
+// -----------------------------------------------------
+app.get("/events", requireManager, async (req, res) => {
+    try {
+        const eventDefs = await knex("eventdefinition")
+            .select("eventdefid", "eventname", "eventdescription")
+            .orderBy("eventname");
+
+        res.render("events/eventlist", { eventDefs });
+    } catch (err) {
+        console.error("Error loading event definitions:", err);
+        res.render("events/eventlist", { eventDefs: [] });
+    }
+});
+
+// -----------------------------------------------------
+// EVENT DETAILS FOR A SPECIFIC DAY
+// -----------------------------------------------------
+app.get("/events/:eventdefid/day/:date", requireManager, async (req, res) => {
+    const { eventdefid, date } = req.params;
+
+    let events = await knex("event")
+        .join("eventdefinition", "event.eventdefid", "eventdefinition.eventdefid")
+        .select("event.*", "eventdefinition.eventname", "eventdefinition.eventdescription")
+        .where("event.eventdefid", eventdefid)
+        .whereRaw("DATE(eventdatetimestart AT TIME ZONE 'UTC' AT TIME ZONE 'America/Denver') = ?", [date]);
+
+    const dateFormatted = new Date(date).toLocaleDateString("en-US", {
+        month: "short", day: "numeric", year: "numeric"
+    });
+
+    events = events.map(ev => ({
+        ...ev,
+        startTimeFormatted: new Date(ev.eventdatetimestart).toLocaleTimeString([], {
+            hour: "numeric", minute: "2-digit"
+        }),
+        endTimeFormatted: new Date(ev.eventdatetimeend).toLocaleTimeString([], {
+            hour: "numeric", minute: "2-digit"
+        })
+    }));
+
+    res.render("events/eventdetails", { events, dateFormatted });
+});
+
+// -----------------------------------------------------
+// EVENT CALENDAR PAGE
+// -----------------------------------------------------
+app.get("/events/:eventdefid", requireManager, async (req, res) => {
+    try {
+        const eventDef = await knex("eventdefinition")
+            .where("eventdefid", req.params.eventdefid)
+            .first();
+
+        const events = await knex("event")
+            .where("eventdefid", req.params.eventdefid)
+            .select("eventid", "eventdatetimestart");
+
+        console.log("EVENTDEFID:", req.params.eventdefid);
+        console.log("RAW EVENTS:", events);
+        events.forEach(ev => console.log(" - eventdatetimestart:", ev.eventdatetimestart));
+
+        const datesAvailable = events.map(ev => {
+            const d = new Date(ev.eventdatetimestart);
+            const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+            return local.toISOString().split("T")[0];
+        });
+
+        res.render("events/eventcalendar", { eventDef, datesAvailable });
+    } catch (err) {
+        console.error("Error loading calendar:", err);
+        res.status(500).render("404");
+    }
+});
+
+// -----------------------------------------------------
+// EDIT EVENT
+// -----------------------------------------------------
+app.get("/events/edit/:id", requireManager, async (req, res) => {
+    try {
+        const event = await knex("event")
+            .join("eventdefinition", "event.eventdefid", "eventdefinition.eventdefid")
+            .select(
+                "event.*",
+                "eventdefinition.eventname",
+                "eventdefinition.eventdescription",
+                "eventdefinition.eventtype",
+                "eventdefinition.eventrecurrencepattern"
+            )
+            .where("event.eventid", req.params.id)
+            .first();
+
+        res.render("events/editevent", { event });
+    } catch (err) {
+        console.error("Error loading edit event:", err);
+        res.status(500).render("404");
+    }
+});
+
+// Submit edit
+app.post("/events/edit/:id", requireManager, async (req, res) => {
+    try {
+        const event = await knex("event")
+            .where("eventid", req.params.id)
+            .first();
+
+        await knex("eventdefinition")
+            .where("eventdefid", event.eventdefid)
+            .update({
+                eventname: req.body.eventname,
+                eventdescription: req.body.eventdescription,
+                eventtype: req.body.eventtype,
+                eventrecurrencepattern: req.body.eventrecurrencepattern
+            });
+
+        await knex("event")
+            .where("eventid", req.params.id)
+            .update({
+                eventdatetimestart: req.body.eventdatetimestart,
+                eventdatetimeend: req.body.eventdatetimeend,
+                eventlocation: req.body.eventlocation,
+                eventcapacity: req.body.eventcapacity
+            });
+
+        res.redirect("/events");
+    } catch (err) {
+        console.error("Error updating event:", err);
+        res.status(500).render("404");
+    }
+});
+
+// -----------------------------------------------------
+// DELETE EVENT
+// -----------------------------------------------------
+app.post("/events/delete/:id", requireManager, async (req, res) => {
+    try {
+        await knex("event")
+            .where("eventid", req.params.id)
+            .del();
+
+        res.redirect("/events");
+    } catch (err) {
+        console.error("Error deleting event:", err);
+        res.status(500).render("404");
+    }
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+});
+

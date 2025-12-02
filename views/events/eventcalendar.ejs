@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title><%= eventDef.eventname %> | Calendar</title>
+
+<style>
+    :root {
+        --er-blue:     #99B7C6;
+        --er-lavender: #978EC4;
+        --er-cream:    #F9F5EA;
+        --er-blush:    #FFD8D1;
+        --er-pink:     #F9AFB1;
+        --er-sage:     #9AB59D;
+        --er-charcoal: #3A3F3B;
+        --er-peach:    #F4B092;
+        --er-rose:     #CE325B;
+    }
+
+    * {
+        box-sizing: border-box;
+        font-family: "Montserrat", system-ui, sans-serif;
+    }
+
+    body {
+        margin: 0;
+        background: var(--er-cream);
+        color: var(--er-charcoal);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    /* PAGE TITLE */
+    .page-title {
+        font-family: "DM Serif Display", serif;
+        font-size: 2.3rem;
+        text-align: center;
+        margin: 2rem 0 0.5rem;
+        letter-spacing: 0.04em;
+    }
+
+    .page-subtitle {
+        color: rgba(58,63,59,0.65);
+        font-size: 0.95rem;
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+
+    /* MAIN CALENDAR WRAPPER */
+    .calendar-wrapper {
+        width: 90%;
+        max-width: 1200px;
+        background: #ffffff;
+        padding: 2rem;
+        border-radius: 1.5rem;
+        border-top: 6px solid var(--er-pink);
+        box-shadow: 0 14px 40px rgba(0,0,0,0.08);
+        margin-bottom: 3rem;
+    }
+
+    /* HEADER NAVIGATION */
+    .calendar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: "DM Serif Display", serif;
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .nav-btn {
+        background: var(--er-pink);
+        border: none;
+        padding: 0.6rem 1.2rem;
+        border-radius: 999px;
+        color: #fff;
+        font-weight: 600;
+        letter-spacing: 0.07em;
+        cursor: pointer;
+        box-shadow: 0 10px 24px rgba(249, 175, 177, 0.3);
+        transition: all 0.18s ease;
+    }
+
+    .nav-btn:hover {
+        background: var(--er-rose);
+        transform: translateY(-1px);
+    }
+
+    /* CALENDAR GRID */
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 12px;
+        text-align: center;
+    }
+
+    .day-name {
+        font-weight: 700;
+        color: rgba(58,63,59,0.7);
+        padding-bottom: 0.6rem;
+        letter-spacing: 0.04em;
+        font-size: 0.85rem;
+    }
+
+    .calendar-day {
+        padding: 1rem;
+        border-radius: 1rem;
+        font-size: 1rem;
+        transition: 0.18s ease;
+        font-weight: 600;
+    }
+
+    /* ACTIVE DATE (EVENT EXISTS) */
+    .active {
+        background: var(--er-blue);
+        color: #fff;
+        text-decoration: none;
+        display: block;
+        box-shadow: 0 8px 20px rgba(153,183,198,0.3);
+    }
+
+    .active:hover {
+        background: var(--er-lavender);
+        transform: translateY(-2px);
+    }
+
+    /* DISABLED DATE (NO EVENT YET) */
+    .disabled {
+        background: #f0f0f0;
+        color: #aaa;
+        text-decoration: line-through;
+        cursor: pointer;
+        transition: 0.18s ease;
+    }
+
+    .disabled:hover {
+        background: var(--er-blush);
+        color: var(--er-charcoal);
+        text-decoration: none;
+        transform: translateY(-2px);
+    }
+
+    /* ================= MODAL ================= */
+    #addEventModal {
+        display: none;
+        position: fixed;
+        top:0; left:0; right:0; bottom:0;
+        background: rgba(0,0,0,0.45);
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    .modal-box {
+        background: #ffffff;
+        padding: 2rem;
+        border-radius: 1.3rem;
+        width: 380px;
+        box-shadow: 0 14px 40px rgba(0,0,0,0.15);
+        border-top: 6px solid var(--er-pink);
+    }
+
+    .modal-box h2 {
+        font-family: "DM Serif Display", serif;
+        margin-top: 0;
+        letter-spacing: 0.03em;
+        margin-bottom: 1.2rem;
+    }
+
+    .modal-box input {
+        width: 100%;
+        padding: 0.7rem;
+        border: 1px solid var(--er-blush);
+        border-radius: 0.75rem;
+        margin: 0.3rem 0 1rem;
+        font-size: 1rem;
+        background: var(--er-cream);
+    }
+
+    .btn-primary {
+        background: var(--er-pink);
+        color: #fff;
+        padding: 0.8rem 1.4rem;
+        border-radius: 999px;
+        font-weight: 700;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 10px 24px rgba(249,175,177,0.25);
+        transition: all 0.18s ease;
+    }
+
+    .btn-primary:hover {
+        background: var(--er-rose);
+        transform: translateY(-1px);
+    }
+
+    .btn-cancel {
+        background: #ccc;
+        padding: 0.8rem 1.4rem;
+        border-radius: 999px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        margin-left: 10px;
+    }
+
+</style>
+
+</head>
+<body>
+
+<%- include('../navbar.ejs') %>
+
+<h1 class="page-title"><%= eventDef.eventname %> — Select a Date</h1>
+
+<div class="calendar-wrapper">
+
+    <div class="calendar-header">
+        <button class="nav-btn" onclick="prevMonth()">&lt;</button>
+        <div id="monthLabel"></div>
+        <button class="nav-btn" onclick="nextMonth()">&gt;</button>
+    </div>
+
+    <div class="calendar-grid">
+        <div class="day-name">S</div>
+        <div class="day-name">M</div>
+        <div class="day-name">T</div>
+        <div class="day-name">W</div>
+        <div class="day-name">T</div>
+        <div class="day-name">F</div>
+        <div class="day-name">S</div>
+    </div>
+
+    <div id="calendarGrid" class="calendar-grid"></div>
+
+</div>
+
+<!-- ADD EVENT MODAL -->
+<div id="addEventModal">
+    <div class="modal-box">
+
+        <h2 style="margin-top:0;">
+            Add Event on <span id="selectedDate"></span>
+        </h2>
+
+        <form id="addEventForm" method="POST">
+            <label>Start Time</label>
+            <input type="time" name="starttime" required>
+            <br><br>
+
+            <label>End Time</label>
+            <input type="time" name="endtime" required>
+            <br><br>
+
+            <label>Location</label>
+            <input type="text" name="eventlocation" required>
+            <br><br>
+
+            <label>Capacity</label>
+            <input type="number" name="eventcapacity" required>
+            <br><br>
+
+            <button type="submit"
+                    style="background:#9bbccc; color:white; padding:10px 20px; border-radius:10px;">
+                Add Event
+            </button>
+
+            <button type="button"
+                    onclick="closeAddEventModal()"
+                    style="margin-left:10px; background:#ccc; padding:10px 20px; border-radius:10px;">
+                Cancel
+            </button>
+        </form>
+
+    </div>
+</div>
+
+<!-- FULL JAVASCRIPT -->
+<script>
+    const availableDates = <%- JSON.stringify(datesAvailable) %>;
+
+    let currentMonth = new Date().getMonth();
+    let currentYear = new Date().getFullYear();
+
+    function renderCalendar() {
+        const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+        document.getElementById("monthLabel").innerText =
+            new Date(currentYear, currentMonth).toLocaleString("en-US", {
+                month: "long",
+                year: "numeric"
+            });
+
+        let grid = "";
+
+        for (let i = 0; i < firstDay; i++) {
+            grid += "<div></div>";
+        }
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const formatted = new Date(currentYear, currentMonth, day)
+                .toISOString()
+                .split("T")[0];
+
+            if (availableDates.includes(formatted)) {
+                grid +=
+                    '<a class="calendar-day active" href="/events/<%= eventDef.eventdefid %>/day/' +
+                    formatted +
+                    '">' +
+                    day +
+                    '</a>';
+            } else {
+                grid +=
+                    `<div class="calendar-day disabled" onclick="openAddEventModal('${formatted}')">
+                        ${day}
+                     </div>`;
+            }
+        }
+
+        document.getElementById("calendarGrid").innerHTML = grid;
+    }
+
+    function nextMonth() {
+        currentMonth++;
+        if (currentMonth > 11) {
+            currentMonth = 0;
+            currentYear++;
+        }
+        renderCalendar();
+    }
+
+    function prevMonth() {
+        currentMonth--;
+        if (currentMonth < 0) {
+            currentMonth = 11;
+            currentYear--;
+        }
+        renderCalendar();
+    }
+
+    function openAddEventModal(date) {
+        document.getElementById("selectedDate").innerText = date;
+        document.getElementById("addEventForm").action =
+            "/events/<%= eventDef.eventdefid %>/day/" + date + "/add";
+        document.getElementById("addEventModal").style.display = "flex";
+    }
+
+    function closeAddEventModal() {
+        document.getElementById("addEventModal").style.display = "none";
+    }
+
+    window.onload = renderCalendar;
+</script>
+
+</body>
+</html>

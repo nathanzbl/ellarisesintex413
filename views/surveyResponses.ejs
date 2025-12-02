@@ -243,6 +243,99 @@ td:nth-child(8) {  /* score columns */
   text-align: center;
   white-space: nowrap; /* header and score will not wrap */
 }
+.edit-button {
+  display: inline-block;
+  margin-right: 0.25rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 120, 180, 0.35);
+  background: rgba(0, 120, 180, 0.08);
+  color: #005a99;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+}
+
+.edit-button:hover {
+  background: rgba(0, 120, 180, 0.16);
+}
+.pagination {
+  margin-top: 0.9rem;
+  padding: 0.7rem 0.9rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  background: rgba(255,255,255,0.7);
+  border: 1px solid rgba(0,0,0,0.05);
+  border-radius: 0.75rem;
+  white-space: nowrap;  /* keep everything on one line */
+  overflow-x: auto;     /* if it ever overflows on tiny screens, scroll instead of wrapping */
+}
+
+
+/* On wider screens: info on the left, controls get the rest */
+@media (min-width: 720px) {
+  .pagination {
+    grid-template-columns: auto 1fr;
+    column-gap: 0.75rem;
+    align-items: center;
+  }
+}
+
+.pagination-info {
+  color: rgba(0,0,0,0.6);
+}
+
+.pagination-controls {
+  display: flex;
+  justify-content: center;   /* center the whole strip */
+  align-items: center;
+  flex-wrap: wrap;           /* only wraps if screen is actually too narrow */
+  gap: 0.4rem;
+}
+
+
+.page-link,
+.page-link-disabled {
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.1);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.page-link {
+  background: #fff;
+  color: var(--er-charcoal);
+}
+
+.page-link:hover {
+  background: var(--er-blue);
+  color: #fff;
+}
+
+.page-link-disabled {
+  background: rgba(0,0,0,0.03);
+  color: rgba(0,0,0,0.35);
+  cursor: default;
+}
+
+.page-current {
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  background: var(--er-lavender);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
 
 
   </style>
@@ -345,22 +438,121 @@ td:nth-child(8) {  /* score columns */
                   }) %>
                 </td>
                 <td>
+  <a
+    href="/survey/<%= s.surveyid %>/edit?<%=
+      selectedEventDefId ? 'eventDefId=' + encodeURIComponent(selectedEventDefId) : ''
+    %>"
+    class="edit-button"
+  >
+    Edit
+  </a>
+
   <form
     action="/survey/<%= s.surveyid %>/delete?<%=
-      selectedEventDefId ? 'eventId=' + encodeURIComponent(selectedEventDefId) : ''
+      selectedEventDefId ? 'eventDefId=' + encodeURIComponent(selectedEventDefId) : ''
     %>"
     method="POST"
+    style="display:inline"
     onsubmit="return confirm('Delete this survey response?');"
   >
     <button type="submit" class="delete-button">Delete</button>
   </form>
 </td>
 
+
               </tr>
             <% }); %>
           </tbody>
         </table>
       </div>
+
+            <div class="pagination">
+       
+
+        <div class="pagination-controls">
+          <% 
+            const hasPrev = pagination.currentPage > 1;
+            const hasNext = pagination.currentPage < pagination.totalPages;
+
+            function pageUrl(page) {
+              return (
+                "/survey/responses?page=" + page +
+                (selectedEventDefId
+                  ? "&eventDefId=" + encodeURIComponent(selectedEventDefId)
+                  : ""
+                )
+              );
+            }
+          %>
+
+          <!-- Prev button -->
+          <% if (hasPrev) { %>
+            <a class="page-link" href="<%= pageUrl(pagination.currentPage - 1) %>">
+              Prev
+            </a>
+          <% } else { %>
+            <span class="page-link-disabled">Prev</span>
+          <% } %>
+
+          <!-- First page + leading ellipsis (jump back a window) -->
+          <% if (pagination.windowStart > 1) { %>
+            <a
+              class="page-link <%= pagination.currentPage === 1 ? 'page-current' : '' %>"
+              href="<%= pageUrl(1) %>"
+            >
+              1
+            </a>
+
+            <% if (pagination.windowStart > 2) { %>
+              <a
+                class="page-link"
+                href="<%= pageUrl(Math.max(1, pagination.windowStart - pagination.windowSize)) %>"
+              >
+                ...
+              </a>
+            <% } %>
+          <% } %>
+
+          <!-- Window of pages (e.g., 1–10, 11–20, etc.) -->
+          <% for (let p = pagination.windowStart; p <= pagination.windowEnd; p++) { %>
+            <a
+              class="page-link <%= p === pagination.currentPage ? 'page-current' : '' %>"
+              href="<%= pageUrl(p) %>"
+            >
+              <%= p %>
+            </a>
+          <% } %>
+
+          <!-- Trailing ellipsis + last page (jump forward a window) -->
+          <% if (pagination.windowEnd < pagination.totalPages) { %>
+            <% if (pagination.windowEnd < pagination.totalPages - 1) { %>
+              <a
+                class="page-link"
+                href="<%= pageUrl(Math.min(pagination.totalPages, pagination.windowEnd + pagination.windowSize)) %>"
+              >
+                ...
+              </a>
+            <% } %>
+
+            <a
+              class="page-link <%= pagination.currentPage === pagination.totalPages ? 'page-current' : '' %>"
+              href="<%= pageUrl(pagination.totalPages) %>"
+            >
+              <%= pagination.totalPages %>
+            </a>
+          <% } %>
+
+          <!-- Next button -->
+          <% if (hasNext) { %>
+            <a class="page-link" href="<%= pageUrl(pagination.currentPage + 1) %>">
+              Next
+            </a>
+          <% } else { %>
+            <span class="page-link-disabled">Next</span>
+          <% } %>
+        </div>
+      </div>
+
     <% } else { %>
       <p class="empty-state">
         No survey responses found for the current filter.
