@@ -70,10 +70,122 @@
         margin-bottom: 2rem;
     }
     
+    /* --- NEW CONTROL BAR STYLING --- */
+    .controls-bar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end; 
+        justify-content: space-between; 
+        margin-bottom: 1.5rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid var(--er-blush);
+    }
+    
+    .search-form {
+        display: flex;
+        flex-grow: 1; 
+        flex-wrap: wrap; 
+        gap: 1rem;
+        align-items: flex-end;
+        max-width: 100%; 
+    }
+
+    .add-button-wrapper {
+        text-align: center;
+        flex-shrink: 0; 
+        padding-bottom: 0.7rem; /* Vertically align with Search button */
+    }
+    /* --- END NEW CONTROL BAR STYLING --- */
+
+
+    /* --- SEARCH AND FILTER STYLES --- */
+    .search-group {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        min-width: 120px; /* Adjusted slightly smaller for 4 fields */
+    }
+    
+    .search-label {
+        font-size: 0.75rem;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        color: var(--er-charcoal);
+        text-transform: uppercase;
+    }
+    
+    .search-input {
+        padding: 0.7rem 1rem;
+        border: 2px solid var(--er-blush);
+        border-radius: 0.75rem;
+        font-family: inherit;
+        font-size: 0.9rem;
+        outline: none;
+        transition: border-color 0.2s ease;
+    }
+    
+    .search-input:focus {
+        border-color: var(--er-pink);
+    }
+
+    .btn-search, .btn-clear {
+        padding: 0.7rem 1rem;
+        border-radius: 999px;
+        border: none;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.18s ease;
+        width: 100%; 
+    }
+
+    .btn-search {
+        background: var(--er-sage);
+        color: white;
+        box-shadow: 0 5px 12px rgba(154, 181, 157, 0.4);
+    }
+    .btn-search:hover {
+        background: rgba(154, 181, 157, 0.8);
+    }
+    
+    .btn-clear {
+        background: var(--er-blush);
+        color: var(--er-charcoal);
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+        margin-top: 0; 
+    }
+    .btn-clear:hover {
+        background: var(--er-pink);
+        color: white;
+    }
+
+    .search-actions-wrapper {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: space-between;
+        width: 100%; 
+    }
+    .search-actions-wrapper .btn-search,
+    .search-actions-wrapper .btn-clear {
+         width: auto; 
+    }
+    /* --- END SEARCH STYLES --- */
+
+
+    /* --- TABLE STYLES --- */
+    .table-responsive {
+        overflow-x: auto; 
+        width: 100%;
+        margin-top: 1.5rem;
+    }
+
     .table-custom {
         width: 100%;
+        min-width: 800px; /* Increased min-width for more columns */
         border-collapse: collapse;
-        margin-top: 1.5rem;
     }
 
     .table-custom thead tr {
@@ -89,26 +201,29 @@
         padding: 1rem 1.25rem;
         text-align: left;
         border-bottom: 1px solid var(--er-blush);
+        white-space: nowrap; /* Prevents wrapping in small cells */
     }
 
     .table-custom tbody tr:nth-child(even) {
         background-color: var(--er-cream);
     }
+    /* --- END TABLE STYLES --- */
+
 
     .btn-action {
-        padding: 0.85rem 1rem;
+        padding: 0.7rem 1rem;
         border-radius: 999px;
         border: none;
         font-weight: 600;
-        font-size: 0.95rem;
+        font-size: 0.85rem;
         letter-spacing: 0.08em;
         text-transform: uppercase;
         cursor: pointer;
         box-shadow: 0 10px 24px rgba(206, 50, 91, 0.25);
         transition: all 0.18s ease;
         text-decoration: none;
-        display: inline-block;
-        text-align: center;
+        display: inline-block; 
+
     }
 
     .btn-add-milestone {
@@ -244,40 +359,122 @@
             </p>
         </div>
         
+        <h1 class="milestone-title">All Participants</h1>
+        <p class="milestone-subtitle">A view of all participants registered in the system. (Displaying <%= participants.length %> records per page)</p>
+        <div class="add-button-wrapper">
+                <a href="/addParticipant" class="btn-action btn-add-milestone">Add Participant</a>
+            </div>
+        <!-- START TOP CONTROLS BAR: SEARCH FILTERS AND ADD BUTTON -->
+        <div class="controls-bar">
+            
+            <!-- Search Form (Takes up majority of the space) -->
+            <form method="GET" action="/participants" class="search-form">
+                
+                <!-- Search by Name -->
+                <div class="search-group" style="flex-basis: 20%;">
+                    <label for="search_name" class="search-label">Name</label>
+                    <input 
+                        type="text" 
+                        name="search_name" 
+                        id="search_name" 
+                        class="search-input" 
+                        placeholder="First or Last Name"
+                        value="<%= typeof search_name !== 'undefined' ? search_name : '' %>"
+                    >
+                </div>
+
+                <!-- Search by ID -->
+                <div class="search-group" style="flex-basis: 10%;">
+                    <label for="search_id" class="search-label">ID</label>
+                    <input 
+                        type="text" 
+                        name="search_id" 
+                        id="search_id" 
+                        class="search-input" 
+                        placeholder="ID"
+                        value="<%= typeof search_id !== 'undefined' ? search_id : '' %>"
+                    >
+                </div>
+                
+                <!-- Search by Email -->
+                <div class="search-group" style="flex-basis: 25%;">
+                    <label for="search_email" class="search-label">Email</label>
+                    <input 
+                        type="text" 
+                        name="search_email" 
+                        id="search_email" 
+                        class="search-input" 
+                        placeholder="email@example.org"
+                        value="<%= typeof search_email !== 'undefined' ? search_email : '' %>"
+                    >
+                </div>
+
+                <!-- Search by Phone -->
+                <div class="search-group" style="flex-basis: 15%;">
+                    <label for="search_phone" class="search-label">Phone</label>
+                    <input 
+                        type="text" 
+                        name="search_phone" 
+                        id="search_phone" 
+                        class="search-input" 
+                        placeholder="Contact Number"
+                        value="<%= typeof search_phone !== 'undefined' ? search_phone : '' %>"
+                    >
+                </div>
+
+
+                <div class="search-group" style="flex-basis: 15%; flex-grow: 0;">
+                    
+                    <!-- Wrapper for horizontal alignment of Search/Clear buttons -->
+                    <div class="search-actions-wrapper"> 
+                        <button type="submit" class="btn-search">Search</button>
+                        
+                        <% 
+                            // Define isSearching based on the new parameters
+                            const isSearching = (typeof search_name !== 'undefined' && search_name) || 
+                                                (typeof search_id !== 'undefined' && search_id) ||
+                                                (typeof search_email !== 'undefined' && search_email) ||
+                                                (typeof search_phone !== 'undefined' && search_phone);
+                        %>
+
+                        <% if (isSearching) { %>
+                            <a href="/participants" class="btn-clear">Clear</a>
+                        <% } %>
+                    </div>
+                </div>
+            </form>
+            
+        </div>
+        <!-- END TOP CONTROLS BAR -->
+
+
         <% 
-            // Display Pagination at the Top (if multiple pages exist)
-            if (typeof totalPages !== 'undefined' && totalPages > 1) { 
+        // Display Pagination at the Top (if multiple pages exist)
+        if (typeof totalPages !== 'undefined' && totalPages > 1) { 
         %>
             <div class="pagination-container">
                 <ul class="custom-pagination">
                     
                     <!-- Previous Button -->
                     <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
-                        <a class="page-link" href="/participants?page=<%= currentPage - 1 %>">Previous</a>
+                        <a class="page-link" href="/participants?page=<%= currentPage - 1 %><%= isSearching ? '&search_name=' + (search_name || '') + '&search_id=' + (search_id || '') + '&search_email=' + (search_email || '') + '&search_phone=' + (search_phone || '') : '' %>">Previous</a>
                     </li>
 
                     <!-- Page Number Links -->
                     <% for(let i = 1; i <= totalPages; i++) { %>
                         <li class="page-item <%= currentPage === i ? 'active' : '' %>">
-                            <a class="page-link" href="/participants?page=<%= i %>"><%= i %></a>
+                            <a class="page-link" href="/participants?page=<%= i %><%= isSearching ? '&search_name=' + (search_name || '') + '&search_id=' + (search_id || '') + '&search_email=' + (search_email || '') + '&search_phone=' + (search_phone || '') : '' %>"><%= i %></a>
                         </li>
                     <% } %>
 
                     <!-- Next Button -->
                     <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
-                        <a class="page-link" href="/participants?page=<%= currentPage + 1 %>">Next</a>
+                        <a class="page-link" href="/participants?page=<%= currentPage + 1 %><%= isSearching ? '&search_name=' + (search_name || '') + '&search_id=' + (search_id || '') + '&search_email=' + (search_email || '') + '&search_phone=' + (search_phone || '') : '' %>">Next</a>
                     </li>
                 </ul>
             </div>
         <% } %>
         
-        <h1 class="milestone-title">All Participants</h1>
-        <p class="milestone-subtitle">A view of all participants registered in the system. (Displaying <%= participants.length %> records per page)</p>
-
-        <div class="text-center-wrapper">
-            <a href="/addParticipant" class="btn-action btn-add-milestone">Add Participant</a>
-        </div>
-            
         <% 
         // Display error messages passed from the route or session
         const displayError = (message && message.type === 'error' && message.text) || (typeof error_message !== 'undefined' && error_message); 
@@ -290,76 +487,56 @@
         <% // Check if the participants array exists and is not empty
         if (typeof participants === 'undefined' || participants.length === 0) { %>
             <div class="message-alert message-warning">
-                No participants found in the database.
+                No participants found <%= isSearching ? 'matching your criteria.' : 'in the database.' %>
                 <% if (displayError) { %>
                     <p style="font-size: 0.9em; margin-top: 10px;">If an error is displayed above, please check server logs for database connection/query issues.</p>
                 <% } %>
             </div>
         <% } else { %>
-            <table class="table-custom">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>First Name</th>
-                        <th>Last Name</th>
-                        <th>Email</th>
-                        <th>Contact Number</th>
-                        <th colspan="2">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% for (let iCount = 0; iCount < participants.length; iCount++) { %>
+            <!-- Added table-responsive for mobile view -->
+            <div class="table-responsive">
+                <table class="table-custom">
+                    <thead>
                         <tr>
-                            <td><%= participants[iCount].participantid %></td>
-                            
-                            <td><%= participants[iCount].participantfirstname %></td>
-                            <td><%= participants[iCount].participantlastname %></td>
-                            <td><%= participants[iCount].participantemail %></td>
-                            <td><%= participants[iCount].participantphone || 'N/A' %></td>
-                            
-                            <td>
-                                <a href="/editParticipant/<%= participants[iCount].participantid %>" class="btn-small btn-delete-milestone">Edit</a>
-                            </td>
-                            <td>
-                                <!-- Form for deletion, uses SweetAlert2 for confirmation -->
-                                <form 
-                                    action="/deleteParticipant/<%= participants[iCount].participantid %>" 
-                                    method="post"
-                                    onsubmit="return confirmDeletion(event);" 
-                                >
-                                    <input type="submit" name="Delete" value="Delete" class="btn-small btn-delete-milestone"/>
-                                </form>
-                            </td>
+                            <th>ID</th>
+                            <th>First Name</th>
+                            <th>Last Name</th>
+                            <th>Email</th>
+                            <th>Contact Number</th>
+                            <th colspan="2">Actions</th>
                         </tr>
-                    <% } %>
-                </tbody>
-            </table>
-        <% } %>
-
-        <% // Display Pagination at the Bottom (if multiple pages exist)
-        if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
-            <div class="pagination-container">
-                <ul class="custom-pagination">
-                    
-                    <!-- Previous Button -->
-                    <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
-                        <a class="page-link" href="/participants?page=<%= currentPage - 1 %>">Previous</a>
-                    </li>
-
-                    <!-- Page Number Links -->
-                    <% for(let i = 1; i <= totalPages; i++) { %>
-                        <li class="page-item <%= currentPage === i ? 'active' : '' %>">
-                            <a class="page-link" href="/participants?page=<%= i %>"><%= i %></a>
-                        </li>
-                    <% } %>
-
-                    <!-- Next Button -->
-                    <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
-                        <a class="page-link" href="/participants?page=<%= currentPage + 1 %>">Next</a>
-                    </li>
-                </ul>
+                    </thead>
+                    <tbody>
+                        <% for (let iCount = 0; iCount < participants.length; iCount++) { %>
+                            <tr>
+                                <td><%= participants[iCount].participantid %></td>
+                                
+                                <td><%= participants[iCount].participantfirstname %></td>
+                                <td><%= participants[iCount].participantlastname %></td>
+                                <td><%= participants[iCount].participantemail %></td>
+                                <td><%= participants[iCount].participantphone || 'N/A' %></td>
+                                
+                                <td>
+                                    <a href="/editParticipant/<%= participants[iCount].participantid %>" class="btn-small btn-delete-milestone">Edit</a>
+                                </td>
+                                <td>
+                                    <!-- Form for deletion, uses SweetAlert2 for confirmation -->
+                                    <form 
+                                        action="/deleteParticipant/<%= participants[iCount].participantid %>" 
+                                        method="post"
+                                        onsubmit="return confirmDeletion(event);" 
+                                    >
+                                        <input type="submit" name="Delete" value="Delete" class="btn-small btn-delete-milestone"/>
+                                    </form>
+                                </td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
             </div>
         <% } %>
+
+        <% // The bottom pagination is removed as requested, keeping only the top one %>
         
     </div>
 </div>
@@ -386,3 +563,5 @@ const form = event.currentTarget;
         }
     });
 }
+</script>
+</html>
