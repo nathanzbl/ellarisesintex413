@@ -253,7 +253,10 @@ app.get("/survey/thankyou", (req, res) => {
 }); 
 
 app.get("/survey/responses", async (req, res) => {
-  const { eventDefId } = req.query; // query param from the dropdown
+  const { eventDefId } = req.query;
+  const pageSize = 25;
+  const rawPage = parseInt(req.query.page, 10) || 1;
+  const page = Math.max(rawPage, 1);
 
   try {
     // Event definitions for the dropdown
@@ -261,11 +264,30 @@ app.get("/survey/responses", async (req, res) => {
       .select("eventdefid", "eventname")
       .orderBy("eventdefid", "asc");
 
-    // Base query: survey -> event -> eventdefinition -> participant
-    let query = knex("survey as s")
+    // Base query
+    let baseQuery = knex("survey as s")
       .join("event as e", "e.eventid", "s.eventid")
       .join("eventdefinition as ed", "ed.eventdefid", "e.eventdefid")
-      .join("participant as p", "s.participantid", "p.participantid")
+      .join("participant as p", "s.participantid", "p.participantid");
+
+    if (eventDefId && eventDefId !== "") {
+      baseQuery = baseQuery.where("e.eventdefid", Number(eventDefId));
+    }
+
+    // Count
+    const countRow = await baseQuery
+      .clone()
+      .countDistinct({ total: "s.surveyid" })
+      .first();
+
+    const totalCount = parseInt(countRow.total, 10) || 0;
+    const totalPages = totalCount === 0 ? 1 : Math.ceil(totalCount / pageSize);
+    const currentPage = Math.min(page, totalPages);
+    const offset = (currentPage - 1) * pageSize;
+
+    // Data
+    const surveys = await baseQuery
+      .clone()
       .select(
         "s.surveyid",
         "s.eventid",
@@ -280,25 +302,41 @@ app.get("/survey/responses", async (req, res) => {
         "s.surveycomments",
         "s.surveysubmissiondate"
       )
-      .orderBy("s.surveysubmissiondate", "desc");
+      .orderBy("s.surveysubmissiondate", "desc")
+      .limit(pageSize)
+      .offset(offset);
 
-    // Filter by event definition if one was selected
-    if (eventDefId && eventDefId !== "") {
-      query = query.where("e.eventdefid", Number(eventDefId));
-    }
+    const firstItem = totalCount === 0 ? 0 : offset + 1;
+    const lastItem = offset + surveys.length;
 
-    const surveys = await query;
+    // Sliding window: 10 pages at a time
+    const windowSize = 10;
+    const windowStart =
+      Math.floor((currentPage - 1) / windowSize) * windowSize + 1;
+    const windowEnd = Math.min(windowStart + windowSize - 1, totalPages);
 
     res.render("surveyResponses", {
       surveys,
       events,
-      selectedEventDefId: eventDefId || ""
+      selectedEventDefId: eventDefId || "",
+      pagination: {
+        currentPage,
+        totalPages,
+        totalCount,
+        pageSize,
+        firstItem,
+        lastItem,
+        windowSize,
+        windowStart,
+        windowEnd
+      }
     });
   } catch (err) {
     console.error("Survey responses error:", err);
     res.status(500).send("Error loading survey responses");
   }
 });
+
 
 
 
@@ -547,6 +585,101 @@ app.get("/donations/thank-you", (req, res) => {
     res.render("donationThankYou");
 });
 
+
+
+// GET /donations
+app.get('/donations/view', async (req, res) => {
+  try {
+    // RBAC here if you want
+    // if (!req.user || !req.user.isadmin) return res.status(403).render('403');
+
+    const pageSize = 25;
+    const currentPage = Number(req.query.page) > 0 ? Number(req.query.page) : 1;
+
+    const {
+      participantSearch,
+      eventSearch,
+      minAmount,
+      maxAmount
+    } = req.query;
+
+    // Base query with Participant + PrimaryKey + Event + EventDefinition
+    const baseQuery = knex('donation as d')
+      .leftJoin('participant as p', 'd.participantid', 'p.participantid')
+      .leftJoin('primarykey as pk', 'd.donationid', 'pk.donationid')
+      .leftJoin('event as ev', 'pk.eventid', 'ev.eventid')
+      .leftJoin('eventdefinition as ed', 'ev.eventdefid', 'ed.eventdefid');
+
+    const applyFilters = (q) => {
+      if (participantSearch && participantSearch.trim() !== '') {
+        const term = participantSearch.trim();
+        q.where(function () {
+          this.whereILike('p.participantfirstname', `%${term}%`)
+            .orWhereILike('p.participantlastname', `%${term}%`)
+            .orWhereILike('p.participantemail', `%${term}%`);
+        });
+      }
+
+      if (eventSearch && eventSearch.trim() !== '') {
+        q.whereILike('ed.eventname', `%${eventSearch.trim()}%`);
+      }
+
+      if (minAmount && minAmount !== '') {
+        q.where('d.donationamount', '>=', Number(minAmount));
+      }
+
+      if (maxAmount && maxAmount !== '') {
+        q.where('d.donationamount', '<=', Number(maxAmount));
+      }
+    };
+
+    // Count query
+    const countQuery = baseQuery.clone();
+    applyFilters(countQuery);
+
+    const countResult = await countQuery.countDistinct({ total: 'd.donationid' });
+    const totalRows = Number(countResult[0].total || 0);
+    const totalPages = totalRows === 0 ? 1 : Math.ceil(totalRows / pageSize);
+
+    const safePage =
+      currentPage > totalPages ? totalPages : currentPage < 1 ? 1 : currentPage;
+
+    // Data query
+    const dataQuery = baseQuery.clone();
+    applyFilters(dataQuery);
+
+    const donations = await dataQuery
+      .select(
+        'd.donationid',
+        'd.donationnumber',
+        'd.donationamount',
+        'd.donationdate',
+        'p.participantemail',
+        'ed.eventname as eventname',
+        knex.raw(
+          "coalesce(p.participantfirstname, '') || " +
+          "case when p.participantfirstname is not null and p.participantlastname is not null then ' ' else '' end || " +
+          "coalesce(p.participantlastname, '') as participantname"
+        )
+      )
+      .orderBy('d.donationdate', 'desc')
+      .limit(pageSize)
+      .offset((safePage - 1) * pageSize);
+
+    res.render('viewDonations', {
+      donations,
+      participantSearch: participantSearch || '',
+      eventSearch: eventSearch || '',
+      minAmount: minAmount || '',
+      maxAmount: maxAmount || '',
+      currentPage: safePage,
+      totalPages
+    });
+  } catch (err) {
+    console.error('Error loading donations:', err);
+    res.status(500).send('Error loading donations');
+  }
+});
 
 app.get("/users", (req, res) => {
     // Check if user is logged in
