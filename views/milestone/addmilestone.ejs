@@ -187,9 +187,9 @@
             <h1 class="milestone-title">Add Milestone</h1>
             <p class="milestone-subtitle">Enter all required data for the new milestone.</p>
             
-            <% if (typeof message !== 'undefined' && message) { %>
-                <div class="message-alert" style="color: <%= message.type === 'success' ? 'var(--er-sage)' : 'var(--er-rose)' %>; background: <%= message.type === 'success' ? 'rgba(154, 181, 157, 0.1)' : 'rgba(206, 50, 91, 0.07)' %>;">
-                    <%= message.text %>
+            <% if (error_message) { %>
+                <div class="message-alert" style="color: var(--er-rose); background: rgba(206, 50, 91, 0.07);">
+                     <%= error_message %>
                 </div>
             <% } %>
 
@@ -228,6 +228,5 @@
             
         </div>
     </div>
-    <%- include('../common/footer.ejs') %>
 </body>
 </html>

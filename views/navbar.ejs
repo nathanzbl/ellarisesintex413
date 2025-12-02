@@ -1,30 +1,21 @@
 <style>
-:root {
-        --er-blue:     #99B7C6;
+    :root {
+        --er-blue: #99B7C6;
         --er-lavender: #978EC4;
-        --er-cream:    #F9F5EA;
-        --er-blush:    #FFD8D1;
+        --er-cream: #F9F5EA;
+        --er-blush: #FFD8D1;
         --pink: #FFD7D1;
-        --er-pink:     #F9AFB1;
-        --er-sage:     #9AB59D;
+        --er-pink: #F9AFB1;
+        --er-sage: #9AB59D;
         --er-charcoal: #3A3F3B;
-        --er-peach:    #F4B092;
-        --er-rose:     #CE325B;
+        --er-peach: #F4B092;
+        --er-rose: #CE325B;
     }
 
-    * { box-sizing: border-box; }
-
-    body {
-        margin: 0;
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 0;
-        font-family: "Montserrat", system-ui, sans-serif;
-        background: var(--er-cream);
-        color: var(--er-charcoal);
-    }
+    /* * {
+        box-sizing: border-box;
+    } */
+    /* NOTE: Removing 'body' styles and 'html' styles here as they should be in the main page */
 
     nav {
         width: 100%;
@@ -33,6 +24,8 @@
         position: sticky;
         top: 0;
         z-index: 100;
+        font-family: "Montserrat", system-ui, sans-serif; /* Added font family for consistency */
+        color: var(--er-charcoal); /* Added color for consistency */
     }
 
     .nav-container {
@@ -40,7 +33,7 @@
         margin: 0 auto;
         display: flex;
         align-items: center;
-        justify-content: space-between;
+        justify-content: space-between; 
         padding: 0.75rem 1.5rem;
     }
 
@@ -52,6 +45,7 @@
     .nav-links {
         display: flex;
         gap: 1rem;
+        margin-right: 1.5rem; 
     }
 
     .nav-links a {
@@ -63,6 +57,7 @@
         padding: 0.5rem 0.75rem;
         border-radius: 0.5rem;
         transition: all 0.2s ease;
+        white-space: nowrap;
     }
 
     .nav-links a:hover {
@@ -70,21 +65,98 @@
         color: var(--er-rose);
     }
 
+    /* --- Styles for Language Toggle --- */
+    .lang-toggle {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.25rem;
+        background: var(--er-cream);
+        border-radius: 0.75rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .lang-button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1rem; 
+        font-weight: 600; 
+        padding: 0.5rem 0.6rem; 
+        border-radius: 0.5rem;
+        transition: transform 0.1s, background-color 0.2s;
+        outline: none;
+        letter-spacing: 0.05em;
+        white-space: nowrap; 
+        font-family: "Montserrat", system-ui, sans-serif; /* Set font here too */
+    }
+
+    .lang-button:hover {
+        transform: scale(1.05);
+        background-color: var(--er-blush);
+    }
+    
+    /* Style for the currently active language */
+    .lang-button.active {
+        background-color: var(--er-rose);
+        color: var(--er-cream);
+        box-shadow: 0 0 0 2px var(--er-rose);
+        transform: scale(1.0);
+    }
+
+    .lang-button.active:hover {
+        background-color: var(--er-rose);
+    }
+
+    /* Responsive adjustments remain the same */
+    @media (max-width: 768px) {
+        .nav-container {
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .nav-links {
+            justify-content: center; 
+            flex-wrap: wrap;
+            margin-right: 0;
+            width: 100%;
+        }
+
+        .lang-toggle {
+            position: absolute;
+            top: 0.75rem;
+            right: 1.5rem;
+        }
+    }
+    
+    /* REMOVED: Main content styles, they should be in the main page files */
+
 </style>
 
 <nav>
     <div class="nav-container">
         <a href="/">
-            <img src="images/EllaRisesLogo.png.avif" alt="Ella Rises" class="nav-logo">
+            <img src="/images/EllaRisesLogo.png.avif" width="75px">
         </a>
+        
         <div class="nav-links">
-            <a href="/">Home</a>
-            <a href="/donations">Donations</a>
-            <a href="/events">Events</a>
-            <a href="/milestones">Milestones</a>
-            <a href="/participants">Participants</a>
-            <a href="/surveys">Surveys</a>
-            <a href="/login">Login</a>
+            <a href="/" data-i18n-key="nav_home">Home</a>
+            <a href="/donations" data-i18n-key="nav_donations">Donations</a>
+            <a href="/events" data-i18n-key="nav_events">Events</a>
+            <a href="/milestones" data-i18n-key="nav_milestones">Milestones</a>
+            <a href="/participants" data-i18n-key="nav_participants">Participants</a>
+            <a href="/surveys" data-i18n-key="nav_surveys">Surveys</a>
+            <a href="/login" data-i18n-key="nav_login">Login</a>
+        </div>
+
+        <div class="lang-toggle">
+            <button id="lang-en" class="lang-button" data-lang="en" data-i18n-key="lang_en_label" aria-label="Switch to English">
+                🇺🇸 ENG
+            </button>
+            <button id="lang-es" class="lang-button" data-lang="es" data-i18n-key="lang_es_label" aria-label="Cambiar a Español">
+                🇪🇸 SPA
+            </button>
         </div>
     </div>
 </nav>
