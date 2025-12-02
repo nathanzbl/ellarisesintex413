@@ -243,6 +243,24 @@ td:nth-child(8) {  /* score columns */
   text-align: center;
   white-space: nowrap; /* header and score will not wrap */
 }
+.edit-button {
+  display: inline-block;
+  margin-right: 0.25rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 120, 180, 0.35);
+  background: rgba(0, 120, 180, 0.08);
+  color: #005a99;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+}
+
+.edit-button:hover {
+  background: rgba(0, 120, 180, 0.16);
+}
 
 
   </style>
@@ -345,16 +363,27 @@ td:nth-child(8) {  /* score columns */
                   }) %>
                 </td>
                 <td>
+  <a
+    href="/survey/<%= s.surveyid %>/edit?<%=
+      selectedEventDefId ? 'eventDefId=' + encodeURIComponent(selectedEventDefId) : ''
+    %>"
+    class="edit-button"
+  >
+    Edit
+  </a>
+
   <form
     action="/survey/<%= s.surveyid %>/delete?<%=
-      selectedEventDefId ? 'eventId=' + encodeURIComponent(selectedEventDefId) : ''
+      selectedEventDefId ? 'eventDefId=' + encodeURIComponent(selectedEventDefId) : ''
     %>"
     method="POST"
+    style="display:inline"
     onsubmit="return confirm('Delete this survey response?');"
   >
     <button type="submit" class="delete-button">Delete</button>
   </form>
 </td>
+
 
               </tr>
             <% }); %>
