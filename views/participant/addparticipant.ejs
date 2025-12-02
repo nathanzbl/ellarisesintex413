@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Add Participant | Ella Rises</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:wght@400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Full Ella Rises Color Palette */
+            --er-blue:     #99B7C6;
+            --er-lavender: #978EC4;
+            --er-cream:    #F9F5EA;
+            --er-blush:    #FFD8D1;
+            --er-pink:     #F9AFB1;
+            --er-sage:     #9AB59D;
+            --er-charcoal: #3A3F3B;
+            --er-peach:    #F4B092;
+            --er-rose:     #CE325B;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0;
+            font-family: "Montserrat", system-ui, sans-serif;
+            background: var(--er-cream);
+            color: var(--er-charcoal);
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+            width: 100%;
+        }
+
+        .data-card {
+            max-width: 720px;
+            width: 100%;
+            padding: 2.5rem 2.25rem;
+            border-radius: 1.5rem;
+            background-color: #ffffff;
+            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.08);
+            border-top: 6px solid var(--er-pink);
+        }
+
+        .milestone-title {
+            font-family: "DM Serif Display", serif;
+            font-size: 2rem;
+            text-align: center;
+            letter-spacing: 0.06em;
+            margin: 0 0 0.25rem;
+        }
+
+        .milestone-subtitle {
+            font-size: 0.95rem;
+            text-align: center;
+            color: rgba(58, 63, 59, 0.7);
+            margin-bottom: 2rem;
+        }
+        
+        /* FORM-SPECIFIC STYLES */
+        .mb-3 {
+            margin-bottom: 2rem;
+        }
+
+        .field-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 0.75rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .text-input,
+        .date-input,
+        .select-input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid var(--er-blush);
+            border-radius: 0.75rem;
+            font-family: inherit;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s ease;
+            background: #fff;
+        }
+
+        .text-input:focus,
+        .date-input:focus,
+        .select-input:focus {
+            border-color: var(--er-pink);
+        }
+
+        .text-input::placeholder,
+        .date-input::placeholder {
+            color: rgba(58, 63, 59, 0.5);
+        }
+
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(30%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(50%);
+            cursor: pointer;
+        }
+
+
+        /* BUTTON STYLING */
+        .btn-action {
+            padding: 0.85rem 1rem;
+            border-radius: 999px;
+            border: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 0 10px 24px rgba(206, 50, 91, 0.25);
+            transition: all 0.18s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-save-milestone {
+            background: var(--er-pink);
+            color: #fff;
+        }
+        
+        .btn-save-milestone:hover {
+            background: var(--er-rose);
+            transform: translateY(-1px);
+        }
+
+        .btn-back {
+            background: var(--er-charcoal);
+            color: #fff;
+            margin-left: 1rem;
+        }
+        
+        .btn-back:hover {
+            background: rgba(58, 63, 59, 0.8);
+            transform: translateY(-1px);
+        }
+
+        .message-alert {
+            text-align: center;
+            color: var(--er-rose);
+            background: rgba(206, 50, 91, 0.07);
+            padding: 0.8rem 1.2rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .text-center-wrapper {
+             text-align: center;
+             margin-top: 2rem;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid var(--er-blush);
+            margin: 2rem 0;
+        }
+    </style>
+</head>
+<body>
+    <%- include('../navbar.ejs') %>
+
+    <div class="main-content">
+        <div class="data-card">
+            
+            <h1 class="milestone-title">Add New Participant</h1>
+            <p class="milestone-subtitle">Enter all required data for the new participant.</p>
+            
+            <% if (error_message) { %>
+                <div class="message-alert" style="color: var(--er-rose); background: rgba(206, 50, 91, 0.07);">
+                    <%= error_message %>
+                 </div>
+            <% } %>
+
+            <form action="/addParticipant" method="post">
+
+                <div class="mb-3">
+                    <label for="firstName" class="field-label">First Name:</label>
+                    <input 
+                        type="text" 
+                        class="text-input" 
+                        id="firstName" 
+                        name="firstName" 
+                        placeholder="e.g., Jane" 
+                        required
+                    >
+                </div>
+                
+                <div class="mb-3">
+                    <label for="lastName" class="field-label">Last Name:</label>
+                    <input type="text" class="text-input" id="lastName" name="lastName" placeholder="e.g., Doe" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="email" class="field-label">Email:</label>
+                    <input type="email" class="text-input" id="email" name="email" placeholder="e.g., jane.doe@example.com" required>
+                </div>
+                
+                <hr>
+
+                <div class="text-center-wrapper">
+                    <input type="submit" value="Save Participant" class="btn-action btn-save-milestone">
+                    <a href="/participants" class="btn-action btn-back">Back to Participants</a>
+                </div>
+            
+            </form>
+            
+        </div>
+    </div>
+</body>
+</html>
