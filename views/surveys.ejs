@@ -92,6 +92,49 @@
             color: rgba(58, 63, 59, 0.65);
         }
 
+        .email-input,
+        .date-input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid var(--er-blush);
+            border-radius: 0.75rem;
+            font-family: inherit;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .email-input:focus,
+        .date-input:focus {
+            border-color: var(--er-pink);
+        }
+
+        .email-input::placeholder,
+        .date-input::placeholder {
+            color: rgba(58, 63, 59, 0.5);
+        }
+
+        .event-select {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid var(--er-blush);
+            border-radius: 0.75rem;
+            font-family: inherit;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s ease;
+            background: #fff;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%233A3F3B' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+        }
+
+        .event-select:focus {
+            border-color: var(--er-pink);
+        }
+
         .slider-container {
             position: relative;
             padding: 0 0.5rem;
@@ -159,6 +202,27 @@
             border-radius: 999px;
             min-width: 2.5rem;
             text-align: center;
+        }
+
+        .comments-textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 1rem;
+            border: 2px solid var(--er-blush);
+            border-radius: 0.75rem;
+            font-family: inherit;
+            font-size: 0.9rem;
+            resize: vertical;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .comments-textarea:focus {
+            border-color: var(--er-pink);
+        }
+
+        .comments-textarea::placeholder {
+            color: rgba(58, 63, 59, 0.5);
         }
 
         .btn-primary {
@@ -230,6 +294,39 @@
             <% } %>
 
             <form action="/survey" method="POST">
+                <div class="mb-3">
+                    <div class="field-label">
+                        <span class="label-main">Email Address</span>
+                        <span class="label-hint">Required</span>
+                    </div>
+                    <input type="email" name="SurveyEmail" class="email-input" placeholder="Enter your email address" required>
+                </div>
+
+                <div class="mb-3">
+                    <div class="field-label">
+                        <span class="label-main">Event Attended</span>
+                        <span class="label-hint">Required</span>
+                    </div>
+                    <select name="SurveyEventId" class="event-select" required>
+                        <option value="" disabled selected>Select an event...</option>
+                        <% if (typeof events !== 'undefined' && Array.isArray(events) && events.length > 0) { %>
+                            <% events.forEach(function(evt) { %>
+                                <option value="<%= evt.eventdefid %>"><%= evt.eventdefid %> - <%= evt.eventname %></option>
+                            <% }); %>
+                        <% } else { %>
+                            <option value="" disabled>No events available</option>
+                        <% } %>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <div class="field-label">
+                        <span class="label-main">Event Date</span>
+                        <span class="label-hint">Required</span>
+                    </div>
+                    <input type="date" name="SurveyEventDate" class="date-input" required>
+                </div>
+
                 <% const questions = [
                     { name: 'SurveySatisfactionScore', label: 'Overall Satisfaction', hint: 'How satisfied were you with the event', low: 'Very dissatisfied', high: 'Very satisfied' },
                     { name: 'SurveyUsefulnessScore', label: 'Usefulness', hint: 'How useful was the content for you', low: 'Not useful', high: 'Extremely useful' },
@@ -254,6 +351,14 @@
                         </div>
                     </div>
                 <% }); %>
+
+                <div class="mb-3">
+                    <div class="field-label">
+                        <span class="label-main">Comments</span>
+                        <span class="label-hint">Optional</span>
+                    </div>
+                    <textarea name="SurveyComments" class="comments-textarea" placeholder="Share any additional feedback or suggestions..."></textarea>
+                </div>
 
                 <button type="submit" class="btn-primary">Submit Survey</button>
             </form>
