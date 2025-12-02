@@ -606,60 +606,132 @@ app.get("/milestones", (req, res) => {
         return res.render("login", { error_message: "" });
     }
 
-    const limit = 100; // Number of items per page
+    const limit = 100;
     const currentPage = parseInt(req.query.page) || 1;
     const offset = (currentPage - 1) * limit;
 
+    // --- Search Parameters ---
+    const { search_name, search_milestone, date } = req.query;
+
     let totalMilestones = 0;
 
-    knex('milestone')
+    // Base query setup for COUNT and DATA queries
+    const createBaseQuery = () => {
+        return knex
+            .select(
+                'milestone.*',
+                'participant.participantfirstname',
+                'participant.participantlastname',
+                'participant.participantemail'
+            )
+            .from("milestone")
+            .innerJoin(
+                'participant',
+                'milestone.participantid',
+                'participant.participantid'
+            );
+    };
+    
+    // Function to apply filtering logic to the query builder
+    const applyFilters = (queryBuilder) => {
+        
+        // Use a single top-level WHERE clause to contain all filters
+        queryBuilder.where(function() {
+            const builder = this; // Alias for the Knex query builder
+            let firstCondition = true; // Flag to manage the initial WHERE/AND
+
+            // --- 1. Participant Name Filter (OR logic for first/last name) ---
+            if (search_name) {
+                const wildCardSearch = `%${search_name.toLowerCase()}%`;
+                
+                // Nest the OR block inside a WHERE
+                builder.where(function() {
+                    this.whereRaw('LOWER(participant.participantfirstname) LIKE ?', [wildCardSearch])
+                        .orWhereRaw('LOWER(participant.participantlastname) LIKE ?', [wildCardSearch]);
+                });
+                firstCondition = false;
+            }
+
+            // --- 2. Milestone Title Filter (AND condition) ---
+            if (search_milestone) {
+                const wildCardSearch = `%${search_milestone.toLowerCase()}%`;
+                
+                if (firstCondition) {
+                    builder.whereRaw('LOWER(milestonetitle) LIKE ?', [wildCardSearch]);
+                    firstCondition = false;
+                } else {
+                    // Use AND if a previous condition (like search_name) was set
+                    builder.andWhereRaw('LOWER(milestonetitle) LIKE ?', [wildCardSearch]);
+                }
+            }
+
+            // --- 3. Date Filter (To Date, AND condition) ---
+            if (date) {
+                if (firstCondition) {
+                    builder.where('milestonedate', '<=', date);
+                } else {
+                    // Use AND if any previous condition was set
+                    builder.andWhere('milestonedate', '<=', date);
+                }
+            }
+        });
+        
+        return queryBuilder;
+    };
+
+
+    // Step 1: Count the total number of records that match the search filter
+    let countQuery = knex('milestone')
         .innerJoin(
             'participant', 
             'milestone.participantid', 
             'participant.participantid'
-        )
-        .count('* as count')
-        .then(result => {
-            totalMilestones = parseInt(result[0].count);
-            
-            return knex
-                .select(
-                    'milestone.*',
-                    'participant.participantfirstname', 
-                    'participant.participantlastname',
-                    'participant.participantemail'
-                )
-                .from("milestone")
-                .innerJoin(
-                    'participant', 
-                    'milestone.participantid', 
-                    'participant.participantid'
-                )
-                
-                .limit(limit)
-                .offset(offset);
-        })
-        .then(milestones => {
-            console.log(`Successfully retrieved ${milestones.length} milestones for page ${currentPage}`);
-            
-            // Calculate total pages needed
-            const totalPages = Math.ceil(totalMilestones / limit);
-            
-            res.render("milestone/milestones", {
-                milestone: milestones,
-                currentPage: currentPage,
-                totalPages: totalPages,
-            });
-        })
-        .catch((err) => {
-            console.error("Database query error:", err.message);
-            res.render("milestone/milestones", {
-                milestone: [],
-                currentPage: 1, 
-                totalPages: 1,
-                error_message: `Database error: ${err.message}. Please check if the 'milestone' table exists.`
-            });
+        );
+    
+    // Apply filters to the base query
+    countQuery = applyFilters(countQuery);
+
+    // Execute count query
+    countQuery.count('* as count')
+    .then(result => {
+        totalMilestones = parseInt(result[0].count);
+        
+        // Step 2: Build the main data query
+        let dataQuery = createBaseQuery();
+
+        // Apply the exact same search filters to the data query
+        dataQuery = applyFilters(dataQuery);
+
+        // Apply pagination limits to the filtered results
+        return dataQuery
+            .limit(limit)
+            .offset(offset);
+    })
+    .then(milestones => {
+        console.log(`Successfully retrieved ${milestones.length} milestones for page ${currentPage}. Total filtered: ${totalMilestones}`);
+        
+        const totalPages = Math.ceil(totalMilestones / limit);
+        
+        // Render the view, passing back the search terms for sticky fields
+        res.render("milestone/milestones", {
+            milestone: milestones,
+            currentPage: currentPage,
+            totalPages: totalPages,
+            // Pass search terms back to the view
+            search_name,
+            search_milestone,
+            date
         });
+    })
+    .catch((err) => {
+        console.error("Database query error:", err.message);
+        res.render("milestone/milestones", {
+            milestone: [],
+            currentPage: 1, 
+            totalPages: 1,
+            error_message: `Database error: ${err.message}.`
+        });
+    });
 });
 
 // Add Milestone Post Route
@@ -725,7 +797,7 @@ app.post("/addmilestone", (req, res) => {
                 console.error("Error in add Milestone process:", err.message);
             }
 
-            res.status(500).render("addmilestone", { 
+            res.status(500).render("milestone/addmilestone", { 
                  message: { type: "error", text: errorMessage }
             });
         });

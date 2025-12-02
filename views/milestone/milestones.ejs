@@ -70,6 +70,102 @@
             margin-bottom: 2rem;
         }
         
+        /* --- NEW CONTROL BAR STYLING --- */
+        .controls-bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end; /* Aligns items to the bottom */
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--er-blush);
+        }
+        
+        .search-form {
+            display: flex;
+            flex-grow: 1;
+            flex-wrap: wrap; /* Allows wrapping on mobile */
+            gap: 1rem;
+            align-items: flex-end;
+            /* Ensures the search inputs take available space */
+            max-width: calc(100% - 150px); 
+        }
+
+        .add-button-wrapper {
+            /* Keeps the button aligned to the right */
+            flex-shrink: 0; 
+            margin-left: 1rem; 
+            padding-bottom: 0.7rem; /* Vertically align with Search button */
+        }
+        /* --- END NEW CONTROL BAR STYLING --- */
+
+
+        /* --- SEARCH AND FILTER STYLES --- */
+        .search-group {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            min-width: 150px; /* Ensures fields are usable on small screens */
+        }
+        
+        .search-label {
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--er-charcoal);
+            text-transform: uppercase;
+        }
+        
+        .search-input {
+            padding: 0.7rem 1rem;
+            border: 2px solid var(--er-blush);
+            border-radius: 0.75rem;
+            font-family: inherit;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+        
+        .search-input:focus {
+            border-color: var(--er-pink);
+        }
+
+        .btn-search, .btn-clear {
+            padding: 0.7rem 1rem;
+            border-radius: 999px;
+            border: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.18s ease;
+            width: 100%;
+        }
+
+        .btn-search {
+            background: var(--er-sage);
+            color: white;
+            box-shadow: 0 5px 12px rgba(154, 181, 157, 0.4);
+        }
+        .btn-search:hover {
+            background: rgba(154, 181, 157, 0.8);
+        }
+        
+        .btn-clear {
+            background: var(--er-blush);
+            color: var(--er-charcoal);
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            margin-top: 0.5rem;
+        }
+        .btn-clear:hover {
+            background: var(--er-pink);
+            color: white;
+        }
+        /* --- END SEARCH STYLES --- */
+
+
         .table-custom {
             width: 100%;
             border-collapse: collapse;
@@ -137,15 +233,28 @@
             text-align: center;
         }
 
-        .btn-delete-milestone {
+        .btn-edit-milestone {
             background: var(--er-sage);
             color: #fff;
+            box-shadow: none; /* Removed shadow on small buttons */
         }
         
-        .btn-delete-milestone:hover {
+        .btn-edit-milestone:hover {
             background: var(--er-blue);
             transform: translateY(-1px);
         }
+        
+        .btn-delete-milestone {
+            background: var(--er-rose);
+            color: #fff;
+            box-shadow: none; /* Removed shadow on small buttons */
+        }
+        
+        .btn-delete-milestone:hover {
+            background: var(--er-charcoal);
+            transform: translateY(-1px);
+        }
+
 
         .btn-logout {
             background: var(--er-charcoal);
@@ -235,10 +344,70 @@
             
             <h1 class="milestone-title">Participant Milestones</h1>
             <p class="milestone-subtitle">A view of all milestones recorded in the system.</p>
-            
-            <div class="text-center-wrapper">
-                <a href="/addmilestone" class="btn-action btn-add-milestone">Add Milestone</a>
+
+            <!-- START TOP CONTROLS BAR: SEARCH FILTERS AND ADD BUTTON -->
+            <div class="controls-bar">
+                
+                <!-- Search Form occupies the majority of the space -->
+                <form method="GET" action="/milestones" class="search-form">
+                    
+                    <div class="search-group" style="flex-basis: 25%;">
+                        <label for="search_name" class="search-label">Participant Name</label>
+                        <input 
+                            type="text" 
+                            name="search_name" 
+                            id="search_name" 
+                            class="search-input" 
+                            placeholder="e.g., Jane Doe"
+                            value="<%= typeof search_name !== 'undefined' ? search_name : '' %>"
+                        >
+                    </div>
+
+                    <div class="search-group" style="flex-basis: 25%;">
+                        <label for="search_milestone" class="search-label">Milestone Title</label>
+                        <input 
+                            type="text" 
+                            name="search_milestone" 
+                            id="search_milestone" 
+                            class="search-input" 
+                            placeholder="e.g., Diploma"
+                            value="<%= typeof search_milestone !== 'undefined' ? search_milestone : '' %>"
+                        >
+                    </div>
+                    
+                    <div class="search-group" style="flex-basis: 15%;">
+                        <label for="date" class="search-label">To Date</label>
+                        <input 
+                            type="date" 
+                            name="date" 
+                            id="date" 
+                            class="search-input"
+                            value="<%= typeof date !== 'undefined' ? date : '' %>"
+                        >
+                    </div>
+
+                    <div class="search-group" style="flex-basis: 15%; flex-grow: 0;">
+                        <button type="submit" class="btn-search">Search</button>
+                        
+                        <% 
+                            // Check the three unique variables: search_name, search_milestone, date
+                            const isSearching = (typeof search_name !== 'undefined' && search_name) || 
+                                                (typeof search_milestone !== 'undefined' && search_milestone) ||
+                                                (typeof date !== 'undefined' && date);
+                        %>
+
+                        <% if (isSearching) { %>
+                            <a href="/milestones" class="btn-clear">Clear Filters</a>
+                        <% } %>
+                    </div>
+                </form>
+                
+                <!-- Add Milestone Button aligned to the right -->
+                <div class="add-button-wrapper">
+                    <a href="/addmilestone" class="btn-action btn-add-milestone">Add Milestone</a>
+                </div>
             </div>
+            <!-- END TOP CONTROLS BAR -->
 
             <% if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
                 <div class="pagination-container">
@@ -246,19 +415,22 @@
                         
                         <!-- Previous Button -->
                         <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
-                            <a class="page-link" href="/milestones?page=<%= currentPage - 1 %>">Previous</a>
+                            <!-- Preserve search terms in pagination links -->
+                            <a class="page-link" href="/milestones?page=<%= currentPage - 1 %><%= isSearching ? '&search_name=' + (search_name || '') + '&search_milestone=' + (search_milestone || '') + '&date=' + (date || '') : '' %>">Previous</a>
                         </li>
 
                         <!-- Page Number Links -->
                         <% for(let i = 1; i <= totalPages; i++) { %>
                             <li class="page-item <%= currentPage === i ? 'active' : '' %>">
-                                <a class="page-link" href="/milestones?page=<%= i %>"><%= i %></a>
+                                <!-- Preserve search terms in pagination links -->
+                                <a class="page-link" href="/milestones?page=<%= i %><%= isSearching ? '&search_name=' + (search_name || '') + '&search_milestone=' + (search_milestone || '') + '&date=' + (date || '') : '' %>"><%= i %></a>
                             </li>
                         <% } %>
 
                         <!-- Next Button -->
                         <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
-                            <a class="page-link" href="/milestones?page=<%= currentPage + 1 %>">Next</a>
+                            <!-- Preserve search terms in pagination links -->
+                            <a class="page-link" href="/milestones?page=<%= currentPage + 1 %><%= isSearching ? '&search_name=' + (search_name || '') + '&search_milestone=' + (search_milestone || '') + '&date=' + (date || '') : '' %>">Next</a>
                         </li>
                     </ul>
                 </div>
@@ -272,7 +444,7 @@
 
             <% if (milestone.length === 0) { %>
                 <div class="message-alert message-warning">
-                    No milestones found in the database.
+                    No milestones found <%= isSearching ? 'matching your criteria.' : 'in the database.' %>
                 </div>
             <% } else { %>
                 <table class="table-custom">
@@ -300,8 +472,8 @@
                                     <%= dateValue.toLocaleDateString('en-US', dateOptions) %>
                                 </td>
                                 <td>
-                                    <form action="/editMilestone/<%= milestone[iCount].milestoneid %>" method="post">
-                                        <input type="submit" name="Edit" value="Edit" class="btn-small btn-delete-milestone"/>
+                                    <form action="/editMilestone/<%= milestone[iCount].milestoneid %>" method="get">
+                                        <input type="submit" name="Edit" value="Edit" class="btn-small btn-edit-milestone"/>
                                     </form>
                                 </td>
                                 <td>
@@ -325,19 +497,22 @@
                         
                         <!-- Previous Button -->
                         <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
-                            <a class="page-link" href="/milestones?page=<%= currentPage - 1 %>">Previous</a>
+                            <!-- Preserve search terms in pagination links -->
+                            <a class="page-link" href="/milestones?page=<%= currentPage - 1 %><%= isSearching ? '&search_name=' + (search_name || '') + '&search_milestone=' + (search_milestone || '') + '&date=' + (date || '') : '' %>">Previous</a>
                         </li>
 
                         <!-- Page Number Links -->
                         <% for(let i = 1; i <= totalPages; i++) { %>
                             <li class="page-item <%= currentPage === i ? 'active' : '' %>">
-                                <a class="page-link" href="/milestones?page=<%= i %>"><%= i %></a>
+                                <!-- Preserve search terms in pagination links -->
+                                <a class="page-link" href="/milestones?page=<%= i %><%= isSearching ? '&search_name=' + (search_name || '') + '&search_milestone=' + (search_milestone || '') + '&date=' + (date || '') : '' %>"><%= i %></a>
                             </li>
                         <% } %>
 
                         <!-- Next Button -->
                         <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
-                            <a class="page-link" href="/milestones?page=<%= currentPage + 1 %>">Next</a>
+                            <!-- Preserve search terms in pagination links -->
+                            <a class="page-link" href="/milestones?page=<%= currentPage + 1 %><%= isSearching ? '&search_name=' + (search_name || '') + '&search_milestone=' + (search_milestone || '') + '&date=' + (date || '') : '' %>">Next</a>
                         </li>
                     </ul>
                 </div>
@@ -346,6 +521,7 @@
         </div>
     </div>
     <%- include('../common/footer.ejs') %>
+    
 </body>
 <script>
     function confirmDeletion(event) {
