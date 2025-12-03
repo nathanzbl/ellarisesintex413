@@ -1353,113 +1353,96 @@ app.post("/addParticipant", async (req, res) => {
 });
 
 // GET /editParticipant/:id - Display the Participant Profile/Edit Form
-app.get("/editParticipant/:id", (req, res) => {    
-    if (!req.session.isLoggedIn) {
-        return res.render("login", { error_message: "" });
-    }
+app.get('/editParticipant/:id', async (req, res) => {
     const participantId = req.params.id;
-    const user = req.session.user ? {
-        ...req.session.user,
-        name: req.session.user.username,
-        isManager: req.session.user.role === 'manager'
-    } : { username: 'Guest', role: 'guest' };
-
-    // *** FIX: Use Promise.all to fetch both participant data and milestones ***
-    Promise.all([
-        // 1. Fetch Participant Details
-        knex("participant").where({ participantid: participantId }).first(),
-
-        // 2. NEW MILESTONE QUERY: Query the 'milestone' table directly using the participantId
-        knex("milestone")
+    try {
+        // 1. Fetch Participant Details (Ensure all columns are selected)
+        const participant = await knex('participant')
             .select(
-                "milestonetitle", // Matches the new table schema
-                "milestonedate"   // Matches the new table schema
+                'participantid',
+                'participantfirstname',
+                'participantlastname',
+                'participantemail',
+                'participantphone',   // <--- ADD THIS
+                'participantcity',    // <--- ADD THIS
+                'participantstate',   // <--- ADD THIS
+                'participantzip'      // <--- ADD THIS
+                // ... any other columns you need ...
             )
             .where({ participantid: participantId })
-            .orderBy("milestonedate", "desc") // Sort by date for better viewing
-    ])
-    .then(([participant, milestones]) => { // Destructure results
+            .first();
+
+        // Check if participant was found
         if (!participant) {
-            req.session.message = { type: 'error', text: `Participant with ID ${participantId} not found.` };
-            return res.status(404).redirect("/participants"); 
+            req.session.error_message = 'Participant not found.';
+            return res.redirect('/participants');
         }
-        
-        // Pass the corrected data to the EJS template
-        res.render("participant/editparticipant", { 
-            participant, 
-            milestones, // <-- This array now contains { milestonetitle, milestonedate }
-            user, 
-            error_message: "" 
-        }); 
-    })
-    .catch((err) => {
-        // Log the error so you can see if the Knex query is failing
-        console.error("Error fetching participant and milestones:", err.message); 
-        
-        req.session.message = { type: 'error', text: 'Unable to load participant profile.' };
-        res.status(500).redirect("/participants");
-    });   
+
+        // 2. Fetch Milestones
+        const milestones = await knex('milestone')
+            .select('milestonetitle', knex.raw('TO_CHAR(milestonedate, \'YYYY-MM-DD\') as milestonedate'))
+            .where({ participantid: participantId })
+            .orderBy('milestonedate', 'desc');
+
+        // 3. Render the page
+        res.render('participant/editparticipant', { 
+            participant: participant, 
+            milestones: milestones,
+            error_message: req.session.error_message 
+        });
+        req.session.error_message = null; // Clear session message
+
+    } catch (err) {
+        console.error(err);
+        req.session.error_message = 'Database error when loading participant details.';
+        res.redirect('/participants');
+    }
 });
 
 // POST /editParticipant/:id - Handle form submission for editing (Update Action)
-app.post("/editParticipant/:id", async (req, res) => {
+app.post('/editParticipant/:id', async (req, res) => {
     const participantId = req.params.id;
-    const { firstName, lastName, email } = req.body; 
-    
-    const user = req.session.user ? {
-        ...req.session.user,
-        name: req.session.user.username,
-        isManager: req.session.user.role === 'manager'
-    } : { username: 'Guest', role: 'guest' };
-    
-    // Basic Validation
-    if (!firstName || !lastName || !email) { 
-        // Need to refetch data to re-render the edit form
-        const participant = await knex("participant").where({ participantid: participantId }).first();
-        if (!participant) {
-            req.session.message = { type: 'error', text: `Participant with ID ${participantId} not found.` };
-            return res.status(404).redirect("/participants");
-        }
+    // Destructure all fields from the form submission
+    const { 
+        firstName, 
+        lastName, 
+        email, 
+        phone,    // <--- ADD THIS
+        city,     // <--- ADD THIS
+        state,    // <--- ADD THIS
+        zip       // <--- ADD THIS
+    } = req.body;
 
-        return res.status(400).render("participant/editparticipant", {
-            participant,
-            user,
-            error_message: "All fields are required."
-        });
+    // Basic validation (ensure required fields are present)
+    if (!firstName || !lastName || !email) {
+        req.session.error_message = 'First Name, Last Name, and Email are required.';
+        return res.redirect(`/editParticipant/${participantId}`);
     }
 
-    // Prepare Update Object
-    const updatedParticipant = {
-        participantfirstname: firstName,
-        participantlastname: lastName,
-        participantemail: email
-        // Add other necessary participant fields here
-    };
-    
     try {
-        // Run Update Query
-        const rowsUpdated = await knex("participant")
-            .where({ participantid: participantId }) 
-            .update(updatedParticipant);
+        await knex('participant')
+            .where({ participantid: participantId })
+            .update({
+                participantfirstname: firstName,
+                participantlastname: lastName,
+                participantemail: email,
+                participantphone: phone || null, // Allow null if phone is empty
+                participantcity: city || null,     // Allow null if city is empty
+                participantstate: state || null,   // Allow null if state is empty
+                participantzip: zip || null        // Allow null if zip is empty
+            });
 
-        if (rowsUpdated === 0) {
-            console.warn(`Participant ID ${participantId} not found for update.`);
-        }
-        
-        // Success: Redirect to the list view
-        req.session.message = { type: 'success', text: `Participant ID ${participantId} successfully updated!` };
-        res.redirect("/participants");
+        // Use a success message (optional)
+        req.session.message = { 
+            type: 'success', 
+            text: 'Participant details updated successfully!' 
+        };
+        res.redirect('/participants');
+
     } catch (err) {
-        console.error("Error updating participant:", err.message);
-        
-        // On update failure, refetch the original participant data and display the error
-        const participant = await knex("participant").where({ participantid: participantId }).first();
-
-        res.status(500).render("participant/editparticipant", {
-            participant: participant || {}, // Use empty object if refetch failed
-            user,
-            error_message: "Unable to update participant due to a database error."
-        });
+        console.error(err);
+        req.session.error_message = 'Failed to update participant details due to a database error.';
+        res.redirect(`/editParticipant/${participantId}`);
     }
 });
 
