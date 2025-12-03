@@ -168,14 +168,14 @@ app.get("/surveys", (req, res) => {
     if (req.session.isLoggedIn) {        
         knex.select("eventdefid","eventname").from("eventdefinition")
             .then(events => {
-                res.render("surveys", {
+                res.render("survey/surveys", {
                     events: events,
                     error_message: null
                 });
             })
             .catch((err) => {
                 console.error("Database query error:", err.message);
-                res.render("surveys", {
+                res.render("survey/surveys", {
                     events: [],
                     error_message: `Database error: ${err.message}`
                 });
@@ -262,7 +262,7 @@ app.post("/survey", async (req, res) => {
 });
 
 app.get("/survey/thankyou", (req, res) => {
-    res.render("surveyThankYou");
+    res.render("survey/surveyThankYou");
 }); 
 
 app.get("/survey/responses", async (req, res) => {
@@ -348,7 +348,7 @@ app.get("/survey/responses", async (req, res) => {
       Math.floor((currentPage - 1) / windowSize) * windowSize + 1;
     const windowEnd = Math.min(windowStart + windowSize - 1, totalPages);
 
-    res.render("surveyResponses", {
+    res.render("survey/surveyResponses", {
       surveys,
       events,
       selectedEventDefId: eventDefId || "",
@@ -425,7 +425,7 @@ app.get("/survey/:surveyid/edit", async (req, res) => {
       return res.status(404).send("Survey response not found");
     }
 
-    res.render("surveyEdit", {
+    res.render("survey/surveyEdit", {
       survey,
       eventDefId: eventDefId || ""
     });
@@ -617,7 +617,7 @@ app.post("/donations/add", async (req, res, next) => {
 });
 
 app.get("/donations/thank-you", (req, res) => { 
-    res.render("donationThankYou");
+    res.render("donation/donationThankYou");
 });
 
 
@@ -701,7 +701,7 @@ app.get('/donations/view', async (req, res) => {
       .limit(pageSize)
       .offset((safePage - 1) * pageSize);
 
-    res.render('viewDonations', {
+    res.render('donation/viewDonations', {
       donations,
       participantSearch: participantSearch || '',
       eventSearch: eventSearch || '',
@@ -764,7 +764,7 @@ app.get("/donations/:id/edit", async (req, res, next) => {
 
     donation.donationdate_local = donationdate_local;
 
-    res.render("editDonation", {
+    res.render("donation/editDonation", {
       donation,
       error_message: ""
     });
@@ -952,19 +952,18 @@ app.get('/donations/new', async (req, res) => {
       .orderBy('participantlastname')
       .orderBy('participantfirstname');
 
-    const events = await knex('event as e')
-      .leftJoin('eventdefinition as ed', 'e.eventdefid', 'ed.eventdefid')
-      .select('e.eventid', 'e.eventdate', 'ed.eventname')
-      .orderBy('e.eventdate', 'desc');
+    const events = await knex("eventdefinition")
+      .select("eventdefid", "eventname")
+      .orderBy("eventdefid", "asc");
 
-    res.render('adminDonation', {
+    res.render('donation/adminDonation', {
       participants,
       events,
       error_message: null
     });
   } catch (err) {
     console.error('Error loading add donation view:', err);
-    res.render('adminDonation', {
+    res.render('donation/adminDonation', {
       participants: [],
       events: [],
       error_message: 'Error loading data for new donation.'
@@ -1052,7 +1051,7 @@ app.get("/logout", (req, res) => {
     // Get rid of the session object
     req.session.destroy((err) => {
         if (err) {
-            console.log(err);
+            console.error(err);
         }
         res.redirect("/");
     });
@@ -1060,7 +1059,7 @@ app.get("/logout", (req, res) => {
 
 // Donation Routes
 app.get("/donations", (req, res) => {
-    res.render("donations");
+    res.render("donation/donations");
 });
 
 // Milestone Routes
@@ -1269,7 +1268,9 @@ app.post("/addmilestone", (req, res) => {
 // add milestone get route
 app.get("/addMilestone", (req, res) => {
     if (req.session.isLoggedIn) {
-        res.render("milestone/addmilestone");
+        res.render("milestone/addmilestone",
+            { error_message: "" }
+        );
     }
     else {
         res.render("login", { error_message: "" });
@@ -1284,12 +1285,12 @@ app.get("/editMilestone/:id", (req, res) => {
         .first()
         .then((milestone) => {
             if (!milestone) {
-                return res.status(404).render("/milestones", {
+                return res.status(404).render("milestone/milestones", {
                     milestone: [],
                     error_message: "Milestone not found."
                 });
             }
-            res.render("editmilestone", { user, error_message: "" });
+            res.render("milestone/editmilestone", { user, error_message: "" });
         })
         .catch((err) => {
             console.error("Error fetching milestone:", err.message);
@@ -1389,7 +1390,7 @@ app.post("/deleteMilestone/:id", (req, res) => {
     knex("milestone").where("milestoneid", req.params.id).del().then(milestone => {
         res.redirect("/milestones");
     }).catch(err => {
-        console.log(err);
+        console.error(err);
         res.status(500).json({err});
     })
 });
@@ -1644,7 +1645,11 @@ app.get('/editParticipant/:id', async (req, res) => {
                 'participantphone',   // <--- ADD THIS
                 'participantcity',    // <--- ADD THIS
                 'participantstate',   // <--- ADD THIS
-                'participantzip'      // <--- ADD THIS
+                'participantzip',
+                 'participantdob',
+                  'participantschooloremployer',
+                  'participantfieldofinterest' ,
+                  'totaldonations' // <--- ADD THIS
                 // ... any other columns you need ...
             )
             .where({ participantid: participantId })
@@ -1754,7 +1759,7 @@ app.post("/deleteParticipant/:id", (req, res) => {
     knex("participant").where("participantid", req.params.id).del().then(participant => {
         res.redirect("/participants");
     }).catch(err => {
-        console.log(err);
+        console.error(err);
         res.status(500).json({err});
     })
 });
@@ -1812,7 +1817,7 @@ app.post('/register', async (req, res) => {
             [username, hashedPassword, 'manager']
         );
 
-        console.log(`✅ New manager registered: ${username}`);
+        console.log(` New manager registered: ${username}`);
 
         return res.status(200).json({ 
             success: true, 
@@ -1833,7 +1838,7 @@ app.post("/deleteUser/:id", (req, res) => {
     knex("users").where("id", req.params.id).del().then(users => {
         res.redirect("/users");
     }).catch(err => {
-        console.log(err);
+        console.error(err);
         res.status(500).json({err});
     })
 });
@@ -1932,25 +1937,7 @@ app.post("/editUser/:id", upload.single("profileImage"), (req, res) => {
         });
 });
 
-app.get("/displayHobbies/:userId", (req, res) => {
-    const userId = req.params.userId;
-    knex("users")
-        .where({ id: userId })
-        .first()
-        .then((user) => {
-            knex("hobbies")
-                .where({ user_id: userId })
-                .orderBy("id")
-                .then((hobbies) => {
-                    res.render("displayHobbies", {
-                        user,
-                        hobbies,
-                        error_message: "",
-                        success_message: ""
-                    });
-                })
-            });
-});
+
 
 // -----------------------------------------------------
 //  EVENT SYSTEM ROUTES (PUBLIC + MANAGER)
@@ -1991,7 +1978,7 @@ app.get("/events/detail/:id", async (req, res) => {
 
         if (!event) return res.status(404).render("404");
 
-        res.render("eventdetail", { event });
+        res.render("events/eventdetail", { event });
     } catch (err) {
         console.error("Error loading event detail:", err);
         res.status(500).render("404");
@@ -2014,7 +2001,7 @@ app.get("/events/rsvp/:id", async (req, res) => {
 
         if (!event) return res.status(404).render("404");
 
-        res.render("eventrsvp", { event });
+        res.render("events/eventrsvp", { event });
     } catch (err) {
         console.error("Error loading RSVP page:", err);
         res.status(500).render("404");
@@ -2221,6 +2208,10 @@ app.post("/events/edit/:id", requireManager, async (req, res) => {
         console.error("Error updating event:", err);
         res.status(500).render("404");
     }
+});
+
+app.get("/tableau", requireManager, async (req, res) => {
+    res.render("tableau");
 });
 
 // Manager — Delete Event

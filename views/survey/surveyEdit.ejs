@@ -39,7 +39,7 @@
       border-radius: 1.25rem;
       padding: 2rem 1.75rem;
       box-shadow: 0 14px 40px rgba(0, 0, 0, 0.08);
-      border-top: 5px solid var(--er-lavender);
+      border-top: 5px solid var(--er-rose);
     }
 
     .page-title {
@@ -100,7 +100,7 @@
 
     .score-input:focus {
       outline: none;
-      border-color: var(--er-lavender);
+      border-color: var(--er-rose);
     }
 
     .score-row {
@@ -126,7 +126,7 @@
 
     .comments-textarea:focus {
       outline: none;
-      border-color: var(--er-lavender);
+      border-color: var(--er-rose);
     }
 
     .button-row {
@@ -146,13 +146,13 @@
       letter-spacing: 0.08em;
       text-transform: uppercase;
       cursor: pointer;
-      background: var(--er-lavender);
+      background: var(--er-rose);
       color: #fff;
-      box-shadow: 0 10px 22px rgba(151, 142, 196, 0.35);
+      box-shadow: 0 10px 22px rgba(206, 50, 91, 0.35);
     }
 
     .btn-primary:hover {
-      background: #7f74c0;
+      background: var(--er-lavender);
     }
 
     .btn-secondary {
@@ -177,7 +177,7 @@
   </style>
 </head>
 <body>
-  <%- include("navbar.ejs") %>
+  <%- include("../navbar.ejs") %>
 
   <main class="page">
     <div class="card">
@@ -187,7 +187,7 @@
       </p>
 
       <div class="meta">
-        <div><strong>Event:</strong> <%= survey.eventname %> (Def ID <%= survey.eventdefid %>, Event ID <%= survey.eventid %>)</div>
+        <div><strong>Event:</strong> <%= survey.eventname %> (Event ID <%= survey.eventid %>)</div>
         <div><strong>Participant:</strong> <%= survey.participantemail %></div>
         <div><strong>Submitted:</strong>
           <%= new Date(survey.surveysubmissiondate).toLocaleString("en-US", {
