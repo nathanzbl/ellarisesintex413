@@ -1686,13 +1686,59 @@ app.get("/displayHobbies/:userId", (req, res) => {
 app.get("/eventspublic", async (req, res) => {
     try {
         const eventDefs = await knex("eventdefinition")
-            .select("eventdefid", "eventname", "eventdescription")
+            .select("eventdefid", "eventname", "eventdescription", "eventimage")
             .orderBy("eventname");
 
         res.render("events/eventspublic", { eventDefs });
     } catch (err) {
         console.error("Error loading public event list:", err);
         res.render("events/eventspublic", { eventDefs: [] });
+    }
+});
+
+// -----------------------------------------------------
+// PUBLIC: Event Detail Page (Shows all upcoming times)
+// -----------------------------------------------------
+app.get("/eventspublic/detail/:eventdefid", async (req, res) => {
+    try {
+        const eventdefid = req.params.eventdefid;
+
+        // Fetch event definition info (name, description, image)
+        const eventDef = await knex("eventdefinition")
+            .select("eventdefid", "eventname", "eventdescription", "eventimage", "eventtype")
+            .where("eventdefid", eventdefid)
+            .first();
+
+        if (!eventDef) {
+            return res.status(404).render("404");
+        }
+
+        // Fetch all upcoming events of this event type
+        const upcomingEvents = await knex("event")
+            .select("eventid", "eventdatetimestart", "eventdatetimeend", "eventlocation")
+            .where("eventdefid", eventdefid)
+            .orderBy("eventdatetimestart", "asc");
+
+        // Format date/time for dropdown
+        const formattedEvents = upcomingEvents.map(ev => ({
+            ...ev,
+            label: new Date(ev.eventdatetimestart).toLocaleString("en-US", {
+                weekday: "short",
+                month: "short",
+                day: "numeric",
+                hour: "numeric",
+                minute: "2-digit"
+            })
+        }));
+
+        res.render("events/eventpublicdetail", {
+            eventDef,
+            upcomingEvents: formattedEvents
+        });
+
+    } catch (err) {
+        console.error("Error loading public event detail:", err);
+        res.status(500).render("404");
     }
 });
 
@@ -1800,17 +1846,25 @@ app.get("/events/add", requireManager, (req, res) => {
 });
 
 // Submit Add Event
-app.post("/events/add", requireManager, async (req, res) => {
+// ADD EVENT (with image upload)
+app.post("/events/add", requireManager, upload.single("eventimage"), async (req, res) => {
     try {
+
+        // --- GET THE UPLOADED IMAGE FILENAME (THIS IS WHAT YOU NEEDED) ---
+        const imageFilename = req.file ? req.file.filename : null;
+
+        // Insert into eventdefinition (includes image)
         const [def] = await knex("eventdefinition")
             .insert({
                 eventname: req.body.eventname,
                 eventdescription: req.body.eventdescription,
                 eventtype: req.body.eventtype,
-                eventrecurrencepattern: req.body.eventrecurrencepattern
+                eventrecurrencepattern: req.body.eventrecurrencepattern,
+                eventimage: imageFilename   // <-- IMPORTANT
             })
             .returning("eventdefid");
 
+        // Insert into event table
         await knex("event").insert({
             eventdefid: def.eventdefid,
             eventdatetimestart: req.body.eventdatetimestart,
@@ -1820,6 +1874,7 @@ app.post("/events/add", requireManager, async (req, res) => {
         });
 
         res.redirect("/events");
+
     } catch (err) {
         console.error("Error adding event:", err);
         res.render("events/addevent", { error_message: "Error adding event." });
@@ -1830,8 +1885,14 @@ app.post("/events/add", requireManager, async (req, res) => {
 app.get("/events", requireManager, async (req, res) => {
     try {
         const eventDefs = await knex("eventdefinition")
-            .select("eventdefid", "eventname", "eventdescription")
-            .orderBy("eventname");
+        .select(
+            "eventdefid",
+            "eventname",
+            "eventdescription",
+            "eventimage"
+        )
+        .orderBy("eventname");
+
 
         res.render("events/eventlist", { eventDefs });
     } catch (err) {

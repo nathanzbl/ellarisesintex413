@@ -109,7 +109,7 @@
         <p class="error"><%= error_message %></p>
     <% } %>
 
-    <form action="/events/add" method="POST">
+    <form action="/events/add" method="POST" enctype="multipart/form-data">
 
         <label>Event Name</label>
         <input type="text" name="eventname" required>
@@ -145,11 +145,15 @@
         <label>Capacity</label>
         <input type="number" name="eventcapacity" required>
 
+        <!-- NEW IMAGE UPLOAD FIELD -->
+        <label>Event Image</label>
+        <input type="file" name="eventimage" accept="image/*" required>
+
         <button type="submit">Save Event</button>
 
     </form>
+
 </div>
 
 </body>
 </html>
-
