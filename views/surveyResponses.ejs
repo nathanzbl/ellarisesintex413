@@ -347,29 +347,46 @@ td:nth-child(8) {  /* score columns */
     <header class="page-header">
       <h1 class="page-title">Survey Responses</h1>
       <p class="page-subtitle">
-        View individual survey submissions, scores, and comments. Use the filter to narrow by event.
-      </p>
+  View individual survey submissions, scores, and comments. Use the filters to narrow by event or participant name.
+</p>
+
     </header>
 
     <form class="filter-bar" method="GET" action="/survey/responses">
-  <label for="eventFilter">Filter by event</label>
-  <select id="eventFilter" name="eventDefId" class="filter-select">
-    <option value="">All events</option>
-    <% if (Array.isArray(events)) { %>
-      <% events.forEach(function(evt) { %>
-        <option
-          value="<%= evt.eventdefid %>"
-          <%= String(selectedEventDefId || "") === String(evt.eventdefid) ? "selected" : "" %>
-        >
-          <%= evt.eventdefid %> - <%= evt.eventname %>
-        </option>
-      <% }); %>
-    <% } %>
-  </select>
+  <!-- Event filter -->
+  <div>
+    <label for="eventFilter">Filter by event</label>
+    <select id="eventFilter" name="eventDefId" class="filter-select">
+      <option value="">All events</option>
+      <% if (Array.isArray(events)) { %>
+        <% events.forEach(function(evt) { %>
+          <option
+            value="<%= evt.eventdefid %>"
+            <%= String(selectedEventDefId || "") === String(evt.eventdefid) ? "selected" : "" %>
+          >
+            <%= evt.eventdefid %> - <%= evt.eventname %>
+          </option>
+        <% }); %>
+      <% } %>
+    </select>
+  </div>
+
+  <!-- Participant name search -->
+  <div>
+    <label for="participantName">Participant name</label>
+    <input
+      id="participantName"
+      name="participantName"
+      type="text"
+      class="filter-select"
+      placeholder="e.g. Jane Doe"
+      value="<%= participantName || '' %>"
+    />
+  </div>
 
   <button type="submit" class="filter-submit">Apply</button>
 
-  <% if (selectedEventDefId) { %>
+  <% if (selectedEventDefId || (participantName && participantName.trim() !== "")) { %>
     <button
       type="button"
       class="filter-reset"
@@ -381,6 +398,7 @@ td:nth-child(8) {  /* score columns */
 </form>
 
 
+
     <% if (surveys && surveys.length > 0) { %>
       <div class="table-wrapper">
         <table>
@@ -388,7 +406,7 @@ td:nth-child(8) {  /* score columns */
   <tr>
     <th>ID</th>
     <th>Event</th>
-    <th>Participant Email</th>
+<th>Participant</th>
     <th class="score-col">Satisfaction</th>
 <th class="score-col">Useful</th>
 <th class="score-col">Instructor</th>
@@ -409,7 +427,10 @@ td:nth-child(8) {  /* score columns */
                   <strong><%= s.eventname || ("Event " + s.eventid) %></strong><br />
                   <small>ID: <%= s.eventid %></small>
                 </td>
-                <td><%= s.participantemail %></td>
+<td>
+  <strong><%= s.participantname || "Unknown" %></strong><br />
+  <small><%= s.participantemail %></small>
+</td>
                 <td class="score-col"><span class="score-pill"><%= s.surveysatisfactionscore %></span></td>
 <td class="score-col"><span class="score-pill"><%= s.surveyusefulnessscore %></span></td>
 <td class="score-col"><span class="score-pill"><%= s.surveyinstructorscore %></span></td>
@@ -470,20 +491,24 @@ td:nth-child(8) {  /* score columns */
        
 
         <div class="pagination-controls">
-          <% 
-            const hasPrev = pagination.currentPage > 1;
-            const hasNext = pagination.currentPage < pagination.totalPages;
+          <%
+  const hasPrev = pagination.currentPage > 1;
+  const hasNext = pagination.currentPage < pagination.totalPages;
 
-            function pageUrl(page) {
-              return (
-                "/survey/responses?page=" + page +
-                (selectedEventDefId
-                  ? "&eventDefId=" + encodeURIComponent(selectedEventDefId)
-                  : ""
-                )
-              );
-            }
-          %>
+  function pageUrl(page) {
+    let url = "/survey/responses?page=" + page;
+
+    if (selectedEventDefId) {
+      url += "&eventDefId=" + encodeURIComponent(selectedEventDefId);
+    }
+    if (participantName && participantName.trim() !== "") {
+      url += "&participantName=" + encodeURIComponent(participantName.trim());
+    }
+
+    return url;
+  }
+%>
+
 
           <!-- Prev button -->
           <% if (hasPrev) { %>
