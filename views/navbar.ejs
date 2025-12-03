@@ -1,10 +1,11 @@
 <style>
+/* --- (Your existing CSS here, keeping for completeness) --- */
 :root {
 --er-blue: #99B7C6;
 --er-lavender: #978EC4;
 --er-cream: #F9F5EA;
 --er-blush: #FFD8D1;
---pink: #FFD7D1; /* Used for nav background */
+--pink: #FFD7D1; 
 --er-pink: #F9AFB1;
 --er-sage: #9AB59D;
 --er-charcoal: #3A3F3B;
@@ -19,7 +20,7 @@ box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
 position: sticky;
 top: 0;
 z-index: 100;
-font-family: &quot;Montserrat&quot;, system-ui, sans-serif;
+font-family: "Montserrat", system-ui, sans-serif;
 color: var(--er-charcoal);
 }
 
@@ -83,7 +84,7 @@ transition: transform 0.1s, background-color 0.2s;
 outline: none;
 letter-spacing: 0.05em;
 white-space: nowrap;
-font-family: &quot;Montserrat&quot;, system-ui, sans-serif;
+font-family: "Montserrat", system-ui, sans-serif;
 }
 
 .lang-button:hover {
@@ -123,95 +124,60 @@ gap: 1rem;
     top: 0.75rem;
     right: 1.5rem;
 }
-
-
 }
 </style>
 
 <nav>
     <div class="nav-container">
         <a href="/">
-            <img src="/images/EllaRisesLogo.png.avif" width="80px">
+            <img src="/images/EllaRisesLogo.png.avif" alt="Ella Rises Logo" width="75px" onerror="this.onerror=null; this.src='https://www.google.com/search?q=https://placehold.co/75x50/F9AFB1/3A3F3B%3Ftext%3DLogo';">
         </a>
-        
+
         <div class="nav-links">
-            <a href="/">Home</a>
-            <a href="/donations">Donations</a>
+            <a href="/" data-i18n-key="nav_home">Home</a>
+            <a href="/donations" data-i18n-key="nav_donations">Donations</a>
+
+            <% // Events link logic %>
             <% if (typeof currentUser !== "undefined" && currentUser) { %>
-                <a href="/events" class="nav-link">Events</a>
+                <a href="/events" class="nav-link" data-i18n-key="nav_events">Events</a>
             <% } else { %>
-                <a href="/eventspublic" class="nav-link">Events</a>
-            <% } %>
-            <!-- Only show restricted links if logged in -->
-            <% if (typeof isLoggedIn !== 'undefined' && isLoggedIn) { %>
-                <a href="/milestones">Milestones</a>
-                <a href="/participants">Participants</a>
-                <a href="/surveys">Surveys</a>
+                <a href="/eventspublic" class="nav-link" data-i18n-key="nav_events">Events</a>
             <% } %>
 
             <% if (typeof isLoggedIn !== 'undefined' && isLoggedIn) { %>
-                <a href="/logout" style="color: var(--er-rose);">Logout</a>
+                <a href="/milestones" data-i18n-key="nav_milestones">Milestones</a>
+                <a href="/participants" data-i18n-key="nav_participants">Participants</a>
+                <a href="/surveys" data-i18n-key="nav_surveys">Surveys</a>
+            <% } %>
+
+            <% // Login / Logout logic %>
+            <% if (typeof isLoggedIn !== 'undefined' && isLoggedIn) { %>
+                <a href="/logout" style="color: var(--er-rose);" data-i18n-key="nav_login">Logout</a>
             <% } else { %>
-                <a href="/login">Login</a>
+                <a href="/login" data-i18n-key="nav_login">Login</a>
             <% } %>
         </div>
+
+        <%
+        // Default to 'en' if currentLanguage is not defined (requires server-side variable)
+        // OR get the client-side preference if using client-side routing
+        const lang = typeof currentLanguage !== 'undefined' ? currentLanguage : 'en';
+        %>
+
+        <div class="lang-toggle">
+            <button class="lang-button <%= lang === 'en' ? 'active' : '' %>"
+                    onclick="setLanguage('en')"
+                    data-lang="en"
+                    data-i18n-key="lang_en_label">
+                <%= lang === 'en' ? 'ENG' : 'ING' %>
+            </button>
+            
+            <button class="lang-button <%= lang === 'es' ? 'active' : '' %>"
+                    onclick="setLanguage('es')"
+                    data-lang="es"
+                    data-i18n-key="lang_es_label">
+                <%= lang === 'en' ? 'SPA' : 'ESP' %>
+            </button>
+        </div>
     </div>
-<div class="nav-container">
-<a href="/">
-<!-- Note: Ensure the image path is correct, using a placeholder image for robust delivery -->
-<img src="/images/EllaRisesLogo.png.avif" alt="Ella Rises Logo" width="75px" onerror="this.onerror=null; this.src='https://www.google.com/search?q=https://placehold.co/75x50/F9AFB1/3A3F3B%3Ftext%3DLogo';">
-</a>
-
-<div class="nav-links">
-<a href="/">Home</a>
-<a href="/donations">Donations</a>
-
-<% // Events link logic %>
-<% if (typeof currentUser !== "undefined" && currentUser) { %>
-    <a href="/events" class="nav-link">Events</a>
-<% } else { %>
-    <a href="/eventspublic" class="nav-link">Events</a>
-<% } %>
-
-<!-- Only show restricted links if logged in -->
-<% if (typeof isLoggedIn !== 'undefined' && isLoggedIn) { %>
-    <a href="/milestones">Milestones</a>
-    <a href="/participants">Participants</a>
-    <a href="/surveys">Surveys</a>
-<% } %>
-
-<% // Login / Logout logic %>
-<% if (typeof isLoggedIn !== 'undefined' && isLoggedIn) { %>
-    <a href="/logout" style="color: var(--er-rose);">Logout</a>
-<% } else { %>
-    <a href="/login">Login</a>
-<% } %>
-
-
-</div>
-
-<!-- RESTORED: Language Toggle -->
-
-<%
-// Default to 'en' if currentLanguage is not defined (requires server-side variable)
-const lang = typeof currentLanguage !== 'undefined' ? currentLanguage : 'en';
-%>
-
-<div class="lang-toggle">
-<!--
-NOTE: The onclick function assumes a global JavaScript function setLanguage
-exists to handle changing the language (e.g., redirecting or updating text).
--->
-<button class="lang-button <%= lang === 'en' ? 'active' : '' %>"
-onclick="setLanguage('en')">
-<%= lang === 'en' ? 'ENG' : 'ING' %>
-</button>
-<button class="lang-button <%= lang === 'es' ? 'active' : '' %>"
-onclick="setLanguage('es')">
-<%= lang === 'en' ? 'SPA' : 'ESP' %>
-</button>
-</div>
-
-</div>
-
 </nav>
