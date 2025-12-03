@@ -1135,7 +1135,7 @@ const fetchAllParticipants = async (limit, offset) => {
 // PARTICIPANT ROUTES
 // -----------------------------------------------------
 
-// GET /participants - Display the list of all participants with pagination
+// GET /participants - Display the list of all participants with pagination and search
 app.get('/participants', async (req, res) => {
     if (!req.session.isLoggedIn) {
         return res.render("login", { error_message: "" });
@@ -1151,48 +1151,130 @@ app.get('/participants', async (req, res) => {
     const message = req.session.message;
     delete req.session.message;
     
-    // --- Pagination Logic (Uses 100 per page) ---
+    // --- Pagination Logic ---
     const limit = 100;
-    // Ensure currentPage defaults to 1 and is an integer
     const currentPage = parseInt(req.query.page) > 0 ? parseInt(req.query.page) : 1;
     const offset = (currentPage - 1) * limit;
     let totalParticipants = 0;
-    // --------------------------------------------
+    
+    // --- Search Parameters ---
+    // Extract search parameters from the URL query
+    const { search_name, search_id, search_email, search_phone } = req.query; 
+
+    // Function to apply filtering logic to the query builder (used for both count and data)
+    const applyFilters = (queryBuilder) => {
+        queryBuilder.where(function() {
+            const builder = this;
+            let firstCondition = true;
+
+            // Helper to determine if we use WHERE (first) or ANDWHERE (subsequent)
+            const chainCondition = (conditionFunc) => {
+                if (firstCondition) {
+                    builder.where(conditionFunc);
+                    firstCondition = false;
+                } else {
+                    builder.andWhere(conditionFunc);
+                }
+            };
+            
+            // 1. Participant Name Filter (First Name OR Last Name)
+            if (search_name) {
+                const wildCardSearch = `%${search_name.toLowerCase()}%`;
+                
+                chainCondition(function() {
+                    this.whereRaw('LOWER(participantfirstname) LIKE ?', [wildCardSearch])
+                        .orWhereRaw('LOWER(participantlastname) LIKE ?', [wildCardSearch]);
+                });
+            }
+
+            // 2. Participant ID Filter
+            if (search_id) {
+                // If it's a number, treat as exact. Otherwise, use LIKE for partial string search.
+                chainCondition(function() {
+                    if (!isNaN(parseInt(search_id))) {
+                        this.where('participantid', parseInt(search_id));
+                    } else {
+                         const wildCardSearch = `%${search_id}%`;
+                         this.where('participantid', 'LIKE', wildCardSearch);
+                    }
+                });
+            }
+            
+            // 3. Participant Email Filter
+            if (search_email) {
+                const wildCardSearch = `%${search_email.toLowerCase()}%`;
+
+                chainCondition(function() {
+                    this.whereRaw('LOWER(participantemail) LIKE ?', [wildCardSearch]);
+                });
+            }
+            
+            // 4. Participant Phone Filter
+            if (search_phone) {
+                const wildCardSearch = `%${search_phone}%`;
+
+                chainCondition(function() {
+                    // Note: Phone numbers are often stored as strings and searched using LIKE
+                    this.where('participantphone', 'LIKE', wildCardSearch);
+                });
+            }
+        });
+        
+        return queryBuilder;
+    };
+
 
     try {
-        // 1. Get total count for pagination (required to calculate total pages)
-        const countResult = await knex('participant').count('* as count');
+        // --- 1. Get total count for pagination ---
+        let countQuery = knex('participant').clone();
+        countQuery = applyFilters(countQuery);
+        
+        const countResult = await countQuery.count('* as count');
         totalParticipants = parseInt(countResult[0].count, 10);
         
-        // 2. Fetch paginated data (ONLY 100 records for the current page)
-        const allParticipants = await fetchAllParticipants(limit, offset); 
+        // --- 2. Fetch paginated data ---
+        let dataQuery = knex.select('*').from('participant');
+        dataQuery = applyFilters(dataQuery);
         
-        console.log(`✅ PARTICIPANT DATA STATUS: Fetched ${allParticipants.length} participants for page ${currentPage} (Total: ${totalParticipants}).`);
+        // Apply pagination limits to the filtered results
+        const allParticipants = await dataQuery
+            .limit(limit)
+            .offset(offset);
         
-        // 3. Render View
+        console.log(`PARTICIPANT DATA STATUS: Fetched ${allParticipants.length} participants for page ${currentPage} (Total: ${totalParticipants}).`);
+        
+        // --- 3. Render View ---
         const totalPages = Math.ceil(totalParticipants / limit);
         
         res.render('participant/participants', { 
             user: user, 
             participants: allParticipants, 
-            searchQuery: '',
             message: message, 
             error_message: null,
             currentPage: currentPage, 
-            totalPages: totalPages
+            totalPages: totalPages,
+            // Pass search parameters back to EJS for sticky fields
+            search_name,
+            search_id,
+            search_email,
+            search_phone
         });
         
     } catch (error) {
-        console.error("❌ Participant Route Render Error:", error.message);
-        // Pass error through render function
+        console.error("Participant Route Render Error:", error.message);
+        
+        // Ensure search params stick even on error
         res.render('participant/participants', {
             user: user, 
             participants: [],
-            searchQuery: '',
             message: null,
             error_message: error.message,
             currentPage: 1, 
-            totalPages: 1
+            totalPages: 1,
+            search_name: req.query.search_name, 
+            search_id: req.query.search_id,
+            search_email: req.query.search_email,
+            search_phone: req.query.search_phone
         });
     }
 });
