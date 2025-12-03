@@ -1,55 +1,62 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ella Rises - Culturally Rooted, Education Focused</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --pink: #FFD7D1;
-            --blue: #A8C0CC;
-            --text-gray: #4A4A4A;
-            --purple-accent: #C4B7D3;
-            --flower-red: #D9414E;
-            --dark-text: #1f2937;
-            --light-bg: #f7f7f7;
-            --border-color: rgba(0, 0, 0, 0.05);
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n-key="doc_title">Ella Rises - Culturally Rooted, Education Focused</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+--pink: #FFD7D1;
+--blue: #A8C0CC;
+--text-gray: #4A4A4A;
+--purple-accent: #C4B7D3;
+--flower-red: #D9414E;
+--dark-text: #1f2937;
+--light-bg: #f7f7f7;
+--border-color: rgba(0, 0, 0, 0.05);
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        /* Added required color variables for the toggle buttons */
+        --er-cream:    #F9F5EA;
+        --er-blush:    #FFD8D1;
+        --er-rose:     #CE325B;
+    }
 
-        body {
-            background-color: white;
-            font-family: 'Inter', 'Lato', sans-serif;
-            color: var(--dark-text);
-        }
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
 
-        .welcome {
-            font-family: serif;
-            font-weight: 1000;
-            font-size: 5rem;
-            width: 100%;
-            align-items: center;
-            display: flex;
-            justify-content: center;
-            background-color: #3A3F3B;
-        }
+    body {
+        background-color: white;
+        font-family: 'Inter', 'Lato', sans-serif;
+        color: var(--dark-text);
+    }
+    
+    /* The rest of your existing CSS... */
+    .welcome {
+        font-family: serif;
+        font-weight: 1000;
+        font-size: 5rem;
+        width: 100%;
+        align-items: center;
+        display: flex;
+        justify-content: center;
+        background-color: #3A3F3B;
+    }
 
-        .welcome img {
-            width: 50%;
-            display: flex;
-            align-items: center;
-            
-        }
+    .welcome img {
+        width: 50%;
+        display: flex;
+        align-items: center;
+        
+    }
 
         /* Hero Section */
         header {
-            background: linear-gradient(to bottom, white, white);
+            background: linear-gradient(to bottom, #FFD8D1, white);
             padding: 50px 20px;
             width: 100%;
             min-height: 80vh; 
@@ -62,204 +69,269 @@
         .hero-container p { margin-top: 24px; font-size: 1.25rem; color: var(--text-gray); max-width: 42rem; margin-left: auto; margin-right: auto; line-height: 1.75; }
         .hero-buttons { margin-top: 40px; display: flex; gap: 16px; justify-content: center; }
 
-        /* CTA Button Styles */
-        .cta-btn { background: var(--flower-red); color: #fff; text-decoration: none; padding: 14px 28px; border-radius: 9999px; box-shadow: 0 4px 10px rgba(217, 65, 78, 0.4); transition: all 0.3s ease; border: none; cursor: pointer; font-size: 1rem; font-weight: 600; }
-        .cta-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(217, 65, 78, 0.5); }
-        .secondary-btn { background-color: white; color: var(--dark-text); text-decoration: none; border: 2px solid var(--purple-accent); padding: 12px 28px; border-radius: 9999px; font-weight: 500; cursor: pointer; transition: all 0.3s ease; font-size: 1rem; }
-        .secondary-btn:hover { background-color: var(--purple-accent); color: white; }
-        .hero-container img { max-width: 100%; height: auto; border-radius: 8px; margin-bottom: 32px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); }
+    /* CTA Button Styles */
+    .cta-btn { background: var(--flower-red); color: #fff; text-decoration: none; padding: 14px 28px; border-radius: 9999px; box-shadow: 0 4px 10px rgba(217, 65, 78, 0.4); transition: all 0.3s ease; border: none; cursor: pointer; font-size: 1rem; font-weight: 600; }
+    .cta-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(217, 65, 78, 0.5); }
+    .secondary-btn { background-color: white; color: var(--dark-text); text-decoration: none; border: 2px solid var(--purple-accent); padding: 12px 28px; border-radius: 9999px; font-weight: 500; cursor: pointer; transition: all 0.3s ease; font-size: 1rem; }
+    .secondary-btn:hover { background-color: var(--purple-accent); color: white; }
+    .hero-container img { max-width: 100%; height: auto; border-radius: 8px; margin-bottom: 32px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); }
 
 
-        /* --- NEW SECTION STYLES --- */
+    /* --- NEW SECTION STYLES --- */
 
-        .section {
-            padding: 80px 20px;
-            text-align: center;
-        }
+    .section {
+        padding: 80px 20px;
+        text-align: center;
+    }
 
-        .section-light {
-            background-color: var(--light-bg);
-        }
-        
-        .section-content {
-            max-width: 72rem;
-            margin: 0 auto;
-        }
+    .section-light {
+        background-color: var(--light-bg);
+    }
+    
+    .section-content {
+        max-width: 72rem;
+        margin: 0 auto;
+    }
 
-        .section-content h2 {
-            font-size: 2.25rem;
-            font-weight: 700;
-            margin-bottom: 20px;
-            color: var(--flower-red); 
-        }
+    .section-content h2 {
+        font-size: 2.25rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+        color: var(--flower-red); 
+    }
 
-        /* Stats Grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 32px;
-            margin-top: 40px;
-        }
-        .stat-item {
-            padding: 24px;
-            background-color: white;
-            border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-            transition: transform 0.3s ease;
-        }
-        .stat-item:hover { transform: translateY(-5px); }
-        .stat-item .number {
-            font-size: 3rem;
-            font-weight: 700;
-            color: var(--flower-red);
-            line-height: 1;
-        }
-        .stat-item .label {
-            margin-top: 8px;
-            font-size: 1rem;
-            font-weight: 500;
-            color: var(--text-gray);
-        }
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 32px;
+        margin-top: 40px;
+    }
+    .stat-item {
+        padding: 24px;
+        background-color: white;
+        border-radius: 12px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s ease;
+    }
+    .stat-item:hover { transform: translateY(-5px); }
+    .stat-item .number {
+        font-size: 3rem;
+        font-weight: 700;
+        color: var(--flower-red);
+        line-height: 1;
+    }
+    .stat-item .label {
+        margin-top: 8px;
+        font-size: 1rem;
+        font-weight: 500;
+        color: var(--text-gray);
+    }
 
-        /* Program Cards Grid */
-        .program-card-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 40px;
-            margin-top: 40px;
-            text-align: left;
-        }
+    /* Program Cards Grid */
+    .program-card-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 40px;
+        margin-top: 40px;
+        text-align: left;
+    }
 
-        /* Program Card FIXES */
-        .program-card {
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 0; /* Removed padding here */
-            background-color: white;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-            transition: transform 0.3s ease;
-            overflow: hidden; /* **KEY: Clips image overflow** */
-            display: flex;
-            flex-direction: column;
-        }
-        .program-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-        
-        /* Image Containment FIXES */
-        .program-card img {
-            width: 100%;             /* Fills card width */
-            height: 250px;           /* **Fixed height for uniformity** */
-            object-fit: cover;       /* **Crops to fill area** */
-            display: block;
-            margin-bottom: 0;
-        }
-        
-        /* Wrapper to re-introduce padding for text */
-        .program-content-wrapper {
-            padding: 32px;
-            flex-grow: 1; 
-        }
-        
-        .program-content-wrapper h3 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-top: 0;
-            margin-bottom: 10px;
-            color: var(--dark-text);
-        }
-        
-        .program-content-wrapper p {
-            font-size: 1rem;
-            color: var(--text-gray);
-            line-height: 1.6;
-        }
+    /* Program Card FIXES */
+    .program-card {
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 0;
+        background-color: white;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        transition: transform 0.3s ease;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+    .program-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    /* Image Containment FIXES */
+    .program-card img {
+        width: 100%;
+        height: 250px;
+        object-fit: cover;
+        display: block;
+        margin-bottom: 0;
+    }
+    
+    /* Wrapper to re-introduce padding for text */
+    .program-content-wrapper {
+        padding: 32px;
+        flex-grow: 1; 
+    }
+    
+    .program-content-wrapper h3 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-top: 0;
+        margin-bottom: 10px;
+        color: var(--dark-text);
+    }
+    
+    .program-content-wrapper p {
+        font-size: 1rem;
+        color: var(--text-gray);
+        line-height: 1.6;
+    }
 
-    </style>
+    /* --- LANGUAGE TOGGLE STYLES (REQUIRED) --- */
+    /* Assuming the NAV structure is included and contains the .lang-toggle div */
+    .lang-toggle {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.25rem;
+        background: var(--er-cream);
+        border-radius: 0.75rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .lang-button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1.5rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.5rem;
+        transition: transform 0.1s, background-color 0.2s;
+        outline: none;
+    }
+
+    .lang-button:hover {
+        transform: scale(1.05);
+        background-color: var(--er-blush);
+    }
+    
+    .lang-button.active {
+        background-color: var(--er-rose);
+        box-shadow: 0 0 0 2px var(--er-rose);
+        transform: scale(1.1);
+    }
+    /* End Language Toggle Styles */
+
+</style>
+
+
 </head>
 <body>
-    <%- include('navbar.ejs') %>
-    
-    <header id="welcome">
-        <div class="hero-container">
-            
-            <img src="/images/ellarises.jpg" alt="A group of young women from Ella Rises smiling">
-            
-            <h1>Pursuing Higher Education. Embracing Heritage.</h1>
-            <p>
-                Welcome to Ella Rises. Our objective is to empower the future generation of women by **inviting young women to pursue higher education and embrace their heritage**. We provide culturally rooted programs and educational experiences through our signature programs focusing on **mariachi, ballet folklorico, and STEAM**.
-            </p>
-            <div class="hero-buttons">
-                <a href="/donations" class="cta-btn">Support Our Mission (Donate)</a>
-                <a href="#impact" class="secondary-btn">View Our Impact</a> 
+<%- include('navbar.ejs') %>
+<main>
+    <%- include('spanishtranslationstorage.ejs') %>
+</main>
+<header id="welcome">
+    <div class="hero-container">
+        
+        <img src="/images/ellarises.jpg" alt="A group of young women from Ella Rises smiling">
+        
+        <h1 data-i18n-key="hero_headline">Pursuing Higher Education. Embracing Heritage.</h1>
+        <p data-i18n-key="hero_text">
+            Welcome to Ella Rises. Our objective is to empower the future generation of women by **inviting young women to pursue higher education and embrace their heritage**. We provide culturally rooted programs and educational experiences through our signature programs focusing on **mariachi, ballet folklorico, and STEAM**.
+        </p>
+        <div class="hero-buttons">
+            <a href="/donations" class="cta-btn" data-i18n-key="btn_donate">Support Our Mission (Donate)</a>
+            <a href="#impact" class="secondary-btn" data-i18n-key="btn_impact">View Our Impact</a> 
+        </div>
+    </div>
+</header>
+
+<section class="section section-light" id="impact">
+    <div class="section-content">
+        <h2 data-i18n-key="impact_title" style="color: var(--dark-text);">Making a Lasting Impact</h2>
+        <p data-i18n-key="impact_text" style="margin-bottom: 40px;">Through your generous support, our signature programs and the Ella Rises Summit serve **over 150 young women each year**, helping them achieve educational goals and build confidence.</p>
+        
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="number" data-i18n-key="stat_1_num">150+</div>
+                <div class="label" data-i18n-key="stat_1_label">Young Women Served Annually</div>
+            </div>
+            <div class="stat-item">
+                <div class="number" data-i18n-key="stat_2_num">3</div>
+                <div class="label" data-i18n-key="stat_2_label">Core Program Pillars (Mariachi, Folklorico, STEAM)</div>
+            </div>
+            <div class="stat-item">
+                <div class="number" data-i18n-key="stat_3_num">100%</div>
+                <div class="label" data-i18n-key="stat_3_label">Focus on Culturally Rooted Education</div>
             </div>
         </div>
-    </header>
-    
-    <section class="section section-light" id="impact">
-        <div class="section-content">
-            <h2 style="color: var(--dark-text);">Making a Lasting Impact</h2>
-            <p style="margin-bottom: 40px;">Through your generous support, our signature programs and the Ella Rises Summit serve **over 150 young women each year**, helping them achieve educational goals and build confidence.</p>
+    </div>
+</section>
+
+<hr>
+
+<section class="section" id="programs">
+    <div class="section-content">
+        <h2 data-i18n-key="programs_title" style="color: var(--flower-red);">Our Signature Programs</h2>
+        <p data-i18n-key="programs_intro">We believe in a holistic approach to empowerment. Explore the key areas where our young women thrive.</p>
+        
+        <div class="program-card-grid">
             
-            <div class="stats-grid">
-                <div class="stat-item">
-                    <div class="number">150+</div>
-                    <div class="label">Young Women Served Annually</div>
+            <div class="program-card">
+                <img src="/images/BF_Single_RedDress.png" alt="Young woman in red folklorico dress">
+                <div class="program-content-wrapper">
+                    <h3 data-i18n-key="card_mariachi_title">Mariachi Workshops</h3>
+                    <p data-i18n-key="card_mariachi_text">Develop musical talent, stage presence, and teamwork through the study and performance of traditional Mariachi music, deeply connecting participants with their cultural roots.</p>
                 </div>
-                <div class="stat-item">
-                    <div class="number">3</div>
-                    <div class="label">Core Program Pillars (Mariachi, Folklorico, STEAM)</div>
+            </div>
+
+            <div class="program-card">
+                <img src="/images/Mariachi_Single.png" alt="Young woman playing a mariachi instrument">
+                <div class="program-content-wrapper">
+                    <h3 data-i18n-key="card_folklorico_title">Ballet Folklorico</h3>
+                    <p data-i18n-key="card_folklorico_text">Participants learn the vibrant and historic dance traditions of Mexico, fostering discipline, pride, and an appreciation for the rich history embedded in each regional dance style.</p>
                 </div>
-                <div class="stat-item">
-                    <div class="number">100%</div>
-                    <div class="label">Focus on Culturally Rooted Education</div>
+            </div>
+
+            <div class="program-card">
+                <img src="/images/steamEllaRises.jpg" alt="Young women participating in a STEAM workshop">
+                <div class="program-content-wrapper">
+                    <h3 data-i18n-key="card_steam_title">STEAM Education</h3>
+                    <p data-i18n-key="card_steam_text">We provide hands-on, engaging workshops in Science, Technology, Engineering, Arts, and Math to encourage curiosity and prepare young women for future careers in these critical fields.</p>
                 </div>
             </div>
         </div>
-    </section>
-
-    <hr>
-    
-    <section class="section" id="programs">
-        <div class="section-content">
-            <h2 style="color: var(--flower-red);">Our Signature Programs</h2>
-            <p>We believe in a holistic approach to empowerment. Explore the key areas where our young women thrive.</p>
-            
-            <div class="program-card-grid">
-                
-                <div class="program-card">
-                    <img src="/images/BF_Single_RedDress.png" alt="Young woman in red folklorico dress">
-                    <div class="program-content-wrapper">
-                        <h3>Mariachi Workshops</h3>
-                        <p>Develop musical talent, stage presence, and teamwork through the study and performance of traditional Mariachi music, deeply connecting participants with their cultural roots.</p>
-                    </div>
-                </div>
-
-                <div class="program-card">
-                    <img src="/images/Mariachi_Single.png" alt="Young woman playing a mariachi instrument">
-                    <div class="program-content-wrapper">
-                        <h3>Ballet Folklorico</h3>
-                        <p>Participants learn the vibrant and historic dance traditions of Mexico, fostering discipline, pride, and an appreciation for the rich history embedded in each regional dance style.</p>
-                    </div>
-                </div>
-
-                <div class="program-card">
-                    <img src="/images/steamEllaRises.jpg" alt="Young women participating in a STEAM workshop">
-                    <div class="program-content-wrapper">
-                        <h3>STEAM Education</h3>
-                        <p>We provide hands-on, engaging workshops in Science, Technology, Engineering, Arts, and Math to encourage curiosity and prepare young women for future careers in these critical fields.</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div style="margin-top: 60px;">
-                <a href="/events" class="secondary-btn" style="background-color: var(--purple-accent); color: white; border: none;">View All Events & Enroll Today</a>
-            </div>
+        
+        <div style="margin-top: 60px;">
+            <a href="/events" class="secondary-btn" style="background-color: var(--purple-accent); color: white; border: none;" data-i18n-key="btn_events">View All Events & Enroll Today</a>
         </div>
-    </section>
-    
-    <%- include('common/footer.ejs') %>
-    
+    </div>
+</section>
+
+<%- include('common/footer.ejs') %>
+
+<script>
+    // --- Initialization and Event Listeners ---
+    window.onload = () => {
+        // Check if the setLanguage function is available (it should be loaded from the included file)
+        if (typeof setLanguage === 'undefined') {
+            console.error('setLanguage function not found. Ensure spanishtranslationstorage.ejs is included correctly.');
+            return;
+        }
+
+        // Get user preference from localStorage, default to English ('en')
+        const userPref = localStorage.getItem('userLang') || 'en';
+        
+        // Apply the initial language immediately on load. 
+        setLanguage(userPref); 
+
+        // Add event listeners to the flag buttons (Assumes the buttons are present in navbar.ejs)
+        document.querySelectorAll('.lang-button').forEach(button => {
+            button.addEventListener('click', (event) => {
+                const newLang = event.currentTarget.getAttribute('data-lang');
+                setLanguage(newLang);
+            });
+        });
+    };
+</script>
+
+
 </body>
 </html>

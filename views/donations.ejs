@@ -2,10 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Ella Rises – Support Our Youth</title>
+    <title data-i18n-key="doc_title_donate">Ella Rises – Support Our Youth</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:wght@400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -346,72 +345,68 @@
 </head>
 <body>
     <%- include('navbar.ejs') %>
-
 <main>
+    <%- include('spanishtranslationstorage.ejs') %> 
     <div class="page-layout">
      
 
-        <!-- LEFT: Story / Impact -->
         <section class="story-card">
-            <div class="tagline">Rise con Ella</div>
-            <h1>Empowering Futures, One Donation at a Time</h1>
-            <p class="lead">
+            <div class="tagline" data-i18n-key="story_tagline">Rise With Ella</div>
+            <h1 data-i18n-key="story_headline">Empowering Futures, One Donation at a Time</h1>
+            <p class="lead" data-i18n-key="story_lead_text">
                 Ella Rises helps young Latinas in Utah envision themselves in college, in STEAM careers,
                 and as leaders in their communities. Your gift fuels mentoring, creative workshops, and
                 life-changing experiences.
             </p>
 
-            <!-- Progress bar -->
             <div class="progress">
                 <div class="progress-top">
-                    <span><strong>$980</strong> raised</span>
-                    <span>Goal: $100,000</span>
+                    <span data-i18n-key="progress_raised_prefix"><strong>$980</strong> raised</span>
+                    <span data-i18n-key="progress_goal_prefix">Goal: $100,000</span>
                 </div>
                 <div class="progress-bar">
                     <div class="progress-bar-inner"></div>
                 </div>
             </div>
 
-            <h3>Why Your Donation Matters</h3>
+            <h3 data-i18n-key="impact_title">Why Your Donation Matters</h3>
             <ul class="impact-list">
-                <li>Funds youth summits and day camps focused on STEAM & identity.</li>
-                <li>Supports campus visits to local universities and colleges.</li>
-                <li>Expands arts & culture programs like mariachi and ballet folklórico.</li>
+                <li data-i18n-key="impact_list_1">Funds youth summits and day camps focused on STEAM & identity.</li>
+                <li data-i18n-key="impact_list_2">Supports campus visits to local universities and colleges.</li>
+                <li data-i18n-key="impact_list_3">Expands arts & culture programs like mariachi and ballet folklórico.</li>
             </ul>
 
-            <p class="note">
+            <p class="note" data-i18n-key="story_note">
                 Every dollar helps a young woman see herself in higher education and feel proud of her
                 heritage. Thank you for investing in her story.
             </p>
         </section>
 
-        <!-- RIGHT: Donation Form -->
         <section class="donation-card" aria-label="Donation form">
-            <h2>Choose Your Gift</h2>
-            <p class="subtext">
+            <h2 data-i18n-key="form_title">Choose Your Gift</h2>
+            <p class="subtext" data-i18n-key="form_subtext">
                 Complete the secure form below to make a tax-deductible donation to Ella Rises.
             </p>
 
             <form action="/donations/add" method="post">
-                <!-- Donor info -->
                 <div class="field-group">
-                    <h3>Donor Information</h3>
+                    <h3 data-i18n-key="h3_donor_info">Donor Information</h3>
                     <div class="inline-fields">
                         <div>
-                            <label for="first_name">First Name</label>
+                            <label for="first_name" data-i18n-key="label_first_name">First Name</label>
                             <input type="text" id="first_name" name="first_name" required>
                         </div>
                         <div>
-                            <label for="last_name">Last Name</label>
+                            <label for="last_name" data-i18n-key="label_last_name">Last Name</label>
                             <input type="text" id="last_name" name="last_name" required>
                         </div>
                     </div>
 
                     <div class="inline-fields">
                         <div>
-                            <label for="email">Email</label>
+                            <label for="email" data-i18n-key="label_email">Email</label>
                             <input type="email" id="email" name="email" required>
-                            <div class="help">For your receipt and updates.</div>
+                            <div class="help" data-i18n-key="help_receipt">For your receipt and updates.</div>
                         </div>
                        <div>
     <label for="phone">Phone</label>
@@ -428,13 +423,12 @@
 
                     <div class="checkbox-row">
                         <input type="checkbox" id="anonymous" name="anonymous" value="1">
-                        <label for="anonymous">Make my donation anonymous.</label>
+                        <label for="anonymous" data-i18n-key="label_anonymous_checkbox">Make my donation anonymous.</label>
                     </div>
                 </div>
 
-                <!-- Amount & frequency -->
                 <div class="field-group">
-                    <h3>Donation Amount</h3>
+                    <h3 data-i18n-key="h3_amount">Donation Amount</h3>
 
                     <div class="pill-toggle-group">
                         <label class="pill-toggle">
@@ -460,52 +454,50 @@
                     </div>
 
                     <div style="margin-top: 0.75rem;">
-                        <label for="other_amount">Other Amount (USD)</label>
-                        <input type="number" id="other_amount" name="other_amount" min="1" step="1" placeholder="Enter another amount">
-                        <div class="help">
+                        <label for="other_amount" data-i18n-key="label_other_amount">Other Amount (USD)</label>
+                        <input type="number" id="other_amount" name="other_amount" min="1" step="1" placeholder="Enter another amount" data-i18n-placeholder-key="placeholder_other_amount">
+                        <div class="help" data-i18n-key="help_other_amount">
                             If you enter an "Other" amount, it will override the buttons above in your backend logic.
                         </div>
                     </div>
 
                     <div>
-                        <label>Frequency</label>
+                        <label data-i18n-key="label_frequency">Frequency</label>
                         <div class="frequency-group">
-                            <label><input type="radio" name="frequency" value="one-time" checked> One-time</label>
-                            <label><input type="radio" name="frequency" value="monthly"> Monthly</label>
-                            <label><input type="radio" name="frequency" value="quarterly"> Quarterly</label>
-                            <label><input type="radio" name="frequency" value="yearly"> Yearly</label>
+                            <label><input type="radio" name="frequency" value="one-time" checked> <span data-i18n-key="freq_one_time">One-time</span></label>
+                            <label><input type="radio" name="frequency" value="monthly"> <span data-i18n-key="freq_monthly">Monthly</span></label>
+                            <label><input type="radio" name="frequency" value="quarterly"> <span data-i18n-key="freq_quarterly">Quarterly</span></label>
+                            <label><input type="radio" name="frequency" value="yearly"> <span data-i18n-key="freq_yearly">Yearly</span></label>
                         </div>
                     </div>
                 </div>
 
-                <!-- Designation & message -->
                 <div class="field-group">
-                    <h3>Additional Details</h3>
+                    <h3 data-i18n-key="h3_details">Additional Details</h3>
                     <div>
-                        <label for="designation">Designate my gift to</label>
+                        <label for="designation" data-i18n-key="label_designation">Designate my gift to</label>
                         <select id="designation" name="designation">
-                            <option value="general">Where it's needed most</option>
-                            <option value="youth_summits">Ella Rises Youth Summits</option>
-                            <option value="steam">STEAM & education programs</option>
-                            <option value="arts">Arts & culture programs</option>
+                            <option value="general" data-i18n-key="option_general">Where it's needed most</option>
+                            <option value="youth_summits" data-i18n-key="option_summits">Ella Rises Youth Summits</option>
+                            <option value="steam" data-i18n-key="option_steam">STEAM & education programs</option>
+                            <option value="arts" data-i18n-key="option_arts">Arts & culture programs</option>
                         </select>
                     </div>
 
                     <div>
-                        <label for="note">Add a note (optional)</label>
-                        <textarea id="note" name="note" placeholder="Dedication, employer match info, or a message to the Ella Rises team."></textarea>
+                        <label for="note" data-i18n-key="label_note">Add a note (optional)</label>
+                        <textarea id="note" name="note" placeholder="Dedication, employer match info, or a message to the Ella Rises team." data-i18n-placeholder-key="placeholder_note"></textarea>
                     </div>
 
                     <div class="checkbox-row">
                         <input type="checkbox" id="updates" name="updates" value="1" checked>
-                        <label for="updates">Email me occasional updates about Ella Rises programs and impact.</label>
+                        <label for="updates" data-i18n-key="label_updates_checkbox">Email me occasional updates about Ella Rises programs and impact.</label>
                     </div>
                 </div>
 
-                <!-- Submit -->
                 <div class="submit-row">
-                    <button type="submit">Continue to Payment</button>
-                    <div class="secure-text">
+                    <button type="submit" data-i18n-key="btn_payment">Continue to Payment</button>
+                    <div class="secure-text" data-i18n-key="secure_text">
                         This is a demo form for INTEX. In production, this would connect to a secure payment processor.
                     </div>
                 </div>
@@ -515,4 +507,4 @@
 </main>
 
 </body>
-</html></div></select></div></label>
+</html>

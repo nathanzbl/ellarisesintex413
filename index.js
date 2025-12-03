@@ -266,7 +266,10 @@ app.get("/survey/thankyou", (req, res) => {
 }); 
 
 app.get("/survey/responses", async (req, res) => {
-  const { eventDefId } = req.query; // query param from the dropdown
+  const { eventDefId } = req.query;
+  const pageSize = 25;
+  const rawPage = parseInt(req.query.page, 10) || 1;
+  const page = Math.max(rawPage, 1);
 
   try {
     // Event definitions for the dropdown
@@ -274,11 +277,30 @@ app.get("/survey/responses", async (req, res) => {
       .select("eventdefid", "eventname")
       .orderBy("eventdefid", "asc");
 
-    // Base query: survey -> event -> eventdefinition -> participant
-    let query = knex("survey as s")
+    // Base query
+    let baseQuery = knex("survey as s")
       .join("event as e", "e.eventid", "s.eventid")
       .join("eventdefinition as ed", "ed.eventdefid", "e.eventdefid")
-      .join("participant as p", "s.participantid", "p.participantid")
+      .join("participant as p", "s.participantid", "p.participantid");
+
+    if (eventDefId && eventDefId !== "") {
+      baseQuery = baseQuery.where("e.eventdefid", Number(eventDefId));
+    }
+
+    // Count
+    const countRow = await baseQuery
+      .clone()
+      .countDistinct({ total: "s.surveyid" })
+      .first();
+
+    const totalCount = parseInt(countRow.total, 10) || 0;
+    const totalPages = totalCount === 0 ? 1 : Math.ceil(totalCount / pageSize);
+    const currentPage = Math.min(page, totalPages);
+    const offset = (currentPage - 1) * pageSize;
+
+    // Data
+    const surveys = await baseQuery
+      .clone()
       .select(
         "s.surveyid",
         "s.eventid",
@@ -293,25 +315,41 @@ app.get("/survey/responses", async (req, res) => {
         "s.surveycomments",
         "s.surveysubmissiondate"
       )
-      .orderBy("s.surveysubmissiondate", "desc");
+      .orderBy("s.surveysubmissiondate", "desc")
+      .limit(pageSize)
+      .offset(offset);
 
-    // Filter by event definition if one was selected
-    if (eventDefId && eventDefId !== "") {
-      query = query.where("e.eventdefid", Number(eventDefId));
-    }
+    const firstItem = totalCount === 0 ? 0 : offset + 1;
+    const lastItem = offset + surveys.length;
 
-    const surveys = await query;
+    // Sliding window: 10 pages at a time
+    const windowSize = 10;
+    const windowStart =
+      Math.floor((currentPage - 1) / windowSize) * windowSize + 1;
+    const windowEnd = Math.min(windowStart + windowSize - 1, totalPages);
 
     res.render("surveyResponses", {
       surveys,
       events,
-      selectedEventDefId: eventDefId || ""
+      selectedEventDefId: eventDefId || "",
+      pagination: {
+        currentPage,
+        totalPages,
+        totalCount,
+        pageSize,
+        firstItem,
+        lastItem,
+        windowSize,
+        windowStart,
+        windowEnd
+      }
     });
   } catch (err) {
     console.error("Survey responses error:", err);
     res.status(500).send("Error loading survey responses");
   }
 });
+
 
 
 
@@ -560,6 +598,101 @@ app.get("/donations/thank-you", (req, res) => {
     res.render("donationThankYou");
 });
 
+
+
+// GET /donations
+app.get('/donations/view', async (req, res) => {
+  try {
+    // RBAC here if you want
+    // if (!req.user || !req.user.isadmin) return res.status(403).render('403');
+
+    const pageSize = 25;
+    const currentPage = Number(req.query.page) > 0 ? Number(req.query.page) : 1;
+
+    const {
+      participantSearch,
+      eventSearch,
+      minAmount,
+      maxAmount
+    } = req.query;
+
+    // Base query with Participant + PrimaryKey + Event + EventDefinition
+    const baseQuery = knex('donation as d')
+      .leftJoin('participant as p', 'd.participantid', 'p.participantid')
+      .leftJoin('primarykey as pk', 'd.donationid', 'pk.donationid')
+      .leftJoin('event as ev', 'pk.eventid', 'ev.eventid')
+      .leftJoin('eventdefinition as ed', 'ev.eventdefid', 'ed.eventdefid');
+
+    const applyFilters = (q) => {
+      if (participantSearch && participantSearch.trim() !== '') {
+        const term = participantSearch.trim();
+        q.where(function () {
+          this.whereILike('p.participantfirstname', `%${term}%`)
+            .orWhereILike('p.participantlastname', `%${term}%`)
+            .orWhereILike('p.participantemail', `%${term}%`);
+        });
+      }
+
+      if (eventSearch && eventSearch.trim() !== '') {
+        q.whereILike('ed.eventname', `%${eventSearch.trim()}%`);
+      }
+
+      if (minAmount && minAmount !== '') {
+        q.where('d.donationamount', '>=', Number(minAmount));
+      }
+
+      if (maxAmount && maxAmount !== '') {
+        q.where('d.donationamount', '<=', Number(maxAmount));
+      }
+    };
+
+    // Count query
+    const countQuery = baseQuery.clone();
+    applyFilters(countQuery);
+
+    const countResult = await countQuery.countDistinct({ total: 'd.donationid' });
+    const totalRows = Number(countResult[0].total || 0);
+    const totalPages = totalRows === 0 ? 1 : Math.ceil(totalRows / pageSize);
+
+    const safePage =
+      currentPage > totalPages ? totalPages : currentPage < 1 ? 1 : currentPage;
+
+    // Data query
+    const dataQuery = baseQuery.clone();
+    applyFilters(dataQuery);
+
+    const donations = await dataQuery
+      .select(
+        'd.donationid',
+        'd.donationnumber',
+        'd.donationamount',
+        'd.donationdate',
+        'p.participantemail',
+        'ed.eventname as eventname',
+        knex.raw(
+          "coalesce(p.participantfirstname, '') || " +
+          "case when p.participantfirstname is not null and p.participantlastname is not null then ' ' else '' end || " +
+          "coalesce(p.participantlastname, '') as participantname"
+        )
+      )
+      .orderBy('d.donationdate', 'desc')
+      .limit(pageSize)
+      .offset((safePage - 1) * pageSize);
+
+    res.render('viewDonations', {
+      donations,
+      participantSearch: participantSearch || '',
+      eventSearch: eventSearch || '',
+      minAmount: minAmount || '',
+      maxAmount: maxAmount || '',
+      currentPage: safePage,
+      totalPages
+    });
+  } catch (err) {
+    console.error('Error loading donations:', err);
+    res.status(500).send('Error loading donations');
+  }
+});
 
 app.get("/users", (req, res) => {
     // Check if user is logged in
@@ -1015,7 +1148,7 @@ const fetchAllParticipants = async (limit, offset) => {
 // PARTICIPANT ROUTES
 // -----------------------------------------------------
 
-// GET /participants - Display the list of all participants with pagination
+// GET /participants - Display the list of all participants with pagination and search
 app.get('/participants', async (req, res) => {
     if (!req.session.isLoggedIn) {
         return res.render("login", { error_message: "" });
@@ -1031,48 +1164,130 @@ app.get('/participants', async (req, res) => {
     const message = req.session.message;
     delete req.session.message;
     
-    // --- Pagination Logic (Uses 100 per page) ---
+    // --- Pagination Logic ---
     const limit = 100;
-    // Ensure currentPage defaults to 1 and is an integer
     const currentPage = parseInt(req.query.page) > 0 ? parseInt(req.query.page) : 1;
     const offset = (currentPage - 1) * limit;
     let totalParticipants = 0;
-    // --------------------------------------------
+    
+    // --- Search Parameters ---
+    // Extract search parameters from the URL query
+    const { search_name, search_id, search_email, search_phone } = req.query; 
+
+    // Function to apply filtering logic to the query builder (used for both count and data)
+    const applyFilters = (queryBuilder) => {
+        queryBuilder.where(function() {
+            const builder = this;
+            let firstCondition = true;
+
+            // Helper to determine if we use WHERE (first) or ANDWHERE (subsequent)
+            const chainCondition = (conditionFunc) => {
+                if (firstCondition) {
+                    builder.where(conditionFunc);
+                    firstCondition = false;
+                } else {
+                    builder.andWhere(conditionFunc);
+                }
+            };
+            
+            // 1. Participant Name Filter (First Name OR Last Name)
+            if (search_name) {
+                const wildCardSearch = `%${search_name.toLowerCase()}%`;
+                
+                chainCondition(function() {
+                    this.whereRaw('LOWER(participantfirstname) LIKE ?', [wildCardSearch])
+                        .orWhereRaw('LOWER(participantlastname) LIKE ?', [wildCardSearch]);
+                });
+            }
+
+            // 2. Participant ID Filter
+            if (search_id) {
+                // If it's a number, treat as exact. Otherwise, use LIKE for partial string search.
+                chainCondition(function() {
+                    if (!isNaN(parseInt(search_id))) {
+                        this.where('participantid', parseInt(search_id));
+                    } else {
+                         const wildCardSearch = `%${search_id}%`;
+                         this.where('participantid', 'LIKE', wildCardSearch);
+                    }
+                });
+            }
+            
+            // 3. Participant Email Filter
+            if (search_email) {
+                const wildCardSearch = `%${search_email.toLowerCase()}%`;
+
+                chainCondition(function() {
+                    this.whereRaw('LOWER(participantemail) LIKE ?', [wildCardSearch]);
+                });
+            }
+            
+            // 4. Participant Phone Filter
+            if (search_phone) {
+                const wildCardSearch = `%${search_phone}%`;
+
+                chainCondition(function() {
+                    // Note: Phone numbers are often stored as strings and searched using LIKE
+                    this.where('participantphone', 'LIKE', wildCardSearch);
+                });
+            }
+        });
+        
+        return queryBuilder;
+    };
+
 
     try {
-        // 1. Get total count for pagination (required to calculate total pages)
-        const countResult = await knex('participant').count('* as count');
+        // --- 1. Get total count for pagination ---
+        let countQuery = knex('participant').clone();
+        countQuery = applyFilters(countQuery);
+        
+        const countResult = await countQuery.count('* as count');
         totalParticipants = parseInt(countResult[0].count, 10);
         
-        // 2. Fetch paginated data (ONLY 100 records for the current page)
-        const allParticipants = await fetchAllParticipants(limit, offset); 
+        // --- 2. Fetch paginated data ---
+        let dataQuery = knex.select('*').from('participant');
+        dataQuery = applyFilters(dataQuery);
         
-        console.log(`✅ PARTICIPANT DATA STATUS: Fetched ${allParticipants.length} participants for page ${currentPage} (Total: ${totalParticipants}).`);
+        // Apply pagination limits to the filtered results
+        const allParticipants = await dataQuery
+            .limit(limit)
+            .offset(offset);
         
-        // 3. Render View
+        console.log(`PARTICIPANT DATA STATUS: Fetched ${allParticipants.length} participants for page ${currentPage} (Total: ${totalParticipants}).`);
+        
+        // --- 3. Render View ---
         const totalPages = Math.ceil(totalParticipants / limit);
         
         res.render('participant/participants', { 
             user: user, 
             participants: allParticipants, 
-            searchQuery: '',
             message: message, 
             error_message: null,
             currentPage: currentPage, 
-            totalPages: totalPages
+            totalPages: totalPages,
+            // Pass search parameters back to EJS for sticky fields
+            search_name,
+            search_id,
+            search_email,
+            search_phone
         });
         
     } catch (error) {
-        console.error("❌ Participant Route Render Error:", error.message);
-        // Pass error through render function
+        console.error("Participant Route Render Error:", error.message);
+        
+        // Ensure search params stick even on error
         res.render('participant/participants', {
             user: user, 
             participants: [],
-            searchQuery: '',
             message: null,
             error_message: error.message,
             currentPage: 1, 
-            totalPages: 1
+            totalPages: 1,
+            search_name: req.query.search_name, 
+            search_id: req.query.search_id,
+            search_email: req.query.search_email,
+            search_phone: req.query.search_phone
         });
     }
 });
@@ -1137,7 +1352,7 @@ app.post("/addParticipant", async (req, res) => {
     }
 });
 
-// GET /editParticipant/:id - Display the form for a single participant (Read Single/Update Form)
+// GET /editParticipant/:id - Display the Participant Profile/Edit Form
 app.get("/editParticipant/:id", (req, res) => {    
     if (!req.session.isLoggedIn) {
         return res.render("login", { error_message: "" });
@@ -1149,24 +1364,41 @@ app.get("/editParticipant/:id", (req, res) => {
         isManager: req.session.user.role === 'manager'
     } : { username: 'Guest', role: 'guest' };
 
-    knex("participant")
-        .where({ participantid: participantId })
-        .first()
-        .then((participant) => {
-            if (!participant) {
-                // Set temporary message in session before redirecting
-                req.session.message = { type: 'error', text: `Participant with ID ${participantId} not found.` };
-                return res.status(404).redirect("/participants"); 
-            }
-            // Ensure error_message is passed to edit form
-            res.render("participant/editparticipant", { participant, user, error_message: "" }); 
-        })
-        .catch((err) => {
-            console.error("Error fetching participant:", err.message);
-            // Fallback render to the list view
-             req.session.message = { type: 'error', text: 'Unable to load participant for editing.' };
-            res.status(500).redirect("/participants");
-        });   
+    // *** FIX: Use Promise.all to fetch both participant data and milestones ***
+    Promise.all([
+        // 1. Fetch Participant Details
+        knex("participant").where({ participantid: participantId }).first(),
+
+        // 2. NEW MILESTONE QUERY: Query the 'milestone' table directly using the participantId
+        knex("milestone")
+            .select(
+                "milestonetitle", // Matches the new table schema
+                "milestonedate"   // Matches the new table schema
+            )
+            .where({ participantid: participantId })
+            .orderBy("milestonedate", "desc") // Sort by date for better viewing
+    ])
+    .then(([participant, milestones]) => { // Destructure results
+        if (!participant) {
+            req.session.message = { type: 'error', text: `Participant with ID ${participantId} not found.` };
+            return res.status(404).redirect("/participants"); 
+        }
+        
+        // Pass the corrected data to the EJS template
+        res.render("participant/editparticipant", { 
+            participant, 
+            milestones, // <-- This array now contains { milestonetitle, milestonedate }
+            user, 
+            error_message: "" 
+        }); 
+    })
+    .catch((err) => {
+        // Log the error so you can see if the Knex query is failing
+        console.error("Error fetching participant and milestones:", err.message); 
+        
+        req.session.message = { type: 'error', text: 'Unable to load participant profile.' };
+        res.status(500).redirect("/participants");
+    });   
 });
 
 // POST /editParticipant/:id - Handle form submission for editing (Update Action)
