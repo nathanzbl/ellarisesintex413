@@ -2276,6 +2276,88 @@ function requireManager(req, res, next) {
     return res.status(403).render("403");
 }   
 
+// -----------------------------------------------------
+// MANAGER — Search All Events (Joined)
+// -----------------------------------------------------
+app.get("/events/manage/all", requireManager, async (req, res) => {
+    const { search_name, search_location, search_type, search_start, search_end } = req.query;
+
+    try {
+        let query = knex("event as e")
+            .join("eventdefinition as d", "e.eventdefid", "d.eventdefid")
+            .select(
+                "e.eventid",
+                "e.eventdatetimestart",
+                "e.eventdatetimeend",
+                "e.eventlocation",
+                "d.eventname",
+                "d.eventtype"
+            )
+            .orderBy("e.eventdatetimestart", "asc");
+
+        // ---------- FILTERS ----------
+        if (search_name && search_name.trim() !== "") {
+            query.whereILike("d.eventname", `%${search_name.trim()}%`);
+        }
+
+        if (search_location && search_location.trim() !== "") {
+            query.whereILike("e.eventlocation", `%${search_location.trim()}%`);
+        }
+
+        if (search_type && search_type.trim() !== "") {
+            query.where("d.eventtype", search_type);
+        }
+
+        if (search_start && search_start !== "") {
+            query.where("e.eventdatetimestart", ">=", search_start);
+        }
+
+        if (search_end && search_end !== "") {
+            query.where("e.eventdatetimestart", "<=", search_end);
+        }
+
+        const events = await query;
+
+        // Format dates for display
+        const formattedEvents = events.map(ev => {
+            const start = new Date(ev.eventdatetimestart);
+            const end = new Date(ev.eventdatetimeend);
+
+            return {
+                ...ev,
+                startFormatted: start.toLocaleString("en-US", {
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                    hour: "numeric",
+                    minute: "2-digit"
+                }),
+                endFormatted: end.toLocaleString("en-US", {
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                    hour: "numeric",
+                    minute: "2-digit"
+                })
+            };
+        });
+
+        res.render("events/manageallevents", {
+            events: formattedEvents,
+            search_name,
+            search_location,
+            search_type,
+            search_start,
+            search_end
+        });
+
+    } catch (err) {
+        console.error("Error loading all-event manager search:", err);
+        res.status(500).render("404");
+    }
+});
+
+
 // Add Event via Calendar Modal — MUST COME FIRST
 app.post("/events/:eventdefid/day/:date/add", requireManager, async (req, res) => {
     const { eventdefid, date } = req.params;
@@ -2467,6 +2549,26 @@ app.post("/events/edit/:id", requireManager, async (req, res) => {
 
 app.get("/tableau", requireManager, async (req, res) => {
     res.render("tableau");
+});
+
+// -----------------------------------------------------
+// DELETE ENTIRE EVENT DEFINITION + ALL CHILD EVENTS
+// -----------------------------------------------------
+app.post("/events/fulldelete/:id", requireManager, async (req, res) => {
+    try {
+        const id = req.params.id;
+
+        // delete event rows first due to FK
+        await knex("event").where("eventdefid", id).del();
+
+        // delete eventdefinition
+        await knex("eventdefinition").where("eventdefid", id).del();
+
+        res.redirect("/events/manage");
+    } catch (err) {
+        console.error("Error deleting full event:", err);
+        res.redirect("/events/manage");
+    }
 });
 
 // Manager — Delete Event
