@@ -137,16 +137,10 @@
 <nav>
     <div class="nav-container">
         <a href="/">
-<<<<<<< HEAD
             <img src="/images/EllaRisesLogo.png.avif" width="75px">
-=======
-            <!-- Note: Changed to absolute path for robustness -->
-            <img src="/images/EllaRisesLogo.png.avif" alt="Ella Rises" class="nav-logo">
->>>>>>> 180de6e9540f2799aa7ea589749db6ff6db35ab6
         </a>
         
         <div class="nav-links">
-<<<<<<< HEAD
             <a href="/" data-i18n-key="nav_home">Home</a>
             <a href="/donations" data-i18n-key="nav_donations">Donations</a>
             <a href="/events" data-i18n-key="nav_events">Events</a>
@@ -163,23 +157,6 @@
             <button id="lang-es" class="lang-button" data-lang="es" data-i18n-key="lang_es_label" aria-label="Cambiar a Español">
                 🇪🇸 SPA
             </button>
-=======
-            <a href="/">Home</a>
-            <a href="/donations">Donations</a>
-            <a href="/events">Events</a>
-            <!-- Only show restricted links if logged in -->
-            <% if (typeof isLoggedIn !== 'undefined' && isLoggedIn) { %>
-                <a href="/milestones">Milestones</a>
-                <a href="/participants">Participants</a>
-                <a href="/surveys">Surveys</a>
-            <% } %>
-
-            <% if (typeof isLoggedIn !== 'undefined' && isLoggedIn) { %>
-                <a href="/logout" style="color: var(--er-rose);">Logout</a>
-            <% } else { %>
-                <a href="/login">Login</a>
-            <% } %>
->>>>>>> 180de6e9540f2799aa7ea589749db6ff6db35ab6
         </div>
     </div>
 </nav>

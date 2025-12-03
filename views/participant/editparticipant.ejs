@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Edit Participant | Ella Rises</title>
+    <title>Participant Profile | Ella Rises</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -175,6 +175,42 @@
             border-top: 1px solid var(--er-blush);
             margin: 2rem 0;
         }
+
+        /* NEW STYLES FOR MILESTONE TABLE */
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            text-align: left;
+            margin-top: 2rem;
+            margin-bottom: 1.25rem;
+            color: var(--er-rose);
+        }
+
+        .milestone-table-custom {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2rem; /* Add spacing below the table */
+        }
+
+        .milestone-table-custom thead tr {
+            background-color: var(--er-blue);
+            color: var(--er-cream);
+            font-size: 0.75rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .milestone-table-custom th,
+        .milestone-table-custom td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--er-blush);
+            font-size: 0.9rem;
+        }
+
+        .milestone-table-custom tbody tr:nth-child(even) {
+            background-color: var(--er-cream);
+        }
     </style>
 </head>
 <body>
@@ -183,8 +219,8 @@
     <div class="main-content">
         <div class="data-card">
             
-            <h1 class="milestone-title">Edit Participant</h1>
-            <p class="milestone-subtitle">Update the details for this participant.</p>
+            <h1 class="milestone-title">Participant Profile</h1>
+            <p class="milestone-subtitle">View and update the primary details for this participant.</p>
             
            
             <% if (typeof error_message !== 'undefined' && error_message) { %>
@@ -195,6 +231,8 @@
 
             <form action="/editParticipant/<%= participant.participantid %>" method="post">
                 
+                <h2 class="section-title" style="color: var(--er-charcoal);">Primary Details</h2>
+
                 <div class="mb-3">
                     <label for="firstName" class="field-label">First Name:</label>
                     <input type="text" 
@@ -225,14 +263,40 @@
                            required>
                 </div>
     
+                <h2 class="section-title">Milestone History</h2>
+                
+                <% // This is the section that was missing the opening EJS tag
+                if (typeof milestones === 'undefined' || milestones.length === 0) { %>
+                    <div class="message-alert" style="color: var(--er-charcoal); background: var(--er-blush); border: 1px solid var(--er-pink); margin-bottom: 2rem;">
+                        This participant has no recorded milestone history.
+                    </div>
+                <% } else { %>
+                    <table class="milestone-table-custom">
+                        <thead>
+                            <tr>
+                                <th>Milestone Title</th>
+                                <th>Date Achieved</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% for (let i = 0; i < milestones.length; i++) { %>
+                                <tr>
+                                    <td><%= milestones[i].milestonetitle %></td>
+                                    <td><%= milestones[i].milestonedate %></td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                <% } %>
                 <hr>
 
                 <div class="text-center-wrapper">
-                    <input type="submit" value="Update Participant" class="btn-action btn-save-milestone">
+                    <input type="submit" value="Update Details" class="btn-action btn-save-milestone">
                     <a href="/participants" class="btn-action btn-back">Back to Participants</a>
                 </div>
 
             </form>
+            
         </div>
     </div>
 </body>
