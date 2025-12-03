@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title><%= eventDef.eventname %> | Ella Rises</title>
+
+<style>
+    :root {
+        --pink: #FFD7D1;
+        --er-pink: #F9AFB1;
+        --er-rose: #CE325B;
+        --charcoal: #3A3F3B;
+        --cream: #F9F5EA;
+    }
+
+    body {
+        margin: 0;
+        background: var(--cream);
+        font-family: "Montserrat", sans-serif;
+        color: var(--charcoal);
+    }
+
+    .page-title {
+        font-family: "DM Serif Display", serif;
+        font-size: 2.6rem;
+        text-align: center;
+        margin-top: 2rem;
+    }
+
+    .detail-container {
+        width: 80%;
+        max-width: 900px;
+        margin: 2rem auto;
+        background: white;
+        padding: 2rem;
+        border-radius: 1.2rem;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        border-top: 8px solid var(--pink);
+    }
+
+    .event-image {
+        width: 100%;
+        height: 350px;
+        object-fit: cover;
+        border-radius: 0.8rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .description {
+        font-size: 1.1rem;
+        margin-top: 1rem;
+        line-height: 1.6rem;
+        color: #555;
+    }
+
+    label {
+        display: block;
+        margin-top: 1.5rem;
+        font-weight: bold;
+    }
+
+    select {
+        width: 100%;
+        padding: 12px;
+        margin-top: 0.5rem;
+        border-radius: 0.5rem;
+        border: 1px solid #ddd;
+        font-size: 1rem;
+    }
+
+    .btn {
+        margin-top: 2rem;
+        display: inline-block;
+        padding: 14px 26px;
+        background: var(--er-rose);
+        color: white;
+        text-decoration: none;
+        border-radius: 2rem;
+        font-weight: bold;
+        font-size: 1rem;
+    }
+
+    .btn:hover {
+        background: #b62b4d;
+    }
+</style>
+</head>
+
+<body>
+<%- include("../navbar.ejs") %>
+
+<h1 class="page-title"><%= eventDef.eventname %></h1>
+
+<div class="detail-container">
+
+    <!-- Large image -->
+    <img src="/images/<%= eventDef.eventimage %>" alt="Event image" class="event-image">
+
+    <!-- Description -->
+    <p class="description"><%= eventDef.eventdescription %></p>
+
+    <!-- Location (use first event) -->
+    <% if (upcomingEvents.length > 0) { %>
+        <p><strong>Location:</strong> <%= upcomingEvents[0].eventlocation %></p>
+    <% } %>
+
+    <!-- Dropdown for times -->
+    <label>Select a Date & Time</label>
+    <select>
+        <% upcomingEvents.forEach(ev => { %>
+            <option value="<%= ev.eventid %>"><%= ev.label %></option>
+        <% }) %>
+    </select>
+
+    <br>
+
+    <a href="/events/rsvp/<%= upcomingEvents.length > 0 ? upcomingEvents[0].eventid : '' %>" class="btn">RSVP</a>
+
+</div>
+
+</body>
+</html>
