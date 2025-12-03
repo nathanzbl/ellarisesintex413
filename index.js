@@ -1068,110 +1068,92 @@ app.get("/donations", (req, res) => {
     res.render("donation/donations");
 });
 
-app.get('/profile', (req, res) => {
-    // 1. Check if the user object exists in the session
+app.get('/profile', async (req, res) => {
+    
+    // 1. Check if the user object exists in the session (Guard Clause)
     const currentUser = req.session.user;
 
-    if (!currentUser) {
-        // Handle case where user is not logged in
+    if (!currentUser || !currentUser.id) {
         return res.redirect('/login'); 
     }
+    
+    const userId = currentUser.id;
 
-    // 2. Pass the user data into the 'users' object for the EJS template
-    res.render('profile', {
-        // The EJS template expects 'users.username'
-        users: { 
-            username: currentUser.username,
-            role: currentUser.role // Optional, but good practice
-            // You can pass other properties if needed
-        },
-        // You can also pass the full object if you need more properties:
-        // profileData: currentUser 
-    });
+    // --- QUERY 1: Fetch Profile Data (User + Participant Info) ---
+    const profileQuery = `
+        SELECT 
+            u.username, 
+            u.role, 
+            u.id, 
+            p.*
+        FROM 
+            users u
+        JOIN 
+            participant p ON p.participantid = u.id
+        WHERE 
+            u.id = ?; 
+    `;
+
+    // --- QUERY 2: Fetch Donation History ---
+    const donationHistoryQuery = `
+        SELECT 
+            donationnumber,
+            donationdate, 
+            donationamount
+            FROM 
+            donation 
+        WHERE 
+            participantid = ?
+        ORDER BY 
+            donationdate DESC; -- Ordering by date descending (newest first)
+    `;
+
+    // --- QUERY 3: Fetch Milestones History ---
+    const milestoneQuery = `
+        SELECT 
+            milestonetitle, 
+            milestonedate
+        FROM 
+            milestone 
+        WHERE 
+            participantid = ?
+        ORDER BY 
+            milestonedate DESC; -- Ordering by date descending (newest first)
+    `;
+
+    try {
+        // EXECUTE QUERY 1: Get Profile Data
+        const profileResult = await knex.raw(profileQuery, [userId]); 
+        const profileData = profileResult.rows[0]; 
+
+        if (!profileData) {
+            return res.status(404).send('Profile data not found. Check if user is in participant table.');
+        }
+
+        // EXECUTE QUERY 2: Get Donation History
+        const donationResult = await knex.raw(donationHistoryQuery, [userId]); 
+        const donationHistory = donationResult.rows; 
+        
+        // EXECUTE QUERY 3: Get Milestones History
+        const milestoneResult = await knex.raw(milestoneQuery, [userId]); 
+        const milestonesHistory = milestoneResult.rows; 
+        
+        // 4. Render the page, passing ALL three sets of data
+        res.render('profile', {
+            users: { 
+                ...profileData,
+            },
+            donations: donationHistory,
+            milestones: milestonesHistory // <-- NEW DATA SET
+        });
+
+    } catch (error) {
+        console.error('Error fetching data:', error);
+        // The previous console output was very helpful! Keep an eye on the terminal 
+        // for specific errors if this fails.
+        res.status(500).send('Server Error retrieving data.');
+    }
 });
-
-// app.get('/profile', async (req, res) => {
-//     // We assume 'isLoggedIn' and 'participantid' are stored on the session after login
-//     if (!req.session.isLoggedIn || !req.session.user || !req.session.user.participantid) {
-//         // If not logged in, redirect to login page
-//         return res.render("login", { error_message: "Please log in to view the dashboard." });
-//     }
-
-//     const participantId = req.session.user.participantid;
-//     let participantProfile = null;
-//     let milestones = [];
-//     let donations = [];
-//     let totalDonations = 0;
-
-//     try {
-//         // --- 2. Fetch Participant Profile (Required fields for display) ---
-//         participantProfile = await knex('participant')
-//             .select(
-//                 'participantid',
-//                 'participantfirstname',
-//                 'participantlastname',
-//                 'participantemail',
-//                 'participantphone',
-//                 'participantdob',
-//                 'fieldofinterest',
-//                 'employerschool'
-//             )
-//             .where({ participantid: participantId })
-//             .first();
-
-//         if (!participantProfile) {
-//             throw new Error("Participant profile not found.");
-//         }
-        
-//         // --- 3. Fetch Milestones (Title and Date) ---
-//         milestones = await knex('milestone')
-//             .select('milestonetitle', 'milestonedate')
-//             .where({ participantid: participantId })
-//             .orderBy('milestonedate', 'desc');
-
-//         // --- 4. Fetch Donations and Calculate Total ---
-        
-//         // Fetch detailed donation history (Amount and Date)
-//         donations = await knex('donation')
-//             .select('amount', 'donationdate')
-//             .where({ participantid: participantId })
-//             .orderBy('donationdate', 'desc');
-            
-//         // Calculate total donations contributed by this participant
-//         const totalResult = await knex('donation')
-//             .where({ participantid: participantId })
-//             .sum('amount as total');
-        
-//         totalDonations = totalResult[0].total || 0;
-
-//         // --- 5. Combine Data and Render ---
-        
-//         // Augment the profile data with the calculated total donations
-//         const userData = {
-//             ...participantProfile,
-//             totalDonations: totalDonations
-//         };
-
-//         res.render('userDashboard', {
-//             user: userData, // Main user profile data (used for title, grid, total)
-//             milestones: milestones,
-//             donations: donations,
-//             error_message: null
-//         });
-
-//     } catch (error) {
-//         console.error("Dashboard Data Fetch Error:", error.message);
-        
-//         // Render a degraded view with an error message
-//         res.render('userDashboard', {
-//             // Pass minimal user info to avoid crash, ensuring participantid is null/undefined
-//             user: { username: req.session.user.username || 'Error', participantid: null }, 
-//             milestones: [],
-//             donations: [],
-//             error_message: `Unable to load dashboard data: ${error.message}`
-//         });
-//     }
-// });
 
 // Milestones list + search
 app.get('/milestones', async (req, res) => {
