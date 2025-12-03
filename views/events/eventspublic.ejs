@@ -100,19 +100,7 @@
 
 <body>
 
-<header>
-    <img src="/images/EllaRisesLogo.png.avif" alt="Ella Rises" height="60">
-
-    <nav>
-        <a href="/">About</a>
-        <a href="/programs">Programs</a>
-        <a href="/eventspublic">Events</a>
-        <a href="/getinvolved">Get Involved</a>
-        <a href="/press">Press</a>
-        <a href="/contact">Contact Us</a>
-        <a href="/donations" class="donate-btn">Donate</a>
-    </nav>
-</header>
+<%- include('../common/navbar.ejs') %>
 
 <h1 class="page-title">Upcoming Events</h1>
 
@@ -142,6 +130,6 @@
 <% } else { %>
 <p style="text-align:center; font-size:18px; color:#666;">No upcoming events.</p>
 <% } %>
-
+<%- include('../common/footer.ejs') %>
 </body>
 </html>

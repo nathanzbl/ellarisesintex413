@@ -66,14 +66,20 @@ app.use(
 
 // session middleware
 function setViewGlobals(req, res, next) {
-    // Check if req.session.isLoggedIn is defined; if so, pass it to the views.
-    // If not logged in, isLoggedIn will be false or undefined, which EJS can check.
+    // 1. Pass isLoggedIn status globally
     res.locals.isLoggedIn = req.session.isLoggedIn || false; 
+
+    // 2. Pass the user object globally, providing a safe fallback if no session user exists
+    if (req.session.user) {
+        // Pass the full user object from the session
+        res.locals.user = req.session.user; 
+    } else {
+        // Provide a default/fallback user object to prevent 'user is not defined' errors
+        res.locals.user = { username: 'Guest', role: 'guest' };
+    }
     
-    // Continue to the next middleware or route handler
     next(); 
 }
-
 // Then, tell Express to use this function for all requests:
 app.use(setViewGlobals);
 
@@ -336,9 +342,6 @@ app.get("/survey/responses", async (req, res) => {
     res.status(500).send("Error loading survey responses");
   }
 });
-
-
-
 
 app.post("/survey/:surveyid/delete", async (req, res) => {
   const { surveyid } = req.params;
@@ -772,138 +775,205 @@ app.get("/donations", (req, res) => {
     res.render("donations");
 });
 
-// Milestone Routes
-app.get("/milestones", (req, res) => {
-    if (!req.session.isLoggedIn) {
-        return res.render("login", { error_message: "" });
+app.get('/profile', (req, res) => {
+    // 1. Check if the user object exists in the session
+    const currentUser = req.session.user;
+
+    if (!currentUser) {
+        // Handle case where user is not logged in
+        return res.redirect('/login'); 
     }
 
-    const limit = 100;
-    const currentPage = parseInt(req.query.page) || 1;
-    const offset = (currentPage - 1) * limit;
-
-    // --- Search Parameters ---
-    const { search_name, search_milestone, date } = req.query;
-
-    let totalMilestones = 0;
-
-    // Base query setup for COUNT and DATA queries
-    const createBaseQuery = () => {
-        return knex
-            .select(
-                'milestone.*',
-                'participant.participantfirstname',
-                'participant.participantlastname',
-                'participant.participantemail'
-            )
-            .from("milestone")
-            .innerJoin(
-                'participant',
-                'milestone.participantid',
-                'participant.participantid'
-            );
-    };
-    
-    // Function to apply filtering logic to the query builder
-    const applyFilters = (queryBuilder) => {
-        
-        // Use a single top-level WHERE clause to contain all filters
-        queryBuilder.where(function() {
-            const builder = this; // Alias for the Knex query builder
-            let firstCondition = true; // Flag to manage the initial WHERE/AND
-
-            // --- 1. Participant Name Filter (OR logic for first/last name) ---
-            if (search_name) {
-                const wildCardSearch = `%${search_name.toLowerCase()}%`;
-                
-                // Nest the OR block inside a WHERE
-                builder.where(function() {
-                    this.whereRaw('LOWER(participant.participantfirstname) LIKE ?', [wildCardSearch])
-                        .orWhereRaw('LOWER(participant.participantlastname) LIKE ?', [wildCardSearch]);
-                });
-                firstCondition = false;
-            }
-
-            // --- 2. Milestone Title Filter (AND condition) ---
-            if (search_milestone) {
-                const wildCardSearch = `%${search_milestone.toLowerCase()}%`;
-                
-                if (firstCondition) {
-                    builder.whereRaw('LOWER(milestonetitle) LIKE ?', [wildCardSearch]);
-                    firstCondition = false;
-                } else {
-                    // Use AND if a previous condition (like search_name) was set
-                    builder.andWhereRaw('LOWER(milestonetitle) LIKE ?', [wildCardSearch]);
-                }
-            }
-
-            // --- 3. Date Filter (To Date, AND condition) ---
-            if (date) {
-                if (firstCondition) {
-                    builder.where('milestonedate', '<=', date);
-                } else {
-                    // Use AND if any previous condition was set
-                    builder.andWhere('milestonedate', '<=', date);
-                }
-            }
-        });
-        
-        return queryBuilder;
-    };
-
-
-    // Step 1: Count the total number of records that match the search filter
-    let countQuery = knex('milestone')
-        .innerJoin(
-            'participant', 
-            'milestone.participantid', 
-            'participant.participantid'
-        );
-    
-    // Apply filters to the base query
-    countQuery = applyFilters(countQuery);
-
-    // Execute count query
-    countQuery.count('* as count')
-    .then(result => {
-        totalMilestones = parseInt(result[0].count);
-        
-        // Step 2: Build the main data query
-        let dataQuery = createBaseQuery();
-
-        // Apply the exact same search filters to the data query
-        dataQuery = applyFilters(dataQuery);
-
-        // Apply pagination limits to the filtered results
-        return dataQuery
-            .limit(limit)
-            .offset(offset);
-    })
-    .then(milestones => {
-        console.log(`Successfully retrieved ${milestones.length} milestones for page ${currentPage}. Total filtered: ${totalMilestones}`);
-        
-        const totalPages = Math.ceil(totalMilestones / limit);
-        
-        // Render the view, passing back the search terms for sticky fields
-        res.render("milestone/milestones", {
-            milestone: milestones,
-            currentPage: currentPage,
-            totalPages: totalPages,
-            // Pass search terms back to the view
-            search_name,
-            search_milestone,
-            date
-        });
-    })
-    .catch((err) => {
-        console.error("Database query error:", err.message);
-        res.render("milestone/milestones", {
-            milestone: [],
-            currentPage: 1, 
-            totalPages: 1,
-            error_message: `Database error: ${err.message}.`
-        });
+    // 2. Pass the user data into the 'users' object for the EJS template
+    res.render('profile', {
+        // The EJS template expects 'users.username'
+        users: { 
+            username: currentUser.username,
+            role: currentUser.role // Optional, but good practice
+            // You can pass other properties if needed
+        },
+        // You can also pass the full object if you need more properties:
+        // profileData: currentUser 
     });
+});
+
+// app.get('/profile', async (req, res) => {
+//     // We assume 'isLoggedIn' and 'participantid' are stored on the session after login
+//     if (!req.session.isLoggedIn || !req.session.user || !req.session.user.participantid) {
+//         // If not logged in, redirect to login page
+//         return res.render("login", { error_message: "Please log in to view the dashboard." });
+//     }
+
+//     const participantId = req.session.user.participantid;
+//     let participantProfile = null;
+//     let milestones = [];
+//     let donations = [];
+//     let totalDonations = 0;
+
+//     try {
+//         // --- 2. Fetch Participant Profile (Required fields for display) ---
+//         participantProfile = await knex('participant')
+//             .select(
+//                 'participantid',
+//                 'participantfirstname',
+//                 'participantlastname',
+//                 'participantemail',
+//                 'participantphone',
+//                 'participantdob',
+//                 'fieldofinterest',
+//                 'employerschool'
+//             )
+//             .where({ participantid: participantId })
+//             .first();
+
+//         if (!participantProfile) {
+//             throw new Error("Participant profile not found.");
+//         }
+        
+//         // --- 3. Fetch Milestones (Title and Date) ---
+//         milestones = await knex('milestone')
+//             .select('milestonetitle', 'milestonedate')
+//             .where({ participantid: participantId })
+//             .orderBy('milestonedate', 'desc');
+
+//         // --- 4. Fetch Donations and Calculate Total ---
+        
+//         // Fetch detailed donation history (Amount and Date)
+//         donations = await knex('donation')
+//             .select('amount', 'donationdate')
+//             .where({ participantid: participantId })
+//             .orderBy('donationdate', 'desc');
+            
+//         // Calculate total donations contributed by this participant
+//         const totalResult = await knex('donation')
+//             .where({ participantid: participantId })
+//             .sum('amount as total');
+        
+//         totalDonations = totalResult[0].total || 0;
+
+//         // --- 5. Combine Data and Render ---
+        
+//         // Augment the profile data with the calculated total donations
+//         const userData = {
+//             ...participantProfile,
+//             totalDonations: totalDonations
+//         };
+
+//         res.render('userDashboard', {
+//             user: userData, // Main user profile data (used for title, grid, total)
+//             milestones: milestones,
+//             donations: donations,
+//             error_message: null
+//         });
+
+//     } catch (error) {
+//         console.error("Dashboard Data Fetch Error:", error.message);
+        
+//         // Render a degraded view with an error message
+//         res.render('userDashboard', {
+//             // Pass minimal user info to avoid crash, ensuring participantid is null/undefined
+//             user: { username: req.session.user.username || 'Error', participantid: null }, 
+//             milestones: [],
+//             donations: [],
+//             error_message: `Unable to load dashboard data: ${error.message}`
+//         });
+//     }
+// });
+
+// Milestones list + search
+app.get('/milestones', async (req, res) => {
+  const pageSize = 100;
+
+  let { page, search_name, search_milestone, date } = req.query;
+
+  // Normalize query params
+  let currentPage = parseInt(page, pageSize);
+  if (isNaN(currentPage) || currentPage < 1) {
+    currentPage = 1;
+  }
+
+  search_name = search_name ? search_name.trim() : "";
+  search_milestone = search_milestone ? search_milestone.trim() : "";
+  date = date ? date.trim() : "";
+
+  try {
+    const baseQuery = knex("milestone as m")
+      .innerJoin("participant as p", "m.participantid", "p.participantid");
+
+    // Reusable filter function
+    const applyFilters = (query) => {
+      if (search_name) {
+        // Match on "First Last"
+        query.whereRaw(
+          "LOWER(p.participantfirstname || ' ' || p.participantlastname) LIKE ?",
+          [`%${search_name.toLowerCase()}%`]
+        );
+      }
+
+      if (search_milestone) {
+        query.whereRaw(
+          "LOWER(m.milestonetitle) LIKE ?",
+          [`%${search_milestone.toLowerCase()}%`]
+        );
+      }
+
+      if (date) {
+        // "To Date" filter
+        query.where("m.milestonedate", "<=", date);
+      }
+
+      return query;
+    };
+
+    // Total count for pagination
+    const countRow = await applyFilters(baseQuery.clone())
+      .countDistinct({ total: "m.milestoneid" })
+      .first();
+
+    const totalRows = parseInt(countRow?.total || 0, 10);
+    const totalPages = totalRows > 0 ? Math.ceil(totalRows / pageSize) : 1;
+
+    // Clamp page to valid range
+    const safePage = Math.min(currentPage, totalPages);
+    const offset = (safePage - 1) * pageSize;
+
+    // Actual data query
+    const milestone = await applyFilters(baseQuery.clone())
+      .select(
+        "m.milestoneid",
+        "m.milestonetitle",
+        "m.milestonedate",
+        "p.participantfirstname",
+        "p.participantlastname",
+        "p.participantemail",
+        "p.participantid"
+      )
+      .orderBy("m.milestonedate", "desc")
+      .limit(pageSize)
+      .offset(offset);
+
+    res.render("milestone/milestones", {
+      milestone,
+      currentPage: safePage,
+      totalPages,
+      search_name,
+      search_milestone,
+      date,
+      error_message: ""
+    });
+  } catch (err) {
+    console.error("Error loading milestones:", err);
+
+    res.render("milestone/milestones", {
+      milestone: [],
+      currentPage: 1,
+      totalPages: 0,
+      search_name,
+      search_milestone,
+      date,
+      error_message: "There was a problem loading milestones."
+    });
+  }
 });
 
 // Add Milestone Post Route
@@ -915,8 +985,9 @@ app.post("/addmilestone", (req, res) => {
     
     // validation check
     if (!milestonetitle || !milestonedate || !participantIdentifier) {
+        // FIX: Pass error_message string directly for validation error
         return res.status(400).render("milestone/addmilestone", { 
-            message: { type: "error", text: "Milestone Title, Date, and Participant Identifier are required." }
+            error_message: "Milestone Title, Date, and Participant Identifier are required."
         });
     }
 
@@ -969,8 +1040,9 @@ app.post("/addmilestone", (req, res) => {
                 console.error("Error in add Milestone process:", err.message);
             }
 
+            // FIX: Pass error_message string directly for database/lookup errors
             res.status(500).render("milestone/addmilestone", { 
-                 message: { type: "error", text: errorMessage }
+                 error_message: errorMessage
             });
         });
 });
@@ -978,7 +1050,8 @@ app.post("/addmilestone", (req, res) => {
 // add milestone get route
 app.get("/addMilestone", (req, res) => {
     if (req.session.isLoggedIn) {
-        res.render("milestone/addmilestone");
+        // FIX: Pass a defined (but null) error_message variable for initial load
+        res.render("milestone/addmilestone", { error_message: null });
     }
     else {
         res.render("login", { error_message: "" });
@@ -998,7 +1071,7 @@ app.get("/editMilestone/:id", (req, res) => {
                     error_message: "Milestone not found."
                 });
             }
-            res.render("editmilestone", { user, error_message: "" });
+            res.render("milestone/editmilestone", { milestone, error_message: "" });
         })
         .catch((err) => {
             console.error("Error fetching milestone:", err.message);
@@ -1125,15 +1198,12 @@ const fetchAllParticipants = async (limit, offset) => {
         return participants;
 
     } catch (error) {
-        console.error("❌ Database query error in fetchAllParticipants:", error.message);
+        console.error("Database query error in fetchAllParticipants:", error.message);
         // Re-throw the error so the main route can catch it
         throw new Error("Failed to fetch participants from database.");
     }
 };
 
-// -----------------------------------------------------
-// PARTICIPANT ROUTES
-// -----------------------------------------------------
 
 // GET /participants - Display the list of all participants with pagination and search
 app.get('/participants', async (req, res) => {

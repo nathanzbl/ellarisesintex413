@@ -93,17 +93,7 @@
 
 <body>
 
-<header>
-    <img src="/images/EllaRisesLogo.png.avif" height="60">
-    <nav>
-        <a href="/">Home</a>
-        <a href="/events">Events</a>
-        <a href="/participants">Participants</a>
-        <a href="/milestones">Milestones</a>
-        <a href="/surveys">Surveys</a>
-        <a href="/donations" class="donate-btn">Donations</a>
-    </nav>
-</header>
+<%- include('../common/navbar.ejs') %>
 
 <h1 class="page-title">Add New Event</h1>
 
@@ -162,6 +152,6 @@
     </form>
 
 </div>
-
+<%- include('../common/footer.ejs') %>
 </body>
 </html>
