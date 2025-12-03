@@ -8,21 +8,21 @@
 
 | Item | Value |
 |------|-------|
-| **URL** | `<YOUR DOMAIN HERE>` |
+| **URL** | `<ellarises.byuisresearch.com>` |
 
 ### Admin Login
 
 | Field | Value |
 |-------|-------|
-| Username | `admin` |
-| Password | `admin123` |
+| Username | `SteveCarell` |
+| Password | `test123` |
 
 ### Common User Login
 
 | Field | Value |
 |-------|-------|
-| Username | `user` |
-| Password | `user123` |
+| Username | `"WarrenBuffet123"` |
+| Password | `password1` |
 
 ### Other Requirements
 

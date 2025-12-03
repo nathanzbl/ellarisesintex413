@@ -253,7 +253,7 @@ app.get("/survey/thankyou", (req, res) => {
 }); 
 
 app.get("/survey/responses", async (req, res) => {
-  const { eventDefId } = req.query;
+  const { eventDefId, participantName } = req.query;
   const pageSize = 25;
   const rawPage = parseInt(req.query.page, 10) || 1;
   const page = Math.max(rawPage, 1);
@@ -270,8 +270,18 @@ app.get("/survey/responses", async (req, res) => {
       .join("eventdefinition as ed", "ed.eventdefid", "e.eventdefid")
       .join("participant as p", "s.participantid", "p.participantid");
 
+    // Filter by event definition if provided
     if (eventDefId && eventDefId !== "") {
       baseQuery = baseQuery.where("e.eventdefid", Number(eventDefId));
+    }
+
+    // Filter by participant full name (case insensitive)
+    if (participantName && participantName.trim() !== "") {
+      const nameTerm = `%${participantName.trim().toLowerCase()}%`;
+      baseQuery = baseQuery.whereRaw(
+        "LOWER(COALESCE(p.participantfirstname, '') || ' ' || COALESCE(p.participantlastname, '')) LIKE ?",
+        [nameTerm]
+      );
     }
 
     // Count
@@ -294,6 +304,16 @@ app.get("/survey/responses", async (req, res) => {
         "e.eventdefid",
         "ed.eventname",
         "p.participantemail",
+        knex.raw(`
+          COALESCE(p.participantfirstname, '') ||
+          CASE
+            WHEN p.participantfirstname IS NOT NULL
+             AND p.participantlastname IS NOT NULL
+            THEN ' '
+            ELSE ''
+          END ||
+          COALESCE(p.participantlastname, '') AS participantname
+        `),
         "s.surveysatisfactionscore",
         "s.surveyusefulnessscore",
         "s.surveyinstructorscore",
@@ -319,6 +339,7 @@ app.get("/survey/responses", async (req, res) => {
       surveys,
       events,
       selectedEventDefId: eventDefId || "",
+      participantName: participantName || "",
       pagination: {
         currentPage,
         totalPages,
@@ -336,6 +357,7 @@ app.get("/survey/responses", async (req, res) => {
     res.status(500).send("Error loading survey responses");
   }
 });
+
 
 
 
@@ -662,7 +684,7 @@ app.get('/donations/view', async (req, res) => {
           "coalesce(p.participantlastname, '') as participantname"
         )
       )
-      .orderBy('d.donationdate', 'desc')
+      .orderBy('d.donationdate', 'asc')
       .limit(pageSize)
       .offset((safePage - 1) * pageSize);
 
@@ -678,6 +700,262 @@ app.get('/donations/view', async (req, res) => {
   } catch (err) {
     console.error('Error loading donations:', err);
     res.status(500).send('Error loading donations');
+  }
+});
+
+app.get("/donations/:id/edit", async (req, res, next) => {
+  try {
+    const id = Number(req.params.id);
+    if (!id) {
+      return res.status(400).send("Invalid donation id");
+    }
+
+    const donation = await knex("donation as d")
+      .leftJoin("participant as p", "d.participantid", "p.participantid")
+      .leftJoin("primarykey as pk", "d.donationid", "pk.donationid")
+      .leftJoin("event as ev", "pk.eventid", "ev.eventid")
+      .leftJoin("eventdefinition as ed", "ev.eventdefid", "ed.eventdefid")
+      .select(
+        "d.donationid",
+        "d.donationamount",
+        "d.donationdate",
+        "d.isanonymous",
+        "d.participantid",
+        knex.raw(
+          "coalesce(p.participantfirstname, '') || " +
+          "case when p.participantfirstname is not null and p.participantlastname is not null then ' ' else '' end || " +
+          "coalesce(p.participantlastname, '') as participantname"
+        ),
+        "p.participantemail",
+        "ed.eventname"
+      )
+      .where("d.donationid", id)
+      .first();
+
+    if (!donation) {
+      return res.status(404).render("404");
+    }
+
+    // Format donationdate for datetime-local (YYYY-MM-DDTHH:MM)
+    let donationdate_local = "";
+    if (donation.donationdate) {
+      const d = new Date(donation.donationdate);
+      const pad = (n) => (n < 10 ? "0" + n : "" + n);
+      const yyyy = d.getFullYear();
+      const mm = pad(d.getMonth() + 1);
+      const dd = pad(d.getDate());
+      const hh = pad(d.getHours());
+      const mi = pad(d.getMinutes());
+      donationdate_local = `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
+    }
+
+    donation.donationdate_local = donationdate_local;
+
+    res.render("editDonation", {
+      donation,
+      error_message: ""
+    });
+  } catch (err) {
+    console.error("Error loading donation for edit:", err);
+    next(err);
+  }
+});
+
+
+app.post("/donations/:id/edit", async (req, res, next) => {
+  try {
+    const id = Number(req.params.id);
+    if (!id) {
+      return res.status(400).send("Invalid donation id");
+    }
+
+    const { donationamount, donationdate, isanonymous } = req.body;
+
+    const newAmount = Number(donationamount);
+    if (!newAmount || newAmount <= 0) {
+      // reload original row to re-render form with error
+      const donation = await knex("donation as d")
+        .leftJoin("participant as p", "d.participantid", "p.participantid")
+        .leftJoin("primarykey as pk", "d.donationid", "pk.donationid")
+        .leftJoin("event as ev", "pk.eventid", "ev.eventid")
+        .leftJoin("eventdefinition as ed", "ev.eventdefid", "ed.eventdefid")
+        .select(
+          "d.donationid",
+          "d.donationamount",
+          "d.donationdate",
+          "d.isanonymous",
+          "d.participantid",
+          knex.raw(
+            "coalesce(p.participantfirstname, '') || " +
+            "case when p.participantfirstname is not null and p.participantlastname is not null then ' ' else '' end || " +
+            "coalesce(p.participantlastname, '') as participantname"
+          ),
+          "p.participantemail",
+          "ed.eventname"
+        )
+        .where("d.donationid", id)
+        .first();
+
+      if (donation) {
+        let donationdate_local = "";
+        if (donation.donationdate) {
+          const d = new Date(donation.donationdate);
+          const pad = (n) => (n < 10 ? "0" + n : "" + n);
+          const yyyy = d.getFullYear();
+          const mm = pad(d.getMonth() + 1);
+          const dd = pad(d.getDate());
+          const hh = pad(d.getHours());
+          const mi = pad(d.getMinutes());
+          donationdate_local = `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
+        }
+        donation.donationdate_local = donationdate_local;
+      }
+
+      return res.status(400).render("editDonation", {
+        donation,
+        error_message: "Please enter a valid donation amount."
+      });
+    }
+
+    // Get existing donation so we can adjust participant totals
+    const existing = await knex("donation")
+      .where({ donationid: id })
+      .first();
+
+    if (!existing) {
+      return res.status(404).render("404");
+    }
+
+    const oldAmount = Number(existing.donationamount) || 0;
+    const delta = newAmount - oldAmount;
+
+    // Normalize date
+    let newDate = existing.donationdate;
+    if (donationdate && donationdate.trim() !== "") {
+      newDate = new Date(donationdate);
+    }
+
+    const newIsAnonymous = !!isanonymous;
+
+    await knex.transaction(async (trx) => {
+      // Update donation row
+      await trx("donation")
+        .where({ donationid: id })
+        .update({
+          donationamount: newAmount,
+          donationdate: newDate,
+          isanonymous: newIsAnonymous
+        });
+
+      // Update participant totaldonations if needed
+      if (delta !== 0 && existing.participantid) {
+        const participant = await trx("participant")
+          .where({ participantid: existing.participantid })
+          .first();
+
+        if (participant) {
+          const currentTotal = Number(participant.totaldonations) || 0;
+          await trx("participant")
+            .where({ participantid: existing.participantid })
+            .update({
+              totaldonations: currentTotal + delta
+            });
+        }
+      }
+    });
+
+    res.redirect("/donations/view");
+  } catch (err) {
+    console.error("Error updating donation:", err);
+    next(err);
+  }
+});
+
+app.post("/donations/:id/delete", async (req, res, next) => {
+  try {
+    const id = Number(req.params.id);
+    if (!id) {
+      return res.status(400).send("Invalid donation id");
+    }
+
+    // Get the existing donation so we know amount and participant
+    const existing = await knex("donation")
+      .where({ donationid: id })
+      .first();
+
+    if (!existing) {
+      // Nothing to delete - just go back to the list
+      return res.redirect("/donations/view");
+    }
+
+    const donationAmount = Number(existing.donationamount) || 0;
+    const participantId = existing.participantid;
+
+    await knex.transaction(async (trx) => {
+      // Adjust participant.totaldonations if this donation was tied to a participant
+      if (participantId) {
+        const participant = await trx("participant")
+          .where({ participantid: participantId })
+          .first();
+
+        if (participant) {
+          const currentTotal = Number(participant.totaldonations) || 0;
+          let newTotal = currentTotal - donationAmount;
+          if (newTotal < 0) newTotal = 0;
+
+          await trx("participant")
+            .where({ participantid: participantId })
+            .update({ totaldonations: newTotal });
+        }
+      }
+
+      // Clean up primarykey row if one exists
+      await trx("primarykey")
+        .where({ donationid: id })
+        .del();
+
+      // Finally delete the donation itself
+      await trx("donation")
+        .where({ donationid: id })
+        .del();
+    });
+
+    res.redirect("/donations/view");
+  } catch (err) {
+    console.error("Error deleting donation:", err);
+    next(err);
+  }
+});
+
+app.get('/donations/new', async (req, res) => {
+  try {
+    const participants = await knex('participant')
+      .select(
+        'participantid',
+        'participantfirstname',
+        'participantlastname',
+        'participantemail'
+      )
+      .orderBy('participantlastname')
+      .orderBy('participantfirstname');
+
+    const events = await knex('event as e')
+      .leftJoin('eventdefinition as ed', 'e.eventdefid', 'ed.eventdefid')
+      .select('e.eventid', 'e.eventdate', 'ed.eventname')
+      .orderBy('e.eventdate', 'desc');
+
+    res.render('adminDonation', {
+      participants,
+      events,
+      error_message: null
+    });
+  } catch (err) {
+    console.error('Error loading add donation view:', err);
+    res.render('adminDonation', {
+      participants: [],
+      events: [],
+      error_message: 'Error loading data for new donation.'
+    });
   }
 });
 
