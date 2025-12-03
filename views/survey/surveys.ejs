@@ -283,7 +283,8 @@
     </style>
 </head>
 <body>
-    <%- include('common/navbar.ejs') %>
+    <!-- Assuming navbar.ejs is correctly pulling styles/font links from the main page -->
+    <%- include('../navbar.ejs') %>
 
     <div class="main-content">
         <div class="survey-card">
@@ -394,7 +395,7 @@
     </div>
     <%- include('common/footer.ejs') %>
     <!-- Include the script for initialization after all content -->
-    <%- include('spanishtranslationstorage.ejs') %>
+    <%- include('../spanishtranslationstorage.ejs') %>
     <%- include('common/footer.ejs') %>
 </body>
 </html>

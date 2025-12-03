@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Program Impact Dashboard | Ella Rises</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:wght@400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --er-blue:     #99B7C6;
+      --er-lavender: #978EC4;
+      --er-cream:    #F9F5EA;
+      --er-blush:    #FFD8D1;
+      --er-pink:     #F9AFB1;
+      --er-sage:     #9AB59D;
+      --er-charcoal: #3A3F3B;
+      --er-peach:    #F4B6A6;
+      --er-rose:     #CE325B;
+      --er-light:    #FFFFFF;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Montserrat", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(135deg, var(--er-cream), #fff);
+      color: var(--er-charcoal);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .page-wrapper {
+      width: 100%;
+      max-width: 1200px;
+      background: var(--er-light);
+      border-radius: 18px;
+      box-shadow: 0 10px 30px rgba(58, 63, 59, 0.12);
+      padding: 28px 28px 32px;
+      border: 1px solid rgba(153, 183, 198, 0.25);
+    }
+
+    .page-header {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .breadcrumb {
+      font-size: 0.85rem;
+      color: rgba(58, 63, 59, 0.7);
+    }
+
+    .breadcrumb a {
+      color: var(--er-lavender);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .breadcrumb a:hover {
+      text-decoration: underline;
+    }
+
+    .page-title {
+      font-family: "DM Serif Display", "Times New Roman", serif;
+      font-size: 1.9rem;
+      letter-spacing: 0.03em;
+      color: var(--er-charcoal);
+    }
+
+    .page-subtitle {
+      font-size: 0.95rem;
+      color: rgba(58, 63, 59, 0.8);
+      max-width: 640px;
+      line-height: 1.4;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 18px 0 16px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .toolbar-left {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      background: rgba(153, 183, 198, 0.15);
+      color: rgba(58, 63, 59, 0.85);
+      border: 1px solid rgba(153, 183, 198, 0.45);
+    }
+
+    .chip-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #2ecc71;
+      margin-right: 6px;
+    }
+
+    .toolbar-right {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.15s ease, color 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid rgba(58, 63, 59, 0.2);
+      color: rgba(58, 63, 59, 0.8);
+    }
+
+    .btn-outline:hover {
+      background: rgba(153, 183, 198, 0.08);
+      border-color: rgba(153, 183, 198, 0.7);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--er-lavender), var(--er-pink));
+      color: #fff;
+      box-shadow: 0 6px 16px rgba(151, 142, 196, 0.3);
+      border: none;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 20px rgba(151, 142, 196, 0.4);
+      filter: brightness(1.02);
+    }
+
+    .btn-icon {
+      margin-right: 6px;
+      font-size: 1rem;
+      line-height: 0;
+    }
+
+    .content-card {
+      background: linear-gradient(135deg, rgba(249, 245, 234, 0.9), rgba(255, 216, 209, 0.9));
+      border-radius: 16px;
+      padding: 16px;
+      border: 1px solid rgba(153, 183, 198, 0.4);
+    }
+
+    .dashboard-shell {
+      position: relative;
+      width: 100%;
+      min-height: 70vh;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid rgba(153, 183, 198, 0.4);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .dashboard-placeholder {
+      text-align: center;
+      padding: 24px;
+      max-width: 420px;
+    }
+
+    .placeholder-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 999px;
+      margin: 0 auto 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(153, 183, 198, 0.12);
+      border: 1px solid rgba(153, 183, 198, 0.4);
+      font-size: 1.2rem;
+    }
+
+    .placeholder-title {
+      font-weight: 600;
+      font-size: 1rem;
+      margin-bottom: 6px;
+      color: var(--er-charcoal);
+    }
+
+    .placeholder-text {
+      font-size: 0.9rem;
+      color: rgba(58, 63, 59, 0.8);
+      margin-bottom: 10px;
+    }
+
+    .placeholder-hint {
+      font-size: 0.8rem;
+      color: rgba(58, 63, 59, 0.7);
+      font-style: italic;
+    }
+
+    @media (max-width: 768px) {
+      .page-wrapper {
+        padding: 20px 16px 24px;
+      }
+
+      .page-title {
+        font-size: 1.6rem;
+      }
+
+      .dashboard-shell {
+        min-height: 60vh;
+      }
+    }
+  </style>
+</head>
+<body>
+    
+  <div class="page-wrapper">
+    <header class="page-header">
+      <div class="breadcrumb">
+        <a href="/admin">Admin</a> / <span>Program Impact Dashboard</span>
+      </div>
+      <h1 class="page-title">Program Impact Dashboard</h1>
+      <p class="page-subtitle">
+        Explore survey results, milestones, and event performance in one place. Use this view
+        to answer donor and leadership questions about how Ella Rises is moving the needle.
+      </p>
+    </header>
+
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <div class="chip">
+          <span class="chip-dot"></span>
+          Live Tableau analytics
+        </div>
+        <div class="chip">
+          🎯 Donor facing ready
+        </div>
+      </div>
+      <div class="toolbar-right">
+        <a href="/admin/donations" class="btn btn-outline">
+          <span class="btn-icon">←</span>
+          Back to admin
+        </a>
+        <button type="button" class="btn btn-primary" onclick="window.location.reload()">
+          <span class="btn-icon">⟳</span>
+          Refresh dashboard
+        </button>
+      </div>
+    </div>
+
+    <section class="content-card">
+      <div class="dashboard-shell" id="tableau-dashboard-container">
+        <!-- 
+          Paste your Tableau embed code inside this container.
+          For example, the script and <iframe> or <div> that Tableau gives you.
+        -->
+        <!-- BEGIN TABLEAU EMBED -->
+        <!-- Your Tableau embed snippet goes here -->
+        <!-- END TABLEAU EMBED -->
+
+        <!-- Temporary placeholder so the page does not look broken before you embed -->
+        <div class="dashboard-placeholder">
+          <div class="placeholder-icon">📊</div>
+          <div class="placeholder-title">Tableau dashboard not embedded yet</div>
+          <p class="placeholder-text">
+            When you are ready, paste the Tableau embed code into the
+            <code>tableau-dashboard-container</code> div in this view.
+          </p>
+          <p class="placeholder-hint">
+            Tip: Make sure the embed uses 100 percent width and height so it fills this container.
+          </p>
+        </div>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

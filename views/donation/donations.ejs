@@ -344,9 +344,13 @@
     </style>
 </head>
 <body>
+<<<<<<< HEAD:views/donations.ejs
     <%- include('common/navbar.ejs') %>
+=======
+    <%- include('../navbar.ejs') %>
+>>>>>>> origin/main:views/donation/donations.ejs
 <main>
-    <%- include('spanishtranslationstorage.ejs') %> 
+    <%- include('../spanishtranslationstorage.ejs') %> 
     <div class="page-layout">
      
 
@@ -454,46 +458,20 @@
                     </div>
 
                     <div style="margin-top: 0.75rem;">
-                        <label for="other_amount" data-i18n-key="label_other_amount">Other Amount (USD)</label>
-                        <input type="number" id="other_amount" name="other_amount" min="1" step="1" placeholder="Enter another amount" data-i18n-placeholder-key="placeholder_other_amount">
-                        <div class="help" data-i18n-key="help_other_amount">
-                            If you enter an "Other" amount, it will override the buttons above in your backend logic.
+                        <label for="other_amount">Other Amount (USD)</label>
+                        <input type="number" id="other_amount" name="other_amount" min="1" step="1" placeholder="Enter another amount">
+                        <div class="help">
+                            If you enter an "Other" amount, it will override the buttons above.
                         </div>
                     </div>
 
-                    <div>
-                        <label data-i18n-key="label_frequency">Frequency</label>
-                        <div class="frequency-group">
-                            <label><input type="radio" name="frequency" value="one-time" checked> <span data-i18n-key="freq_one_time">One-time</span></label>
-                            <label><input type="radio" name="frequency" value="monthly"> <span data-i18n-key="freq_monthly">Monthly</span></label>
-                            <label><input type="radio" name="frequency" value="quarterly"> <span data-i18n-key="freq_quarterly">Quarterly</span></label>
-                            <label><input type="radio" name="frequency" value="yearly"> <span data-i18n-key="freq_yearly">Yearly</span></label>
-                        </div>
-                    </div>
+                    
                 </div>
 
-                <div class="field-group">
-                    <h3 data-i18n-key="h3_details">Additional Details</h3>
-                    <div>
-                        <label for="designation" data-i18n-key="label_designation">Designate my gift to</label>
-                        <select id="designation" name="designation">
-                            <option value="general" data-i18n-key="option_general">Where it's needed most</option>
-                            <option value="youth_summits" data-i18n-key="option_summits">Ella Rises Youth Summits</option>
-                            <option value="steam" data-i18n-key="option_steam">STEAM & education programs</option>
-                            <option value="arts" data-i18n-key="option_arts">Arts & culture programs</option>
-                        </select>
-                    </div>
+                <!-- Designation & message -->
+               
 
-                    <div>
-                        <label for="note" data-i18n-key="label_note">Add a note (optional)</label>
-                        <textarea id="note" name="note" placeholder="Dedication, employer match info, or a message to the Ella Rises team." data-i18n-placeholder-key="placeholder_note"></textarea>
-                    </div>
-
-                    <div class="checkbox-row">
-                        <input type="checkbox" id="updates" name="updates" value="1" checked>
-                        <label for="updates" data-i18n-key="label_updates_checkbox">Email me occasional updates about Ella Rises programs and impact.</label>
-                    </div>
-                </div>
+                    
 
                 <div class="submit-row">
                     <button type="submit" data-i18n-key="btn_payment">Continue to Payment</button>
