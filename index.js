@@ -66,20 +66,14 @@ app.use(
 
 // session middleware
 function setViewGlobals(req, res, next) {
-    // 1. Pass isLoggedIn status globally
+    // Check if req.session.isLoggedIn is defined; if so, pass it to the views.
+    // If not logged in, isLoggedIn will be false or undefined, which EJS can check.
     res.locals.isLoggedIn = req.session.isLoggedIn || false; 
-
-    // 2. Pass the user object globally, providing a safe fallback if no session user exists
-    if (req.session.user) {
-        // Pass the full user object from the session
-        res.locals.user = req.session.user; 
-    } else {
-        // Provide a default/fallback user object to prevent 'user is not defined' errors
-        res.locals.user = { username: 'Guest', role: 'guest' };
-    }
     
+    // Continue to the next middleware or route handler
     next(); 
 }
+
 // Then, tell Express to use this function for all requests:
 app.use(setViewGlobals);
 
@@ -132,7 +126,6 @@ const knex = require("knex")({
 app.use(express.urlencoded({extended: true}));
 
 // Global authentication middleware - runs on EVERY request
-// Global authentication middleware - runs on EVERY request
 app.use((req, res, next) => {
 
     // PUBLIC ROUTES: no login required
@@ -142,6 +135,7 @@ app.use((req, res, next) => {
         req.path === '/logout' ||
         req.path === '/donations' ||
         req.path === '/register' ||
+        req.path === '/teapot' ||
         req.path.startsWith('/eventspublic') ||
         req.path.startsWith('/events/detail') ||
         req.path.startsWith('/events/rsvp')
@@ -150,10 +144,13 @@ app.use((req, res, next) => {
     }
 
     // ALL OTHER ROUTES MUST BE LOGGED IN
+    // Note: Manager/Admin routes rely on specific middleware (e.g., requireManager) later on.
     if (req.session.isLoggedIn) {
         return next();
     } 
     
+    // Save the intended destination path to the session before redirecting to login
+    req.session.redirectTo = req.originalUrl;
     return res.render("login", { error_message: "Please log in to access this page" });
 });
 
@@ -174,14 +171,14 @@ app.get("/surveys", (req, res) => {
     if (req.session.isLoggedIn) {        
         knex.select("eventdefid","eventname").from("eventdefinition")
             .then(events => {
-                res.render("survey/surveys", {
+                res.render("surveys", {
                     events: events,
                     error_message: null
                 });
             })
             .catch((err) => {
                 console.error("Database query error:", err.message);
-                res.render("survey/surveys", {
+                res.render("surveys", {
                     events: [],
                     error_message: `Database error: ${err.message}`
                 });
@@ -268,7 +265,7 @@ app.post("/survey", async (req, res) => {
 });
 
 app.get("/survey/thankyou", (req, res) => {
-    res.render("survey/surveyThankYou");
+    res.render("surveyThankYou");
 }); 
 
 app.get("/survey/responses", async (req, res) => {
@@ -354,7 +351,7 @@ app.get("/survey/responses", async (req, res) => {
       Math.floor((currentPage - 1) / windowSize) * windowSize + 1;
     const windowEnd = Math.min(windowStart + windowSize - 1, totalPages);
 
-    res.render("survey/surveyResponses", {
+    res.render("surveyResponses", {
       surveys,
       events,
       selectedEventDefId: eventDefId || "",
@@ -431,7 +428,7 @@ app.get("/survey/:surveyid/edit", async (req, res) => {
       return res.status(404).send("Survey response not found");
     }
 
-    res.render("survey/surveyEdit", {
+    res.render("surveyEdit", {
       survey,
       eventDefId: eventDefId || ""
     });
@@ -623,7 +620,7 @@ app.post("/donations/add", async (req, res, next) => {
 });
 
 app.get("/donations/thank-you", (req, res) => { 
-    res.render("donation/donationThankYou");
+    res.render("donationThankYou");
 });
 
 
@@ -707,7 +704,7 @@ app.get('/donations/view', async (req, res) => {
       .limit(pageSize)
       .offset((safePage - 1) * pageSize);
 
-    res.render('donation/viewDonations', {
+    res.render('viewDonations', {
       donations,
       participantSearch: participantSearch || '',
       eventSearch: eventSearch || '',
@@ -770,7 +767,7 @@ app.get("/donations/:id/edit", async (req, res, next) => {
 
     donation.donationdate_local = donationdate_local;
 
-    res.render("donation/editDonation", {
+    res.render("editDonation", {
       donation,
       error_message: ""
     });
@@ -958,18 +955,19 @@ app.get('/donations/new', async (req, res) => {
       .orderBy('participantlastname')
       .orderBy('participantfirstname');
 
-    const events = await knex("eventdefinition")
-      .select("eventdefid", "eventname")
-      .orderBy("eventdefid", "asc");
+    const events = await knex('event as e')
+      .leftJoin('eventdefinition as ed', 'e.eventdefid', 'ed.eventdefid')
+      .select('e.eventid', 'e.eventdate', 'ed.eventname')
+      .orderBy('e.eventdate', 'desc');
 
-    res.render('donation/adminDonation', {
+    res.render('adminDonation', {
       participants,
       events,
       error_message: null
     });
   } catch (err) {
     console.error('Error loading add donation view:', err);
-    res.render('donation/adminDonation', {
+    res.render('adminDonation', {
       participants: [],
       events: [],
       error_message: 'Error loading data for new donation.'
@@ -1040,8 +1038,12 @@ app.post('/login', async (req, res) => {
         };
         // Mark session as logged in so the auth middleware allows access
         req.session.isLoggedIn = true;
-        // Redirect to main page
-        return res.redirect('/');
+        
+        // Redirect to the stored URL or default to the landing page ('/')
+        const redirectTo = req.session.redirectTo || '/';
+        delete req.session.redirectTo; // Clear the stored destination
+
+        return res.redirect(redirectTo);
 
     } catch (error) {
         console.error('Login error:', error);
@@ -1057,7 +1059,7 @@ app.get("/logout", (req, res) => {
     // Get rid of the session object
     req.session.destroy((err) => {
         if (err) {
-            console.error(err);
+            console.log(err);
         }
         res.redirect("/");
     });
@@ -1065,7 +1067,7 @@ app.get("/logout", (req, res) => {
 
 // Donation Routes
 app.get("/donations", (req, res) => {
-    res.render("donation/donations");
+    res.render("donations");
 });
 
 app.get('/profile', async (req, res) => {
@@ -1184,75 +1186,173 @@ app.get('/milestones', async (req, res) => {
           [`%${search_name.toLowerCase()}%`]
         );
       }
+// Milestone Routes
+// Access restricted to 'manager' role
+app.get("/milestones", requireManager, async (req, res) => {
+    
+    const limit = 100;
+    const currentPage = parseInt(req.query.page) || 1;
+    const offset = (currentPage - 1) * limit;
 
-      if (search_milestone) {
-        query.whereRaw(
-          "LOWER(m.milestonetitle) LIKE ?",
-          [`%${search_milestone.toLowerCase()}%`]
-        );
-      }
+    // --- Search Parameters ---
+    const { search_name, search_milestone, date } = req.query;
 
-      if (date) {
-        // "To Date" filter
-        query.where("m.milestonedate", "<=", date);
-      }
+    let totalMilestones = 0;
 
-      return query;
+    // Base query setup for COUNT and DATA queries
+    const createBaseQuery = () => {
+        return knex
+            .select(
+                'milestone.*',
+                'participant.participantfirstname',
+                'participant.participantlastname',
+                'participant.participantemail'
+            )
+            .from("milestone")
+            .innerJoin(
+                'participant',
+                'milestone.participantid',
+                'participant.participantid'
+            );
+    };
+    
+    // Function to apply filtering logic to the query builder
+    const applyFilters = (queryBuilder) => {
+        
+        // Use a single top-level WHERE clause to contain all filters
+        queryBuilder.where(function() {
+            const builder = this; // Alias for the Knex query builder
+            let firstCondition = true; // Flag to manage the initial WHERE/AND
+
+            // --- 1. Participant Name Filter (OR logic for first/last name/both) ---
+            if (search_name) {
+                const wildCardSearch = `%${search_name.toLowerCase()}%`;
+                // NEW: Prepare for combined full name search (handles "John Smith")
+                const fullNameSearch = `%${search_name.toLowerCase().replace(/\s+/g, ' ')}%`;
+                
+                // Nest the OR block inside a WHERE
+                builder.where(function() {
+                    this.whereRaw('LOWER(participant.participantfirstname) LIKE ?', [wildCardSearch])
+                        .orWhereRaw('LOWER(participant.participantlastname) LIKE ?', [wildCardSearch])
+                        // ADDED: Search the concatenated full name
+                        .orWhereRaw('LOWER(CONCAT(participant.participantfirstname, \' \', participant.participantlastname)) LIKE ?', [fullNameSearch]);
+                });
+                firstCondition = false;
+            }
+
+            // --- 2. Milestone Title Filter (AND condition) ---
+            if (search_milestone) {
+                const wildCardSearch = `%${search_milestone.toLowerCase()}%`;
+                
+                if (firstCondition) {
+                    builder.whereRaw('LOWER(milestonetitle) LIKE ?', [wildCardSearch]);
+                    firstCondition = false;
+                } else {
+                    // Use AND if a previous condition (like search_name) was set
+                    builder.andWhereRaw('LOWER(milestonetitle) LIKE ?', [wildCardSearch]);
+                }
+            }
+
+            // --- 3. Date Filter (To Date, AND condition) ---
+            if (date) {
+                if (firstCondition) {
+                    builder.where('milestonedate', '<=', date);
+                } else {
+                    // Use AND if any previous condition was set
+                    builder.andWhere('milestonedate', '<=', date);
+                }
+            }
+        });
+        
+        return queryBuilder;
     };
 
-    // Total count for pagination
-    const countRow = await applyFilters(baseQuery.clone())
-      .countDistinct({ total: "m.milestoneid" })
-      .first();
 
-    const totalRows = parseInt(countRow?.total || 0, 10);
-    const totalPages = totalRows > 0 ? Math.ceil(totalRows / pageSize) : 1;
+    // Step 1: Count the total number of records that match the search filter
+    let countQuery = knex('milestone')
+        .innerJoin(
+            'participant', 
+            'milestone.participantid', 
+            'participant.participantid'
+        );
+    
+    // Apply filters to the base query
+    countQuery = applyFilters(countQuery);
 
-    // Clamp page to valid range
-    const safePage = Math.min(currentPage, totalPages);
-    const offset = (safePage - 1) * pageSize;
+    // Execute count query
+    countQuery.count('* as count')
+    .then(result => {
+        totalMilestones = parseInt(result[0].count);
+        
+        // Step 2: Build the main data query
+        let dataQuery = createBaseQuery();
 
-    // Actual data query
-    const milestone = await applyFilters(baseQuery.clone())
-      .select(
-        "m.milestoneid",
-        "m.milestonetitle",
-        "m.milestonedate",
-        "p.participantfirstname",
-        "p.participantlastname",
-        "p.participantemail",
-        "p.participantid"
-      )
-      .orderBy("m.milestonedate", "desc")
-      .limit(pageSize)
-      .offset(offset);
+        // Apply the exact same search filters to the data query
+        dataQuery = applyFilters(dataQuery);
 
-    res.render("milestone/milestones", {
-      milestone,
-      currentPage: safePage,
-      totalPages,
-      search_name,
-      search_milestone,
-      date,
-      error_message: ""
+        // Apply sorting and pagination limits to the filtered results
+        return dataQuery
+            // FIX: Explicitly sort by ID to ensure edited records stay in place
+            .orderBy('milestone.milestoneid', 'asc') 
+            .limit(limit)
+            .offset(offset);
+    })
+    .then(milestones => {
+        console.log(`Successfully retrieved ${milestones.length} milestones for page ${currentPage}. Total filtered: ${totalMilestones}`);
+        
+        const totalPages = Math.ceil(totalMilestones / limit);
+        
+        // Setup user object for EJS rendering (Missing from original, adding for completeness)
+        const user = req.session.user ? {
+            ...req.session.user,
+            name: req.session.user.username,
+            isManager: req.session.user.role === 'manager'
+        } : { username: 'Guest', role: 'guest' };
+        
+        // Get and clear session message (Missing from original, adding for completeness)
+        const message = req.session.message;
+        delete req.session.message;
+        
+        // Render the view, passing back the search terms for sticky fields
+        res.render("milestone/milestones", {
+            user: user, // Added 'user' object
+            message: message, // Added 'message' object
+            milestone: milestones,
+            currentPage: currentPage,
+            totalPages: totalPages,
+            // Pass search terms back to the view
+            search_name,
+            search_milestone,
+            date
+        });
+    })
+    .catch((err) => {
+        console.error("Database query error:", err.message);
+        
+        // Setup user object for EJS rendering on error
+        const user = req.session.user ? {
+            ...req.session.user,
+            name: req.session.user.username,
+            isManager: req.session.user.role === 'manager'
+        } : { username: 'Guest', role: 'guest' };
+        
+        res.render("milestone/milestones", {
+            user: user, // Added 'user' object
+            message: null, // Ensure message is null on error
+            milestone: [],
+            currentPage: 1, 
+            totalPages: 1,
+            error_message: `Database error: ${err.message}.`,
+            // Pass search terms back to the view on error
+            search_name: req.query.search_name,
+            search_milestone: req.query.search_milestone,
+            date: req.query.date
+        });
     });
-  } catch (err) {
-    console.error("Error loading milestones:", err);
-
-    res.render("milestone/milestones", {
-      milestone: [],
-      currentPage: 1,
-      totalPages: 0,
-      search_name,
-      search_milestone,
-      date,
-      error_message: "There was a problem loading milestones."
-    });
-  }
 });
 
-// Add Milestone Post Route
-app.post("/addmilestone", (req, res) => {
+// Add Milestone Post Route - Access restricted to 'manager' role
+app.post("/addmilestone", requireManager, (req, res) => {
     const { milestonetitle, milestonedate } = req.body;
     let { participantIdentifier } = req.body; 
     
@@ -1260,9 +1360,8 @@ app.post("/addmilestone", (req, res) => {
     
     // validation check
     if (!milestonetitle || !milestonedate || !participantIdentifier) {
-        // FIX: Pass error_message string directly for validation error
         return res.status(400).render("milestone/addmilestone", { 
-            error_message: "Milestone Title, Date, and Participant Identifier are required."
+            message: { type: "error", text: "Milestone Title, Date, and Participant Identifier are required." }
         });
     }
 
@@ -1315,39 +1414,31 @@ app.post("/addmilestone", (req, res) => {
                 console.error("Error in add Milestone process:", err.message);
             }
 
-            // FIX: Pass error_message string directly for database/lookup errors
             res.status(500).render("milestone/addmilestone", { 
-                 error_message: errorMessage
+                 message: { type: "error", text: errorMessage }
             });
         });
 });
 
-// add milestone get route
-app.get("/addMilestone", (req, res) => {
-    if (req.session.isLoggedIn) {
-        res.render("milestone/addmilestone",
-            { error_message: "" }
-        );
-    }
-    else {
-        res.render("login", { error_message: "" });
-    }  
+// add milestone get route - Access restricted to 'manager' role
+app.get("/addMilestone", requireManager, (req, res) => {
+    res.render("milestone/addmilestone");
 });
 
-// edit milestone get route
-app.get("/editMilestone/:id", (req, res) => {    
+// edit milestone get route - Access restricted to 'manager' role
+app.get("/editMilestone/:id", requireManager, (req, res) => {    
     const milestoneId = req.params.id;
     knex("milestone")
         .where({ milestoneid: milestoneId })
         .first()
         .then((milestone) => {
             if (!milestone) {
-                return res.status(404).render("milestone/milestones", {
+                return res.status(404).render("/milestones", {
                     milestone: [],
                     error_message: "Milestone not found."
                 });
             }
-            res.render("milestone/milestone/editmilestone", { milestone, error_message: "" });
+            res.render("editmilestone", { milestone, error_message: "" });
         })
         .catch((err) => {
             console.error("Error fetching milestone:", err.message);
@@ -1358,8 +1449,8 @@ app.get("/editMilestone/:id", (req, res) => {
         });   
 });
 
-// Edit Milestone POST Route
-app.post("/editMilestone/:id", (req, res) => {
+// Edit Milestone POST Route - Access restricted to 'manager' role
+app.post("/editMilestone/:id", requireManager, (req, res) => {
     const milestoneID = req.params.id;
     
     const { milestonetitle, milestonedate } = req.body; 
@@ -1442,19 +1533,18 @@ app.post("/editMilestone/:id", (req, res) => {
 })
 
 
-// delete milestone
-app.post("/deleteMilestone/:id", (req, res) => {
+// delete milestone - Access restricted to 'manager' role
+app.post("/deleteMilestone/:id", requireManager, (req, res) => {
     knex("milestone").where("milestoneid", req.params.id).del().then(milestone => {
         res.redirect("/milestones");
     }).catch(err => {
-        console.error(err);
+        console.log(err);
         res.status(500).json({err});
     })
 });
 
 // -----------------------------------------------------
 // HELPER FUNCTION: Fetch paginated participants
-// (Updated to ensure limit and offset are correctly applied)
 // -----------------------------------------------------
 const fetchAllParticipants = async (limit, offset) => {
     try {
@@ -1474,18 +1564,19 @@ const fetchAllParticipants = async (limit, offset) => {
         return participants;
 
     } catch (error) {
-        console.error("Database query error in fetchAllParticipants:", error.message);
+        console.error("❌ Database query error in fetchAllParticipants:", error.message);
         // Re-throw the error so the main route can catch it
         throw new Error("Failed to fetch participants from database.");
     }
 };
 
+// -----------------------------------------------------
+// PARTICIPANT ROUTES - Access restricted to 'manager' role
+// -----------------------------------------------------
 
 // GET /participants - Display the list of all participants with pagination and search
-app.get('/participants', async (req, res) => {
-    if (!req.session.isLoggedIn) {
-        return res.render("login", { error_message: "" });
-    }
+app.get('/participants', requireManager, async (req, res) => {
+    
     // Setup user object for EJS rendering
     const user = req.session.user ? {
         ...req.session.user,
@@ -1523,13 +1614,22 @@ app.get('/participants', async (req, res) => {
                 }
             };
             
-            // 1. Participant Name Filter (First Name OR Last Name)
+            // 1. Participant Name Filter (First Name OR Last Name OR Both)
             if (search_name) {
                 const wildCardSearch = `%${search_name.toLowerCase()}%`;
                 
+                // Construct the full name string for combined search
+                const fullNameSearch = `%${search_name.toLowerCase().replace(/\s+/g, ' ')}%`;
+
                 chainCondition(function() {
+                    // Condition 1: Search in first name
                     this.whereRaw('LOWER(participantfirstname) LIKE ?', [wildCardSearch])
-                        .orWhereRaw('LOWER(participantlastname) LIKE ?', [wildCardSearch]);
+                        
+                        // Condition 2: Search in last name
+                        .orWhereRaw('LOWER(participantlastname) LIKE ?', [wildCardSearch])
+                        
+                        // Condition 3: Search for full name combined (handles "John Smith")
+                        .orWhereRaw('LOWER(CONCAT(participantfirstname, \' \', participantlastname)) LIKE ?', [fullNameSearch]);
                 });
             }
 
@@ -1584,6 +1684,8 @@ app.get('/participants', async (req, res) => {
         
         // Apply pagination limits to the filtered results
         const allParticipants = await dataQuery
+            // FIX FOR ORDERING: Explicitly sort by ID to prevent edited records from moving to the bottom
+            .orderBy('participantid', 'asc')
             .limit(limit)
             .offset(offset);
         
@@ -1625,11 +1727,9 @@ app.get('/participants', async (req, res) => {
     }
 });
 
-// GET /addParticipant - Display the form (Create Form)
-app.get("/addParticipant", (req, res) => {
-    if (!req.session.isLoggedIn) {
-        return res.render("login", { error_message: "" });
-    }
+// GET /addParticipant - Display the form (Create Form) - Access restricted to 'manager' role
+app.get("/addParticipant", requireManager, (req, res) => {
+    
     const user = req.session.user ? {
         ...req.session.user,
         name: req.session.user.username,
@@ -1640,8 +1740,8 @@ app.get("/addParticipant", (req, res) => {
     res.render("participant/addparticipant", { message: null, user: user, error_message: "" });
 });
 
-// POST /addParticipant - Handle form submission (Create Action)
-app.post("/addParticipant", async (req, res) => {
+// POST /addParticipant - Handle form submission (Create Action) - Access restricted to 'manager' role
+app.post("/addParticipant", requireManager, async (req, res) => {
     // Assuming fields like firstName, lastName, email, etc.
     const { firstName, lastName, email } = req.body; 
     
@@ -1685,8 +1785,8 @@ app.post("/addParticipant", async (req, res) => {
     }
 });
 
-// GET /editParticipant/:id - Display the Participant Profile/Edit Form
-app.get('/editParticipant/:id', async (req, res) => {
+// GET /editParticipant/:id - Display the Participant Profile/Edit Form - Access restricted to 'manager' role
+app.get('/editParticipant/:id', requireManager, async (req, res) => {
     const participantId = req.params.id;
     try {
         // 1. Fetch Participant Details (Ensure all columns are selected)
@@ -1696,14 +1796,10 @@ app.get('/editParticipant/:id', async (req, res) => {
                 'participantfirstname',
                 'participantlastname',
                 'participantemail',
-                'participantphone',   // <--- ADD THIS
-                'participantcity',    // <--- ADD THIS
-                'participantstate',   // <--- ADD THIS
-                'participantzip',
-                 'participantdob',
-                  'participantschooloremployer',
-                  'participantfieldofinterest' ,
-                  'totaldonations' // <--- ADD THIS
+                'participantphone',   
+                'participantcity',    
+                'participantstate',   
+                'participantzip'      
                 // ... any other columns you need ...
             )
             .where({ participantid: participantId })
@@ -1736,18 +1832,18 @@ app.get('/editParticipant/:id', async (req, res) => {
     }
 });
 
-// POST /editParticipant/:id - Handle form submission for editing (Update Action)
-app.post('/editParticipant/:id', async (req, res) => {
+// POST /editParticipant/:id - Handle form submission for editing (Update Action) - Access restricted to 'manager' role
+app.post('/editParticipant/:id', requireManager, async (req, res) => {
     const participantId = req.params.id;
     // Destructure all fields from the form submission
     const { 
         firstName, 
         lastName, 
         email, 
-        phone,    // <--- ADD THIS
-        city,     // <--- ADD THIS
-        state,    // <--- ADD THIS
-        zip       // <--- ADD THIS
+        phone,    
+        city,     
+        state,    
+        zip       
     } = req.body;
 
     // Basic validation (ensure required fields are present)
@@ -1783,12 +1879,8 @@ app.post('/editParticipant/:id', async (req, res) => {
     }
 });
 
-// POST /deleteParticipant/:id - Delete a participant (Delete Action)
-app.post("/deleteParticipant/:id", (req, res) => {
-    if (req.session.user.role !== 'manager') {
-        req.session.message = { type: 'error', text: 'Authorization denied.' };
-        return res.redirect("/participants");
-    }
+// POST /deleteParticipant/:id - Delete a participant (Delete Action) - Access restricted to 'manager' role
+app.post("/deleteParticipant/:id", requireManager, (req, res) => {
     
     knex("participant")
         .where("participantid", req.params.id)
@@ -1806,16 +1898,6 @@ app.post("/deleteParticipant/:id", (req, res) => {
             req.session.message = { type: 'error', text: 'A database error prevented the deletion.' };
             res.status(500).redirect("/participants");
         });
-});
-
-// delete participant
-app.post("/deleteParticipant/:id", (req, res) => {
-    knex("participant").where("participantid", req.params.id).del().then(participant => {
-        res.redirect("/participants");
-    }).catch(err => {
-        console.error(err);
-        res.status(500).json({err});
-    })
 });
 
 
@@ -1871,7 +1953,7 @@ app.post('/register', async (req, res) => {
             [username, hashedPassword, 'manager']
         );
 
-        console.log(` New manager registered: ${username}`);
+        console.log(`✅ New manager registered: ${username}`);
 
         return res.status(200).json({ 
             success: true, 
@@ -1892,7 +1974,7 @@ app.post("/deleteUser/:id", (req, res) => {
     knex("users").where("id", req.params.id).del().then(users => {
         res.redirect("/users");
     }).catch(err => {
-        console.error(err);
+        console.log(err);
         res.status(500).json({err});
     })
 });
@@ -1991,7 +2073,25 @@ app.post("/editUser/:id", upload.single("profileImage"), (req, res) => {
         });
 });
 
-
+app.get("/displayHobbies/:userId", (req, res) => {
+    const userId = req.params.userId;
+    knex("users")
+        .where({ id: userId })
+        .first()
+        .then((user) => {
+            knex("hobbies")
+                .where({ user_id: userId })
+                .orderBy("id")
+                .then((hobbies) => {
+                    res.render("displayHobbies", {
+                        user,
+                        hobbies,
+                        error_message: "",
+                        success_message: ""
+                    });
+                })
+            });
+});
 
 // -----------------------------------------------------
 //  EVENT SYSTEM ROUTES (PUBLIC + MANAGER)
@@ -2032,7 +2132,7 @@ app.get("/events/detail/:id", async (req, res) => {
 
         if (!event) return res.status(404).render("404");
 
-        res.render("events/eventdetail", { event });
+        res.render("eventdetail", { event });
     } catch (err) {
         console.error("Error loading event detail:", err);
         res.status(500).render("404");
@@ -2055,7 +2155,7 @@ app.get("/events/rsvp/:id", async (req, res) => {
 
         if (!event) return res.status(404).render("404");
 
-        res.render("events/eventrsvp", { event });
+        res.render("eventrsvp", { event });
     } catch (err) {
         console.error("Error loading RSVP page:", err);
         res.status(500).render("404");
@@ -2077,16 +2177,23 @@ app.post("/events/rsvp/:id", async (req, res) => {
    2. MANAGER-ONLY ROUTES
    ================================================ */
 
-// Middleware: Only allow managers
+// Middleware: Only allow managers (role 'manager' or 'm')
 function requireManager(req, res, next) {
-    if (!req.session.user) return res.status(403).render("403");
+    // 1. Check if user is logged in
+    if (!req.session.isLoggedIn || !req.session.user) {
+        // Redirect to login, storing the original path
+        req.session.redirectTo = req.originalUrl;
+        return res.render("login", { error_message: "Please log in to access this page" });
+    }
 
+    // 2. Check for required role
     const role = req.session.user.role.toLowerCase().trim();
 
     if (role === "manager" || role === "m") {
         return next();
     }
 
+    // 3. User is logged in but does not have the manager role
     return res.status(403).render("403");
 }   
 
@@ -2264,10 +2371,6 @@ app.post("/events/edit/:id", requireManager, async (req, res) => {
     }
 });
 
-app.get("/tableau", requireManager, async (req, res) => {
-    res.render("tableau");
-});
-
 // Manager — Delete Event
 app.post("/events/delete/:id", requireManager, async (req, res) => {
     try {
@@ -2282,9 +2385,12 @@ app.post("/events/delete/:id", requireManager, async (req, res) => {
     }
 });
 
+app.get("/teapot", (req, res) => {
+    // Renders the teapot.ejs file located in the views folder
+    res.render("teapot"); 
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
-

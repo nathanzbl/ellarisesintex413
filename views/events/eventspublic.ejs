@@ -128,6 +128,15 @@
         background: var(--er-rose);
     }
 
+    .event-img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    display: block;
+    margin-bottom: 1rem;
+}
+
+
 </style>
 </head>
 
@@ -135,23 +144,23 @@
 
 <%- include('../common/navbar.ejs') %>
 
-<h1 class="page-title">Upcoming Events</h1>
-
-<div class="events-image-wrapper">
-    <img src="/images/EventsPhoto.jpg" alt="Ella Rises Event" class="events-image">
-</div>
+<h1 class="page-title">Events</h1>
 
 
 <div class="event-grid">
     <% eventDefs.forEach(def => { %>
         <div class="event-card">
-
+            <% if (def.eventimage) { %>
+                <img src="/images/<%= def.eventimage %>" alt="Event image" class="event-img">
+            <% } else { %>
+                <img src="/images/default-event.jpg" class="event-img">
+            <% } %>
             <div class="event-name"><%= def.eventname %></div>
             <div class="event-description"><%= def.eventdescription %></div>
 
             <!-- Expand-down Actions -->
             <div class="hover-actions">
-                <a href="/events/<%= def.eventdefid %>" class="btn-action">More Info</a>
+                <a href="/eventspublic/detail/<%= def.eventdefid %>" class="btn-action">More Info</a>
                 <a href="/rsvp/<%= def.eventdefid %>" class="btn-action">RSVP</a>
             </div>
 
