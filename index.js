@@ -135,6 +135,7 @@ app.use((req, res, next) => {
         req.path === '/logout' ||
         req.path === '/donations' ||
         req.path === '/register' ||
+        req.path === '/teapot' ||
         req.path.startsWith('/eventspublic') ||
         req.path.startsWith('/events/detail') ||
         req.path.startsWith('/events/rsvp')
@@ -2224,6 +2225,10 @@ app.post("/events/delete/:id", requireManager, async (req, res) => {
     }
 });
 
+app.get("/teapot", (req, res) => {
+    // Renders the teapot.ejs file located in the views folder
+    res.render("teapot"); 
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
