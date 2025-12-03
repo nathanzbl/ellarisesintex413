@@ -1070,6 +1070,122 @@ app.get("/donations", (req, res) => {
     res.render("donations");
 });
 
+app.get('/profile', async (req, res) => {
+    
+    // 1. Check if the user object exists in the session (Guard Clause)
+    const currentUser = req.session.user;
+
+    if (!currentUser || !currentUser.id) {
+        return res.redirect('/login'); 
+    }
+    
+    const userId = currentUser.id;
+
+    // --- QUERY 1: Fetch Profile Data (User + Participant Info) ---
+    const profileQuery = `
+        SELECT 
+            u.username, 
+            u.role, 
+            u.id, 
+            p.*
+        FROM 
+            users u
+        JOIN 
+            participant p ON p.participantid = u.id
+        WHERE 
+            u.id = ?; 
+    `;
+
+    // --- QUERY 2: Fetch Donation History ---
+    const donationHistoryQuery = `
+        SELECT 
+            donationnumber,
+            donationdate, 
+            donationamount
+            FROM 
+            donation 
+        WHERE 
+            participantid = ?
+        ORDER BY 
+            donationdate DESC; -- Ordering by date descending (newest first)
+    `;
+
+    // --- QUERY 3: Fetch Milestones History ---
+    const milestoneQuery = `
+        SELECT 
+            milestonetitle, 
+            milestonedate
+        FROM 
+            milestone 
+        WHERE 
+            participantid = ?
+        ORDER BY 
+            milestonedate DESC; -- Ordering by date descending (newest first)
+    `;
+
+    try {
+        // EXECUTE QUERY 1: Get Profile Data
+        const profileResult = await knex.raw(profileQuery, [userId]); 
+        const profileData = profileResult.rows[0]; 
+
+        if (!profileData) {
+            return res.status(404).send('Profile data not found. Check if user is in participant table.');
+        }
+
+        // EXECUTE QUERY 2: Get Donation History
+        const donationResult = await knex.raw(donationHistoryQuery, [userId]); 
+        const donationHistory = donationResult.rows; 
+        
+        // EXECUTE QUERY 3: Get Milestones History
+        const milestoneResult = await knex.raw(milestoneQuery, [userId]); 
+        const milestonesHistory = milestoneResult.rows; 
+        
+        // 4. Render the page, passing ALL three sets of data
+        res.render('profile', {
+            users: { 
+                ...profileData,
+            },
+            donations: donationHistory,
+            milestones: milestonesHistory // <-- NEW DATA SET
+        });
+
+    } catch (error) {
+        console.error('Error fetching data:', error);
+        // The previous console output was very helpful! Keep an eye on the terminal 
+        // for specific errors if this fails.
+        res.status(500).send('Server Error retrieving data.');
+    }
+});
+
+// Milestones list + search
+app.get('/milestones', async (req, res) => {
+  const pageSize = 100;
+
+  let { page, search_name, search_milestone, date } = req.query;
+
+  // Normalize query params
+  let currentPage = parseInt(page, pageSize);
+  if (isNaN(currentPage) || currentPage < 1) {
+    currentPage = 1;
+  }
+
+  search_name = search_name ? search_name.trim() : "";
+  search_milestone = search_milestone ? search_milestone.trim() : "";
+  date = date ? date.trim() : "";
+
+  try {
+    const baseQuery = knex("milestone as m")
+      .innerJoin("participant as p", "m.participantid", "p.participantid");
+
+    // Reusable filter function
+    const applyFilters = (query) => {
+      if (search_name) {
+        // Match on "First Last"
+        query.whereRaw(
+          "LOWER(p.participantfirstname || ' ' || p.participantlastname) LIKE ?",
+          [`%${search_name.toLowerCase()}%`]
+        );
+      }
 // Milestone Routes
 // Access restricted to 'manager' role
 app.get("/milestones", requireManager, async (req, res) => {
