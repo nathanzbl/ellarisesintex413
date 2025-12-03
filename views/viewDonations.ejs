@@ -36,6 +36,8 @@
     .page-wrapper {
       min-height: 100vh;
       padding: 24px;
+      max-width: 1200px;
+      margin: 24px auto 40px;
       display: flex;
       flex-direction: column;
       gap: 24px;
@@ -45,104 +47,164 @@
       display: flex;
       flex-wrap: wrap;
       justify-content: space-between;
-      align-items: baseline;
-      gap: 12px;
+      align-items: center;
+      gap: 8px;
     }
+
+    .header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-actions .btn-primary {
+  font-size: 0.9rem;
+  padding: 9px 18px;
+}
 
     h1 {
       font-family: 'DM Serif Display', serif;
-      font-size: 2.2rem;
+      font-size: 2.3rem;
       margin: 0;
       color: var(--er-lavender);
     }
 
     .subtitle {
-      margin: 0;
+      margin: 4px 0 0;
       font-size: 0.98rem;
       color: #555;
     }
 
     .card {
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
-      padding: 20px 20px 24px;
+      background: linear-gradient(135deg, #ffffff, #fffaf5);
+      border-radius: 18px;
+      border: 1px solid #f0e2d9;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.04);
+      padding: 20px 22px 24px;
     }
+
+    /* Filters */
 
     .filters {
       display: flex;
       flex-wrap: wrap;
-      gap: 12px;
-      margin-bottom: 16px;
+      gap: 16px;
+      margin-bottom: 18px;
       align-items: flex-end;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #f3ece6;
     }
 
     .filter-group {
       display: flex;
       flex-direction: column;
       gap: 4px;
-      min-width: 160px;
-      flex: 1;
+      min-width: 180px;
+      flex: 1 1 180px;
     }
 
     .filter-group label {
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       font-weight: 600;
-      color: #555;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
     }
 
     .filter-group input,
     .filter-group select {
-      padding: 8px 10px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
+      padding: 8px 11px;
+      border-radius: 9px;
+      border: 1px solid #d6d6d6;
       font-size: 0.95rem;
       font-family: inherit;
+      background-color: #fff;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .filter-group input:focus,
+    .filter-group select:focus {
+      border-color: var(--er-lavender);
+      box-shadow: 0 0 0 2px rgba(151,142,196,0.18);
     }
 
     .filter-actions {
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
+      justify-content: flex-end;
+      flex: 1 1 160px;
     }
 
     .btn {
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       padding: 9px 16px;
-      border-radius: 8px;
+      border-radius: 999px;
       border: none;
       cursor: pointer;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       font-weight: 600;
       font-family: inherit;
       text-decoration: none;
       text-align: center;
+      line-height: 1.1;
+      transition: background-color 0.15s ease, color 0.15s ease,
+                  box-shadow 0.15s ease, transform 0.05s ease;
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 0.82rem;
     }
 
     .btn-primary {
-      background: var(--er-sage);
+      background: var(--er-lavender);
       color: #fff;
+      box-shadow: 0 6px 14px rgba(151,142,196,0.35);
     }
 
     .btn-primary:hover {
-      background: var(--er-lavender);
+      background: #7c73c1;
+      transform: translateY(-1px);
+      box-shadow: 0 8px 18px rgba(151,142,196,0.45);
     }
 
     .btn-secondary {
       background: #fff;
       color: var(--er-charcoal);
-      border: 1px solid #ccc;
+      border: 1px solid #d0d0d0;
     }
 
     .btn-secondary:hover {
       border-color: var(--er-lavender);
       color: var(--er-lavender);
+      background: #faf7ff;
     }
+
+    .btn-danger {
+      background: #f46a6a;
+      color: #fff;
+      border: 1px solid #f46a6a;
+      box-shadow: 0 4px 10px rgba(244,106,106,0.4);
+    }
+
+    .btn-danger:hover {
+      background: #dd5555;
+      border-color: #dd5555;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 14px rgba(221,85,85,0.45);
+    }
+
+    /* Table */
 
     .table-wrapper {
       overflow-x: auto;
-      border-radius: 12px;
+      border-radius: 14px;
       border: 1px solid #eee;
+      background: #fff;
     }
 
     table {
@@ -153,7 +215,7 @@
     }
 
     thead {
-      background: var(--er-blue);
+      background: linear-gradient(90deg, var(--er-blue), var(--er-lavender));
       color: #fff;
     }
 
@@ -161,28 +223,51 @@
     td {
       padding: 10px 12px;
       text-align: left;
-      border-bottom: 1px solid #f0f0f0;
+      border-bottom: 1px solid #f3f3f3;
       white-space: nowrap;
     }
 
     th {
       font-weight: 600;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       text-transform: uppercase;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.06em;
     }
 
     tbody tr:nth-child(even) {
       background: #fafafa;
     }
 
+    tbody tr:hover {
+      background: #f2f7fb;
+    }
+
     .text-right {
       text-align: right;
     }
 
+    td:nth-child(5) {
+      font-variant-numeric: tabular-nums;
+    }
+
+    td:nth-child(6) {
+      font-size: 0.85rem;
+      color: #666;
+      max-width: 260px;
+      white-space: normal;
+    }
+
+    td:last-child {
+      text-align: right;
+    }
+
+    td:last-child .btn {
+      margin-left: 4px;
+    }
+
     .tag {
       display: inline-block;
-      padding: 2px 8px;
+      padding: 3px 9px;
       border-radius: 999px;
       font-size: 0.75rem;
       font-weight: 600;
@@ -198,8 +283,10 @@
       color: #2f6f4a;
     }
 
+    /* Pagination */
+
     .pagination {
-      margin-top: 16px;
+      margin-top: 18px;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -209,11 +296,21 @@
     }
 
     .page-link {
-      padding: 6px 10px;
+      padding: 6px 11px;
       border-radius: 999px;
       border: 1px solid #ddd;
       text-decoration: none;
       color: var(--er-charcoal);
+      background: #fff;
+      transition: background-color 0.15s ease,
+                  border-color 0.15s ease,
+                  color 0.15s ease;
+    }
+
+    .page-link:hover {
+      border-color: var(--er-lavender);
+      color: var(--er-lavender);
+      background: #faf7ff;
     }
 
     .page-link.active {
@@ -231,23 +328,44 @@
     @media (max-width: 768px) {
       .page-wrapper {
         padding: 16px;
+        margin-top: 12px;
       }
 
       h1 {
-        font-size: 1.8rem;
+        font-size: 1.9rem;
+      }
+
+      .filters {
+        align-items: stretch;
+      }
+
+      .filter-actions {
+        justify-content: flex-start;
+      }
+
+      td:nth-child(6) {
+        max-width: 180px;
       }
     }
   </style>
 </head>
 
 <body>
+  <%- include('navbar.ejs') %>
+
   <div class="page-wrapper">
     <header>
-      <div>
-        <h1>Donations</h1>
-        <p class="subtitle">Admin view of all recorded donations for Ella Rises.</p>
-      </div>
-    </header>
+  <div>
+    <h1>Donations</h1>
+    <p class="subtitle">Admin view of all recorded donations for Ella Rises.</p>
+  </div>
+
+  <div class="header-actions">
+    <a href="/donations/new" class="btn btn-primary">
+      + Add donation
+    </a>
+  </div>
+</header>
 
     <div class="card">
       <!-- Filters -->
@@ -263,16 +381,7 @@
           />
         </div>
 
-        <div class="filter-group">
-          <label for="eventSearch">Event</label>
-          <input
-            type="text"
-            id="eventSearch"
-            name="eventSearch"
-            placeholder="Search event"
-            value="<%= typeof eventSearch !== 'undefined' ? eventSearch : '' %>"
-          />
-        </div>
+       
 
         <div class="filter-group">
           <label for="minAmount">Min amount</label>
@@ -312,13 +421,13 @@
               <th>ID</th>
               <th>Participant</th>
               <th>Email</th>
-              <th>Event</th>
               <th class="text-right">Amount</th>
               <th>Date</th>
-              <th>Method</th>
               <th>Anonymous</th>
+              <th>Actions</th>
             </tr>
           </thead>
+
           <tbody>
             <% if (donations && donations.length > 0) { %>
               <% donations.forEach(function(donation) { %>
@@ -326,18 +435,34 @@
                   <td><%= donation.donationid %></td>
                   <td><%= donation.participantname || 'Anonymous' %></td>
                   <td><%= donation.participantemail || 'N/A' %></td>
-                  <td><%= donation.eventname || 'N/A' %></td>
                   <td class="text-right">
                     $<%= Number(donation.donationamount).toFixed(2) %>
                   </td>
-                  <td><%= donation.donationdate %></td>
-                  <td><%= donation.paymentmethod || 'N/A' %></td>
-                  <td>
+<td><%= new Date(donation.donationdate).toDateString() %></td>                  <td>
                     <% if (donation.isanonymous) { %>
                       <span class="tag tag-anon">Anonymous</span>
                     <% } else { %>
                       <span class="tag tag-visible">Visible</span>
                     <% } %>
+                  </td>
+                  <td>
+                    <a
+                      href="/donations/<%= donation.donationid %>/edit"
+                      class="btn btn-secondary btn-sm"
+                    >
+                      Edit
+                    </a>
+
+                    <form
+                      action="/donations/<%= donation.donationid %>/delete"
+                      method="post"
+                      style="display:inline;"
+                      onsubmit="return confirm('Are you sure you want to delete this donation? This cannot be undone.');"
+                    >
+                      <button type="submit" class="btn btn-danger btn-sm">
+                        Delete
+                      </button>
+                    </form>
                   </td>
                 </tr>
               <% }); %>
@@ -386,3 +511,4 @@
   </div>
 </body>
 </html>
+
