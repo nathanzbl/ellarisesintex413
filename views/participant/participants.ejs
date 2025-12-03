@@ -484,8 +484,7 @@
                     <thead>
                         <tr>
                             <th>Participant ID</th>
-                            <th>First Name</th>
-                            <th>Last Name</th>
+                            <th>Participant Name</th>
                             <th>Email</th>
                             <th>Phone</th>
                             <th>View/Edit</th>
@@ -497,8 +496,8 @@
                             <tr>
                                 <td><%= participants[iCount].participantid %></td>
                                 
-                                <td><%= participants[iCount].participantfirstname %></td>
-                                <td><%= participants[iCount].participantlastname %></td>
+                                <td><%= participants[iCount].participantfirstname %> <%= participants[iCount].participantlastname %></td>
+                                
                                 <td><%= participants[iCount].participantemail %></td>
                                 <td><%= participants[iCount].participantphone || 'N/A' %></td>
                                 
@@ -523,7 +522,6 @@
         
     </div>
 </div>
-<%- include('../common/footer.ejs') %>
 
 
 </body>
