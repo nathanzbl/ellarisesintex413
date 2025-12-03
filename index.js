@@ -2304,7 +2304,7 @@ app.get("/events/manage/all", requireManager, async (req, res) => {
             query.whereILike("e.eventlocation", `%${search_location.trim()}%`);
         }
 
-        if (search_type && search_type !== "") {
+        if (search_type && search_type.trim() !== "") {
             query.where("d.eventtype", search_type);
         }
 

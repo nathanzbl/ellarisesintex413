@@ -121,10 +121,13 @@
 <body>
 
 <%- include('../common/navbar.ejs') %>
+<h1 class="page-title">Select Event To See Calendar</h1>
 
-<div style="width: 85%; margin: 0 auto; text-align: right; margin-bottom: 20px;">
-    <a href="/events/add" class="add-event-btn">+ Add Event</a>
+<div style="text-align:right; margin-bottom:20px;">
+    <a href="/events/add" class="add-event-btn">+ Add Event Type</a>
+    <a href="/events/manage/all" class="add-event-btn" style="background: var(--er-sage);">Manage All Events</a>
 </div>
+
 
 <div class="event-grid">
 
