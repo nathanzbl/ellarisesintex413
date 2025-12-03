@@ -129,33 +129,7 @@ gap: 1rem;
 </style>
 
 <nav>
-    <div class="nav-container">
-        <a href="/">
-            <img src="/images/EllaRisesLogo.png.avif" width="80px">
-        </a>
-        
-        <div class="nav-links">
-            <a href="/">Home</a>
-            <a href="/donations">Donations</a>
-            <% if (typeof currentUser !== "undefined" && currentUser) { %>
-                <a href="/events" class="nav-link">Events</a>
-            <% } else { %>
-                <a href="/eventspublic" class="nav-link">Events</a>
-            <% } %>
-            <!-- Only show restricted links if logged in -->
-            <% if (typeof isLoggedIn !== 'undefined' && isLoggedIn) { %>
-                <a href="/milestones">Milestones</a>
-                <a href="/participants">Participants</a>
-                <a href="/surveys">Surveys</a>
-            <% } %>
-
-            <% if (typeof isLoggedIn !== 'undefined' && isLoggedIn) { %>
-                <a href="/logout" style="color: var(--er-rose);">Logout</a>
-            <% } else { %>
-                <a href="/login">Login</a>
-            <% } %>
-        </div>
-    </div>
+    
 <div class="nav-container">
 <a href="/">
 <!-- Note: Ensure the image path is correct, using a placeholder image for robust delivery -->
