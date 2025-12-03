@@ -90,6 +90,23 @@
         line-height: 1.45;
     }
 
+    .add-event-btn {
+    display: inline-block;
+    background: var(--er-pink);
+    color: white;
+    padding: 0.7rem 1.4rem;
+    font-weight: 600;
+    border-radius: 8px;
+    text-decoration: none;
+    letter-spacing: 0.5px;
+    transition: 0.2s ease;
+    box-shadow: 0 4px 12px rgba(249,175,177,0.35);
+    }
+
+    .add-event-btn:hover {
+        background: var(--er-rose);
+    }
+
 </style>
 </head>
 
@@ -98,6 +115,11 @@
 <%- include('../navbar.ejs') %>
 
 <h1 class="page-title">Select an Event Type</h1>
+
+<!-- Add Event Button -->
+<div style="width: 85%; margin: 0 auto; text-align: right; margin-bottom: 20px;">
+    <a href="/events/add" class="add-event-btn">+ Add Event</a>
+</div>
 
 <div class="event-grid">
     <% eventDefs.forEach(def => { %>

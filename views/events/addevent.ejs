@@ -5,105 +5,101 @@
 <title>Add Event | Ella Rises</title>
 
 <style>
+    :root {
+        --er-blue:     #99B7C6;
+        --er-lavender: #978EC4;
+        --er-cream:    #F9F5EA;
+        --er-blush:    #FFD8D1;
+        --er-pink:     #F9AFB1;
+        --er-sage:     #9AB59D;
+        --er-charcoal: #3A3F3B;
+        --er-peach:    #F4B092;
+        --er-rose:     #CE325B;
+    }
+
     body {
-        background-color: #faf6ef;
-        font-family: Arial, sans-serif;
         margin: 0;
-    }
-
-    header {
-        background-color: #f7cfd5;
-        padding: 20px 50px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    nav a {
-        margin: 0 20px;
-        padding: 8px 18px;
-        border-radius: 20px;
-        background-color: #ffffffcc;
-        font-weight: bold;
-        color: #333;
-        text-decoration: none;
-    }
-
-    .donate-btn {
-        background-color: #9bbccc;
-        color: white !important;
+        font-family: "Montserrat", sans-serif;
+        background: var(--er-cream);
+        color: var(--er-charcoal);
     }
 
     .page-title {
         text-align: center;
-        margin: 35px 0;
-        font-size: 42px;
-        font-family: 'Georgia', serif;
-        color: #333;
+        font-size: 2.7rem;
+        margin-top: 2.5rem;
+        margin-bottom: 1.5rem;
+        font-family: "DM Serif Display", serif;
+        color: var(--er-charcoal);
+        letter-spacing: 0.02em;
     }
 
     .container {
-        width: 60%;
-        margin: auto;
+        width: 70%;
+        margin: 0 auto;
         background: white;
-        padding: 40px;
-        border-radius: 20px;
-        box-shadow: 0 12px 28px rgba(0,0,0,0.1);
-        border-top: 10px solid #f7cfd5;
+        padding: 3rem;
+        border-radius: 1.5rem;
+        border-top: 10px solid var(--er-pink);
+        box-shadow: 0 12px 28px rgba(0,0,0,0.12);
     }
 
     label {
-        font-weight: bold;
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin-top: 1.4rem;
         display: block;
-        margin-top: 20px;
-        color: #555;
+        color: var(--er-charcoal);
+        letter-spacing: 0.04em;
     }
 
     input, textarea, select {
         width: 100%;
         padding: 14px;
+        margin-top: 0.4rem;
         border-radius: 12px;
         border: 1px solid #ddd;
-        margin-top: 8px;
-        font-size: 15px;
+        font-size: 0.95rem;
+        background: #fff;
+    }
+
+    textarea {
+        resize: vertical;
     }
 
     button {
-        margin-top: 30px;
-        padding: 14px 25px;
-        background-color: #e7a2b8;
+        margin-top: 2rem;
+        width: 100%;
+        padding: 1rem;
+        background: var(--er-pink);
         color: white;
         border: none;
-        border-radius: 20px;
-        font-weight: bold;
-        font-size: 16px;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        font-weight: 600;
         cursor: pointer;
+        box-shadow: 0 10px 25px rgba(249,175,177,0.4);
+        transition: 0.2s ease;
+        letter-spacing: 0.05em;
     }
 
     button:hover {
-        background-color: #cf8ca5;
+        background: var(--er-rose);
+        box-shadow: 0 14px 32px rgba(206,50,91,0.35);
     }
 
     .error {
-        color: red;
         text-align: center;
+        color: var(--er-rose);
+        font-weight: bold;
+        margin-bottom: 1rem;
     }
 </style>
 </head>
 
 <body>
 
-<header>
-    <img src="/images/EllaRisesLogo.png.avif" height="60">
-    <nav>
-        <a href="/">Home</a>
-        <a href="/events">Events</a>
-        <a href="/participants">Participants</a>
-        <a href="/milestones">Milestones</a>
-        <a href="/surveys">Surveys</a>
-        <a href="/donations" class="donate-btn">Donations</a>
-    </nav>
-</header>
+<%- include('../navbar.ejs') %>
 
 <h1 class="page-title">Add New Event</h1>
 
@@ -115,15 +111,12 @@
 
     <form action="/events/add" method="POST">
 
-        <!-- Event Name -->
         <label>Event Name</label>
         <input type="text" name="eventname" required>
 
-        <!-- Event Description -->
         <label>Description</label>
         <textarea name="eventdescription" rows="3" required></textarea>
 
-        <!-- Event Type -->
         <label>Event Type</label>
         <select name="eventtype" required>
             <option value="Service">Service</option>
@@ -132,7 +125,6 @@
             <option value="Other">Other</option>
         </select>
 
-        <!-- Recurrence Pattern -->
         <label>Recurrence Pattern</label>
         <select name="eventrecurrencepattern" required>
             <option value="None">None</option>
@@ -141,27 +133,23 @@
             <option value="Yearly">Yearly</option>
         </select>
 
-        <!-- Start Date/Time -->
         <label>Start Date & Time</label>
         <input type="datetime-local" name="eventdatetimestart" required>
 
-        <!-- End Date/Time -->
         <label>End Date & Time</label>
         <input type="datetime-local" name="eventdatetimeend" required>
 
-        <!-- Location -->
         <label>Location</label>
         <input type="text" name="eventlocation" required>
 
-        <!-- Capacity -->
         <label>Capacity</label>
         <input type="number" name="eventcapacity" required>
 
         <button type="submit">Save Event</button>
 
     </form>
-
 </div>
 
 </body>
 </html>
+

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Edit Participant | Ella Rises</title>
+    <title>Participant Profile | Ella Rises</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -75,6 +75,21 @@
         .mb-3 {
             margin-bottom: 2rem;
         }
+
+        /* NEW: Flex container for City/State/Zip */
+        .address-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* Default to 2 columns for medium screens */
+            gap: 1.5rem;
+        }
+
+        /* NEW: Stack City/State/Zip on small screens */
+        @media (min-width: 600px) {
+            .address-group {
+                grid-template-columns: 3fr 2fr 1.5fr; /* City | State | Zip */
+            }
+        }
+
 
         .field-label {
             display: flex;
@@ -175,16 +190,53 @@
             border-top: 1px solid var(--er-blush);
             margin: 2rem 0;
         }
+
+        /* NEW STYLES FOR MILESTONE TABLE */
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            text-align: left;
+            margin-top: 2rem;
+            margin-bottom: 1.25rem;
+            color: var(--er-rose);
+        }
+
+        .milestone-table-custom {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2rem; /* Add spacing below the table */
+        }
+
+        .milestone-table-custom thead tr {
+            background-color: var(--er-blue);
+            color: var(--er-cream);
+            font-size: 0.75rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .milestone-table-custom th,
+        .milestone-table-custom td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--er-blush);
+            font-size: 0.9rem;
+        }
+
+        .milestone-table-custom tbody tr:nth-child(even) {
+            background-color: var(--er-cream);
+        }
     </style>
 </head>
 <body>
+    <!-- Assuming the existence of a common navigation bar -->
     <%- include('../navbar.ejs') %>
 
     <div class="main-content">
         <div class="data-card">
             
-            <h1 class="milestone-title">Edit Participant</h1>
-            <p class="milestone-subtitle">Update the details for this participant.</p>
+            <h1 class="milestone-title">Participant Profile</h1>
+            <p class="milestone-subtitle">View and update the primary details for this participant.</p>
             
            
             <% if (typeof error_message !== 'undefined' && error_message) { %>
@@ -195,6 +247,19 @@
 
             <form action="/editParticipant/<%= participant.participantid %>" method="post">
                 
+                <h2 class="section-title" style="color: var(--er-charcoal);">Primary Details</h2>
+
+                <!-- ID is typically static for display -->
+                <div class="mb-3">
+                    <label for="participantId" class="field-label">Participant ID:</label>
+                    <input type="text" 
+                           class="text-input" 
+                           id="participantId"
+                           value="<%= participant.participantid %>" 
+                           readonly 
+                           style="background-color: var(--er-cream); opacity: 0.8;">
+                </div>
+
                 <div class="mb-3">
                     <label for="firstName" class="field-label">First Name:</label>
                     <input type="text" 
@@ -224,15 +289,109 @@
                            value="<%= participant.participantemail %>" 
                            required>
                 </div>
-    
+                
+                <!-- NEW: Phone Number -->
+                <div class="mb-3">
+                    <label for="phone" class="field-label">Phone Number:</label>
+                    <input type="tel" 
+                           class="text-input" 
+                           id="phone" 
+                           name="phone" 
+                           value="<%= participant.participantphone || '' %>" 
+                           placeholder="e.g., (555) 555-5555">
+                </div>
+                
+                <!-- NEW: Address Line 1 -->
+                <div class="mb-3">
+                    <label for="address1" class="field-label">Address Line 1:</label>
+                    <input type="text" 
+                           class="text-input" 
+                           id="address1" 
+                           name="address1" 
+                           value="<%= participant.participantaddress1 || '' %>" 
+                           placeholder="Street Address, P.O. Box">
+                </div>
+                
+                <!-- NEW: Address Line 2 -->
+                <div class="mb-3">
+                    <label for="address2" class="field-label">Address Line 2 (Optional):</label>
+                    <input type="text" 
+                           class="text-input" 
+                           id="address2" 
+                           name="address2" 
+                           value="<%= participant.participantaddress2 || '' %>" 
+                           placeholder="Apartment, Suite, Unit, Building">
+                </div>
+
+                <!-- NEW: City, State, Zip (Grouped for Layout) -->
+                <div class="address-group mb-3">
+                    
+                    <div>
+                        <label for="city" class="field-label">City:</label>
+                        <input type="text" 
+                               class="text-input" 
+                               id="city" 
+                               name="city" 
+                               value="<%= participant.participantcity || '' %>" 
+                               required>
+                    </div>
+
+                    <div>
+                        <label for="state" class="field-label">State:</label>
+                        <input type="text" 
+                               class="text-input" 
+                               id="state" 
+                               name="state" 
+                               value="<%= participant.participantstate || '' %>" 
+                               required>
+                    </div>
+                    
+                    <div>
+                        <label for="zip" class="field-label">Zip Code:</label>
+                        <input type="text" 
+                               class="text-input" 
+                               id="zip" 
+                               name="zip" 
+                               value="<%= participant.participantzip || '' %>" 
+                               required>
+                    </div>
+
+                </div>
+                
+                <h2 class="section-title">Milestone History</h2>
+                
+                <% // Check if the milestones array is defined and has content
+                if (typeof milestones === 'undefined' || milestones.length === 0) { %>
+                    <div class="message-alert" style="color: var(--er-charcoal); background: var(--er-blush); border: 1px solid var(--er-pink); margin-bottom: 2rem;">
+                        This participant has no recorded milestone history.
+                    </div>
+                <% } else { %>
+                    <table class="milestone-table-custom">
+                        <thead>
+                            <tr>
+                                <th>Milestone Title</th>
+                                <th>Date Achieved</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% for (let i = 0; i < milestones.length; i++) { %>
+                                <tr>
+                                    <td><%= milestones[i].milestonetitle %></td>
+                                    <td><%= milestones[i].milestonedate %></td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                <% } %>
                 <hr>
 
                 <div class="text-center-wrapper">
-                    <input type="submit" value="Update Participant" class="btn-action btn-save-milestone">
+                    <input type="submit" value="Update Details" class="btn-action btn-save-milestone">
                     <a href="/participants" class="btn-action btn-back">Back to Participants</a>
                 </div>
 
             </form>
+            
         </div>
     </div>
 </body>
