@@ -171,14 +171,14 @@ app.get("/surveys", (req, res) => {
     if (req.session.isLoggedIn) {        
         knex.select("eventdefid","eventname").from("eventdefinition")
             .then(events => {
-                res.render("surveys", {
+                res.render("survey/surveys", {
                     events: events,
                     error_message: null
                 });
             })
             .catch((err) => {
                 console.error("Database query error:", err.message);
-                res.render("surveys", {
+                res.render("survey/surveys", {
                     events: [],
                     error_message: `Database error: ${err.message}`
                 });
@@ -218,7 +218,7 @@ app.post("/survey", async (req, res) => {
         .select("eventdefid", "eventname")
         .orderBy("eventdefid", "asc");
 
-      return res.status(400).render("surveys", {
+      return res.status(400).render("survey/surveys", {
         events,
         error_message: "We could not find that email in our records. Please use the email you used to register."
       });
@@ -620,7 +620,7 @@ app.post("/donations/add", async (req, res, next) => {
 });
 
 app.get("/donations/thank-you", (req, res) => { 
-    res.render("donationThankYou");
+    res.render("donation/donationThankYou");
 });
 
 
@@ -1067,7 +1067,7 @@ app.get("/logout", (req, res) => {
 
 // Donation Routes
 app.get("/donations", (req, res) => {
-    res.render("donations");
+    res.render("donation/donations");
 });
 
 app.get('/profile', async (req, res) => {
