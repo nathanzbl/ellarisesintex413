@@ -205,41 +205,22 @@ body {
 
 <body>
 <%- include('navbar.ejs') %>
-
-<!-- ===================== HERO WITH SLIDESHOW ===================== -->
-<div class="hero-wrapper">
-
-    <div class="hero-slideshow">
-        <img src="/images/Homestemworkshop.jpg" class="active">
-        <img src="/images/HomeClassRoom.jpg">
-        <img src="/images/Homeclasshelp.jpg">
-        <img src="/images/HomeBYUtour.jpg">
-        <img src="/images/Homeanimationworkshop.jpg">
-    </div>
-
-    <div class="hero-overlay"></div>
-
-    <div class="hero-content">
-        <h1 class="hero-title text-outline">Ella Rises</h1>
-        <h2 class="hero-subtitle text-outline">Pursuing Higher Education. Embracing Heritage.</h2>
-        <a href="/donations" class="cta-btn">Donate to the Cause</a>
-    </div>
-</div>
-
-
-<!-- ===================== OUR MISSION ===================== -->
-<section class="section" id="mission">
-    <div class="section-content">
-        <h2>Our Mission</h2>
-        <p style="max-width: 750px; margin: auto; font-size: 1.2rem; line-height: 1.8;">
-            To empower the future generation of women by inviting young women to pursue higher education and embrace their heritage. 
-            We provide culturally rooted programs and educational experiences through our signature programs focusing on mariachi, ballet folklorico, and STEAM.
+<main>
+    <%- include('spanishtranslationstorage.ejs') %>
+</main>
+<header id="welcome">
+    <div class="hero-container">
+        
+        <img src="/images/ellarises.jpg" alt="A group of young women from Ella Rises smiling">
+        
+        <h1 data-i18n-key="hero_headline">Pursuing Higher Education. Embracing Heritage.</h1>
+        <p data-i18n-key="hero_text">
+            Welcome to Ella Rises. Our objective is to empower the future generation of women by **inviting young women to pursue higher education and embrace their heritage**. We provide culturally rooted programs and educational experiences through our signature programs focusing on **mariachi, ballet folklorico, and STEAM**.
         </p>
     </div>
 </section>
 
 
-<!-- ===================== MAKING A LASTING IMPACT ===================== -->
 <section class="section section-light" id="impact">
     <div class="section-content">
         <h2>Making a Lasting Impact</h2>

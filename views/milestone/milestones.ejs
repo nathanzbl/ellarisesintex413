@@ -195,6 +195,15 @@
             border-bottom: 1px solid var(--er-blush);
         }
 
+        .table-responsive-wrapper {
+            /* Enables horizontal scrolling when content overflows */
+            overflow-x: auto; 
+            /* Ensures the wrapper uses all available width */
+            width: 100%; 
+            /* Optional: Makes the scrollbar look better on WebKit browsers (Chrome, Safari) */
+            -webkit-overflow-scrolling: touch; 
+        }
+
         .table-custom tbody tr:nth-child(even) {
             background-color: var(--er-cream);
         }
@@ -344,7 +353,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
-    <%- include('../navbar.ejs') %>
+    <%- include('../common/navbar.ejs') %>
 
     <div class="main-content">
         <div class="data-card">
@@ -454,48 +463,53 @@
                     No milestones found <%= isSearching ? 'matching your criteria.' : 'in the database.' %>
                 </div>
             <% } else { %>
-                <table class="table-custom">
-                    <thead>
-                        <tr>
-                            <th>Participant Name</th>
-                            <th>Participant Email</th>
-                            <th>Milestone Title</th>
-                            <th>Date Achieved</th>
-                            <th></th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% for (let iCount = 0; iCount < milestone.length; iCount++) { %>
+                <div class="table-responsive-wrapper">
+                    <table class="table-custom">
+                        <thead>
                             <tr>
-                                <td><%= milestone[iCount].participantfirstname %> <%= milestone[iCount].participantlastname %></td>
-                                <td><%= milestone[iCount].participantemail %> </td>
-                                <td><%= milestone[iCount].milestonetitle %></td>
-                                <td>
-                                    <% 
-                                        const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
-                                        const dateValue = new Date(milestone[iCount].milestonedate);
-                                    %>
-                                    <%= dateValue.toLocaleDateString('en-US', dateOptions) %>
-                                </td>
-                                <td>
-                                    <form action="/editMilestone/<%= milestone[iCount].milestoneid %>" method="get">
-                                        <input type="submit" name="Edit" value="Edit" class="btn-small btn-edit-milestone"/>
-                                    </form>
-                                </td>
-                                <td>
-                                    <form 
-                                        action="/deleteMilestone/<%= milestone[iCount].milestoneid %>" 
-                                        method="post"
-                                        onsubmit="return confirmDeletion(event);" 
-                                    >
-                                        <input type="submit" name="Delete" value="Delete" class="btn-small btn-delete-milestone"/>
-                                    </form>
-                                </td>
+                                <th>Participant ID</th>
+                                <th>Participant Name</th>
+                                <th>Participant Email</th>
+                                <th>Milestone Title</th>
+                                <th>Date Achieved</th>
+                                <th>Edit</th>
+                                <th>Delete</th>
                             </tr>
-                        <% } %>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            <% for (let iCount = 0; iCount < milestone.length; iCount++) { %>
+                                <tr>
+                                    <td><%= milestone[iCount].participantid %> </td>
+                                    <td><%= milestone[iCount].participantfirstname %> <%= milestone[iCount].participantlastname %></td>
+                                    <td><%= milestone[iCount].participantemail %> </td>
+                                    <td><%= milestone[iCount].milestonetitle %></td>
+                                    <td>
+                                        <% 
+                                            const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+                                            const dateValue = new Date(milestone[iCount].milestonedate);
+                                        %>
+                                        <%= dateValue.toLocaleDateString('en-US', dateOptions) %>
+                                    </td>
+                                    <td>
+                                        <form action="/editMilestone/<%= milestone[iCount].milestoneid %>" method="get">
+                                            <input type="submit" name="Edit" value="Edit" class="btn-small btn-edit-milestone"/>
+                                        </form>
+                                    </td>
+                                    <td>
+                                        <form 
+                                            action="/deleteMilestone/<%= milestone[iCount].milestoneid %>" 
+                                            method="post"
+                                            onsubmit="return confirmDeletion(event);" 
+                                        >
+                                            <input type="submit" name="Delete" value="Delete" class="btn-small btn-delete-milestone"/>
+                                        </form>
+                                    </td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+                
             <% } %>
 
             <% if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
