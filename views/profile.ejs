@@ -31,78 +31,171 @@
     .main-content {
         flex: 1;
         display: flex;
-        align-items: flex-start; /* Align content to the top */
+        align-items: flex-start;
         justify-content: center;
         padding: 2rem 1rem;
         width: 100%;
     }
 
     .data-card {
-        max-width: 1200px; 
+        max-width: 900px;
         width: 100%;
-        padding: 2.5rem 2.25rem;
+        padding: 3rem 2.5rem;
         border-radius: 1.5rem;
         background-color: #ffffff;
         box-shadow: 0 14px 40px rgba(0, 0, 0, 0.08);
-        border-top: 6px solid var(--er-pink);
+        border-top: 8px solid var(--er-charcoal); /* Changed to Charcoal */
     }
 
-    .dashboard-title {
+    /* --- PROFILE HEADER STYLES --- */
+    
+    .insta-profile-header {
+        padding-bottom: 2.5rem;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid var(--er-blush);
+    }
+
+    .profile-details h1 {
         font-family: "DM Serif Display", serif;
-        font-size: 2.5rem;
-        text-align: center;
-        letter-spacing: 0.06em;
-        color: var(--er-charcoal);
+        font-size: 3.5rem; /* BIGGER NAME */
         margin: 0 0 0.5rem;
-    }
-
-    .dashboard-subtitle {
-        font-size: 1rem;
-        text-align: center;
-        color: var(--er-rose);
-        margin-bottom: 3rem;
-        font-weight: 600;
-    }
-
-    .section-header {
-        font-family: "DM Serif Display", serif;
-        font-size: 1.8rem;
-        color: var(--er-lavender);
-        border-bottom: 2px solid var(--er-blush);
-        padding-bottom: 0.5rem;
-        margin-top: 2.5rem;
-        margin-bottom: 1.5rem;
-    }
-
-    /* --- PROFILE GRID --- */
-    .profile-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 1.5rem;
-    }
-
-    .profile-item {
-        background: var(--er-cream);
-        padding: 1rem;
-        border-radius: 0.75rem;
-        border: 1px solid var(--er-blush);
-    }
-
-    .profile-label {
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-transform: uppercase;
         color: var(--er-charcoal);
+        line-height: 1.1;
+    }
+
+    .profile-details p.username {
+        font-size: 1.2rem;
+        font-weight: 500;
+        color: var(--er-charcoal); /* Changed to Charcoal */
+        opacity: 0.7;
+        margin: 0 0 1.5rem;
+    }
+
+    .profile-stats {
+        display: flex;
+        gap: 3.5rem; /* More space between stats */
+        margin-top: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-item {
+        text-align: center;
+    }
+
+    .stat-value {
+        font-size: 2.2rem; /* BIGGER STATS */
+        font-weight: 800;
+        color: var(--er-charcoal);
+        display: block;
+        line-height: 1;
         margin-bottom: 0.25rem;
     }
 
-    .profile-value {
-        font-size: 1rem;
-        font-weight: 500;
-        color: var(--er-rose);
+    .stat-label {
+        font-size: 0.85rem;
+        color: var(--er-charcoal);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        opacity: 0.6;
+        font-weight: 600;
     }
 
-    /* --- TABLE STYLES (Milestones/Donations) --- */
+    .bio-info {
+        font-size: 1rem;
+        line-height: 1.6;
+        color: var(--er-charcoal);
+        max-width: 600px;
+    }
+    .bio-info p {
+        margin: 0.35rem 0;
+    }
+    .bio-info strong {
+        color: var(--er-charcoal);
+        font-weight: 700;
+    }
+    
+    /* --- SECTION HEADER WITH BUTTON --- */
+    .section-header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 2rem;
+        margin-bottom: 1.5rem;
+        border-bottom: 2px solid var(--er-charcoal); /* Charcoal Line */
+        padding-bottom: 0.75rem;
+    }
+
+    .section-header-row h2 {
+        font-family: "DM Serif Display", serif;
+        font-size: 1.8rem;
+        color: var(--er-charcoal);
+        margin: 0;
+    }
+
+    /* Edit Profile Button Style */
+    .btn-edit {
+        display: inline-block;
+        background-color: transparent;
+        color: var(--er-charcoal);
+        border: 2px solid var(--er-charcoal);
+        padding: 0.5rem 1.25rem;
+        border-radius: 2rem;
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-edit:hover {
+        background-color: var(--er-charcoal);
+        color: white;
+    }
+
+    /* --- IMPROVED READABILITY GRID --- */
+    .profile-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 2rem; /* More breathing room */
+        margin-bottom: 3rem;
+    }
+
+    .profile-item {
+        /* Removed boxy borders and background */
+        padding: 0.5rem 0;
+    }
+
+    .profile-label {
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--er-charcoal);
+        opacity: 0.5;
+        margin-bottom: 0.35rem;
+        letter-spacing: 0.05em;
+    }
+
+    .profile-value {
+        font-size: 1.15rem; /* Larger text for easier reading */
+        font-weight: 500;
+        color: var(--er-charcoal);
+        line-height: 1.4;
+    }
+
+    /* --- CONTENT SECTIONS --- */
+    .content-sections {
+        margin-top: 3rem;
+    }
+    .content-sections h2 {
+        font-family: "DM Serif Display", serif;
+        font-size: 1.6rem;
+        border-bottom: 1px solid var(--er-sage);
+        padding-bottom: 0.5rem;
+        margin-bottom: 1rem;
+        color: var(--er-charcoal);
+    }
+
+    /* --- TABLE STYLES --- */
     .table-responsive {
         overflow-x: auto;
     }
@@ -115,7 +208,7 @@
     }
 
     .table-dashboard thead tr {
-        background-color: var(--er-sage);
+        background-color: var(--er-sage); /* Dark header for tables */
         color: white;
         font-size: 0.8rem;
         letter-spacing: 0.05em;
@@ -124,17 +217,13 @@
 
     .table-dashboard th,
     .table-dashboard td {
-        padding: 0.8rem 1rem;
+        padding: 1rem 1rem;
         text-align: left;
-        border-bottom: 1px solid var(--er-blush);
+        border-bottom: 1px solid #eee;
     }
 
     .table-dashboard tbody tr:nth-child(even) {
-        background-color: var(--er-blush);
-    }
-
-    .text-center {
-        text-align: center;
+        background-color: #f9f9f9;
     }
 </style>
 
@@ -147,10 +236,128 @@
 
     <div class="main-content">
         <div class="data-card">
-            <h1 class="dashboard-title">Welcome, <%= users.username %>!</h1>
-            <p class="dashboard-subtitle">Your Ella Rises Program Summary</p>
-
             
+            <!-- Header Block -->
+            <div class="insta-profile-header">
+                <div class="profile-details">
+                    <!-- BIG Name -->
+                    <h1><%= users.participantfirstname %> <%= users.participantlastname %></h1>
+                    
+                    <!-- Charcoal Username -->
+                    <p class="username">@<%= users.username %> • <%= users.participantrole %></p>
+                    
+                    <!-- BIG Stats -->
+                    <div class="profile-stats">
+                        <div class="stat-item">
+                            <span class="stat-value"><%= milestones.length %></span>
+                            <span class="stat-label">Milestones</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value"><%= donations.length %></span>
+                            <span class="stat-label">Donations</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value">$<%= users.totaldonations %></span>
+                            <span class="stat-label">Raised</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bio-info">
+                        <p><strong>School/Employer:</strong> <%= users.participantschooloremployer %></p>
+                        <p><strong>Field of Interest:</strong> <%= users.participantfieldofinterest %></p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contact & Identity Section with Inline Edit Button -->
+            <div class="section-header-row">
+                <h2>Contact & Identity</h2>
+                <!-- Edit Button on the same line -->
+                <a href="/editProfile/<%= users.id %>" class="btn-edit">Edit Profile</a>
+            </div>
+            
+            <!-- Improved Readable Grid -->
+            <div class="profile-grid">
+                
+                <div class="profile-item">
+                    <div class="profile-label">Email Address</div>
+                    <div class="profile-value"><%= users.participantemail %></div>
+                </div>
+                
+                <div class="profile-item">
+                    <div class="profile-label">Phone Number</div>
+                    <div class="profile-value"><%= users.participantphone %></div>
+                </div>
+                
+                <div class="profile-item">
+                    <div class="profile-label">Date of Birth</div>
+                    <div class="profile-value"><%= new Date(users.participantdob).toLocaleDateString()%></div>
+                </div>
+                
+                <div class="profile-item">
+                    <div class="profile-label">Location</div>
+                    <div class="profile-value"><%= users.participantcity %>, <%= users.participantstate %> <%= users.participantzip %></div>
+                </div>
+                
+            </div>
+            
+            <!-- Milestones Section -->
+            <div class="content-sections">
+                <h2>Program Milestones</h2>
+
+                <% if (milestones && milestones.length > 0) { %>
+                    <div class="table-responsive">
+                        <table class="table-dashboard">
+                            <thead>
+                                <tr>
+                                    <th>Milestone Title</th>
+                                    <th>Date Achieved</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% milestones.forEach(function(milestone) { %>
+                                    <tr>
+                                        <td><%= milestone.milestonetitle %></td>
+                                        <td><%= new Date(milestone.milestonedate).toLocaleDateString() %></td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                <% } else { %>
+                    <p style="opacity: 0.6; font-style: italic;">No milestones recorded yet.</p>
+                <% } %>
+            </div>
+            
+            <!-- Donation History Section -->
+            <div class="content-sections">
+                <h2>Donation History</h2>
+                
+                <% if (donations && donations.length > 0) { %>
+                    <div class="table-responsive">
+                        <table class="table-dashboard">
+                            <thead>
+                                <tr>
+                                    <th>Ref #</th>
+                                    <th>Date</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% donations.forEach(function(donation) { %>
+                                    <tr>
+                                        <td><%= donation.donationnumber %></td>
+                                        <td><%= new Date(donation.donationdate).toLocaleDateString() %></td>
+                                        <td><strong>$<%= parseFloat(donation.donationamount).toFixed(2) %></strong></td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                <% } else { %>
+                    <p style="opacity: 0.6; font-style: italic;">No donation history found.</p>
+                <% } %>
+            </div>
             
         </div>
     </div>
