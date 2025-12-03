@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Post Event Survey | Ella Rises</title>
+    <!-- Use a translation key for the title -->
+    <title data-i18n-key="doc_title_survey">Post Event Survey | Ella Rises</title>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -286,86 +287,113 @@
 
     <div class="main-content">
         <div class="survey-card">
-            <h1 class="survey-title">Post Event Survey</h1>
-            <p class="survey-subtitle">Thank you for attending. Please rate your experience on a scale of 1 to 5.</p>
+            <!-- Title and Subtitle -->
+            <h1 class="survey-title" data-i18n-key="survey_title">Post Event Survey</h1>
+            <p class="survey-subtitle" data-i18n-key="survey_subtitle">Thank you for attending. Please rate your experience on a scale of 1 to 5.</p>
 
             <% if (error_message && error_message !== "") { %>
                 <p class="error-message"><%= error_message %></p>
             <% } %>
 
             <form action="/survey" method="POST">
+                <!-- Email Address Field -->
                 <div class="mb-3">
                     <div class="field-label">
-                        <span class="label-main">Email Address</span>
-                        <span class="label-hint">Required</span>
+                        <span class="label-main" data-i18n-key="survey_label_email">Email Address</span>
+                        <span class="label-hint" data-i18n-key="survey_hint_required">Required</span>
                     </div>
-                    <input type="email" name="SurveyEmail" class="email-input" placeholder="Enter your email address" required>
+                    <!-- Use data-i18n-placeholder-key for input hints -->
+                    <input 
+                        type="email" 
+                        name="SurveyEmail" 
+                        class="email-input" 
+                        placeholder="Enter your email address" 
+                        data-i18n-placeholder-key="survey_placeholder_email"
+                        required>
                 </div>
 
+                <!-- Event Attended Select -->
                 <div class="mb-3">
                     <div class="field-label">
-                        <span class="label-main">Event Attended</span>
-                        <span class="label-hint">Required</span>
+                        <span class="label-main" data-i18n-key="survey_label_event">Event Attended</span>
+                        <span class="label-hint" data-i18n-key="survey_hint_required">Required</span>
                     </div>
                     <select name="SurveyEventId" class="event-select" required>
-                        <option value="" disabled selected>Select an event...</option>
+                        <!-- Translatable default option -->
+                        <option value="" disabled selected data-i18n-key="survey_option_select">Select an event...</option>
                         <% if (typeof events !== 'undefined' && Array.isArray(events) && events.length > 0) { %>
                             <% events.forEach(function(evt) { %>
                                 <option value="<%= evt.eventdefid %>"><%= evt.eventdefid %> - <%= evt.eventname %></option>
                             <% }); %>
                         <% } else { %>
-                            <option value="" disabled>No events available</option>
+                            <!-- Translatable fallback option -->
+                            <option value="" disabled data-i18n-key="survey_option_none">No events available</option>
                         <% } %>
                     </select>
                 </div>
 
+                <!-- Event Date Field -->
                 <div class="mb-3">
                     <div class="field-label">
-                        <span class="label-main">Event Date</span>
-                        <span class="label-hint">Required</span>
+                        <span class="label-main" data-i18n-key="survey_label_date">Event Date</span>
+                        <span class="label-hint" data-i18n-key="survey_hint_required">Required</span>
                     </div>
                     <input type="date" name="SurveyEventDate" class="date-input" required>
                 </div>
 
-                <% const questions = [
-                    { name: 'SurveySatisfactionScore', label: 'Overall Satisfaction', hint: 'How satisfied were you with the event', low: 'Very dissatisfied', high: 'Very satisfied' },
-                    { name: 'SurveyUsefulnessScore', label: 'Usefulness', hint: 'How useful was the content for you', low: 'Not useful', high: 'Extremely useful' },
-                    { name: 'SurveyInstructorScore', label: 'Instructor', hint: 'Rate the instructor or speaker', low: 'Very poor', high: 'Excellent' },
-                    { name: 'SurveyRecommendationScore', label: 'Recommendation', hint: 'How likely are you to recommend this event', low: 'Not likely', high: 'Very likely' },
-                    
+                <% 
+                // Changed hardcoded strings to translation keys for the EJS loop
+                const questions = [
+                    { name: 'SurveySatisfactionScore', label_key: 'survey_q1_label', hint_key: 'survey_q1_hint', low_key: 'survey_q_low_1', high_key: 'survey_q_high_1' },
+                    { name: 'SurveyUsefulnessScore', label_key: 'survey_q2_label', hint_key: 'survey_q2_hint', low_key: 'survey_q_low_2', high_key: 'survey_q_high_2' },
+                    { name: 'SurveyInstructorScore', label_key: 'survey_q3_label', hint_key: 'survey_q3_hint', low_key: 'survey_q_low_3', high_key: 'survey_q_high_3' },
+                    { name: 'SurveyRecommendationScore', label_key: 'survey_q4_label', hint_key: 'survey_q4_hint', low_key: 'survey_q_low_4', high_key: 'survey_q_high_4' },
                 ]; %>
 
                 <% questions.forEach(q => { %>
                     <div class="mb-3">
                         <div class="field-label">
-                            <span class="label-main"><%= q.label %></span>
-                            <span class="label-hint"><%= q.hint %></span>
+                            <!-- Use data-i18n-key for dynamic label/hint -->
+                            <span class="label-main" data-i18n-key="<%= q.label_key %>"><%= q.label_key %></span>
+                            <span class="label-hint" data-i18n-key="<%= q.hint_key %>"><%= q.hint_key %></span>
                         </div>
                         <div class="slider-container">
                             <input type="range" name="<%= q.name %>" class="rating-slider" min="1" max="5" value="3" oninput="this.nextElementSibling.nextElementSibling.querySelector('span').textContent = this.value">
                             <div class="slider-labels">
-                                <span><%= q.low %></span>
-                                <span><%= q.high %></span>
+                                <!-- Use data-i18n-key for slider labels -->
+                                <span data-i18n-key="<%= q.low_key %>"><%= q.low_key %></span>
+                                <span data-i18n-key="<%= q.high_key %>"><%= q.high_key %></span>
                             </div>
                             <div class="slider-value"><span>3</span></div>
                         </div>
                     </div>
                 <% }); %>
 
+                <!-- Comments Field -->
                 <div class="mb-3">
                     <div class="field-label">
-                        <span class="label-main">Comments</span>
-                        <span class="label-hint">Optional</span>
+                        <span class="label-main" data-i18n-key="survey_label_comments">Comments</span>
+                        <span class="label-hint" data-i18n-key="survey_hint_optional">Optional</span>
                     </div>
-                    <textarea name="SurveyComments" class="comments-textarea" placeholder="Share any additional feedback or suggestions..."></textarea>
+                    <!-- Use data-i18n-placeholder-key for textarea placeholder -->
+                    <textarea 
+                        name="SurveyComments" 
+                        class="comments-textarea" 
+                        placeholder="Share any additional feedback or suggestions..."
+                        data-i18n-placeholder-key="survey_placeholder_comments"
+                        ></textarea>
                 </div>
 
-                <button type="submit" class="btn-primary">Submit Survey</button>
+                <!-- Submit Button -->
+                <button type="submit" class="btn-primary" data-i18n-key="survey_btn_submit">Submit Survey</button>
             </form>
 
-            <p class="thankyou-hint">Your feedback helps shape future Ella Rises events.</p>
+            <!-- Thank You Hint -->
+            <p class="thankyou-hint" data-i18n-key="survey_thankyou_hint">Your feedback helps shape future Ella Rises events.</p>
         </div>
     </div>
     <%- include('common/footer.ejs') %>
+    <!-- Include the script for initialization after all content -->
+    <%- include('spanishtranslationstorage.ejs') %>
 </body>
 </html>

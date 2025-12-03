@@ -1,101 +1,134 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <title>Upcoming Events | Ella Rises</title>
+<meta charset="UTF-8">
+<title>Ella Rises | Events</title>
 
-    <style>
-        body {
-            margin: 0;
-            font-family: 'Arial', sans-serif;
-            background-color: #faf6ef;
-        }
+<style>
+    :root {
+        --er-blue:     #99B7C6;
+        --er-lavender: #978EC4;
+        --er-cream:    #F9F5EA;
+        --er-blush:    #FFD8D1;
+        --er-pink:     #F9AFB1;
+        --er-sage:     #9AB59D;
+        --er-charcoal: #3A3F3B;
+        --er-peach:    #F4B092;
+        --er-rose:     #CE325B;
+    }
 
-        header {
-            background-color: #f7cfd5;
-            padding: 20px 50px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #e8b9c6;
-        }
+    body {
+        margin: 0;
+        background: var(--er-cream);
+        font-family: "Montserrat", sans-serif;
+        color: var(--er-charcoal);
+    }
 
-        nav a {
-            margin: 0 20px;
-            text-decoration: none;
-            color: #333;
-            padding: 8px 18px;
-            border-radius: 20px;
-            background-color: #ffffffcc;
-            font-weight: bold;
-            font-size: 15px;
-        }
+    .events-image-wrapper {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        margin-top: 1.5rem;
+    }
 
-        .donate-btn {
-            background-color: #9bbccc;
-            color: white !important;
-        }
+    .events-image {
+        width: 50%;          /* adjust width */
+        height: 250px;       /* smaller height */
+        object-fit: cover;   /* keeps image from stretching */
+        border-radius: 0;    /* removes rounded corners */
+        display: block;
+    }
 
-        .page-title {
-            text-align: center;
-            margin-top: 35px;
-            font-size: 42px;
-            font-family: 'Georgia', serif;
-            color: #333;
-            letter-spacing: 2px;
-        }
+    .page-title {
+        text-align: center;
+        font-size: 2.5rem;
+        margin-top: 2rem;
+        font-family: "DM Serif Display", serif;
+    }
 
-        .container {
-            width: 60%;
-            margin: 40px auto;
-            background: white;
-            border-radius: 20px;
-            padding: 50px;
-            border-top: 10px solid #f7cfd5;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-        }
+    .event-grid {
+        width: 85%;
+        margin: 2rem auto;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 25px;
+    }
 
-        .event-name {
-            text-align: center;
-            font-size: 28px;
-            font-family: 'Georgia', serif;
-            margin-bottom: 10px;
-        }
+    .event-card {
+        background: #fff;
+        padding: 2rem;
+        border-top: 6px solid var(--er-pink);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: var(--er-charcoal);
+        
+        /* No rounded corners */
+        border-radius: 0;
+        
+        /* Needed for smooth expansion */
+        position: relative;
+        overflow: hidden;
+    }
 
-        .event-meta {
-            text-align: center;
-            color: #555;
-            font-size: 16px;
-            margin-bottom: 30px;
-        }
+    /*  Expand downward on hover */
+    .event-card:hover {
+        padding-bottom: 5rem;
+        box-shadow: 0 18px 38px rgba(0,0,0,0.15);
+    }
 
-        .pink-btn {
-            display: block;
-            width: 180px;
-            margin: 25px auto;
-            padding: 14px;
-            background-color: #e7a2b8;
-            color: white;
-            text-align: center;
-            border-radius: 30px;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 16px;
-        }
+    .event-name {
+        font-size: 1.4rem;
+        font-weight: 600;
+        margin-bottom: .5rem;
+        letter-spacing: 0.04em;
+    }
 
-        .pink-btn:hover {
-            background-color: #d88aa2;
-        }
+    .event-description {
+        color: rgba(58,63,59,0.75);
+        font-size: .9rem;
+        line-height: 1.5rem;
+        min-height: 3.4rem;
+    }
 
-        .detail-link {
-            text-align: center;
-            display: block;
-            margin-bottom: 15px;
-            text-decoration: underline;
-            font-size: 17px;
-            color: #333;
-        }
-    </style>
+    /*  Action buttons reveal from BELOW the card */
+    .hover-actions {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: -80px; /* Hidden at first */
+        padding: 1rem;
+        text-align: center;
+        transition: bottom 0.3s ease;
+        background: white;
+        border-top: 2px solid var(--er-blush);
+    }
+
+    /* Move buttons upward into view */
+    .event-card:hover .hover-actions {
+        bottom: 0;
+    }
+
+    .btn-action {
+        padding: .7rem 1.3rem;
+        border-radius: 0; /* No rounded corners */
+        border: none;
+        background: var(--er-pink);
+        color: #fff;
+        font-weight: 600;
+        letter-spacing: 0.07em;
+        font-size: .9rem;
+        text-decoration: none;
+        margin: .4rem 0;
+        display: inline-block;
+        transition: background 0.2s ease;
+    }
+
+    .btn-action:hover {
+        background: var(--er-rose);
+    }
+
+</style>
 </head>
 
 <body>
@@ -104,32 +137,28 @@
 
 <h1 class="page-title">Upcoming Events</h1>
 
-<% if (nextEvent) { %>
-<div class="container">
-    
-    <!-- Event Name -->
-    <h2 class="event-name"><%= nextEvent.eventname %></h2>
-
-    <!-- Event Date + Location -->
-    <div class="event-meta">
-        <%= nextEvent.eventdatetimestart.toLocaleString() %> • 
-        <strong><%= nextEvent.eventlocation %></strong>
-    </div>
-
-    <!-- More Info -->
-    <a href="/events/detail/<%= nextEvent.eventid %>" class="detail-link">
-        More Info
-    </a>
-
-    <!-- RSVP Button -->
-    <a href="/events/rsvp/<%= nextEvent.eventid %>" class="pink-btn">
-        RSVP
-    </a>
+<div class="events-image-wrapper">
+    <img src="/images/EventsPhoto.jpg" alt="Ella Rises Event" class="events-image">
 </div>
 
-<% } else { %>
-<p style="text-align:center; font-size:18px; color:#666;">No upcoming events.</p>
-<% } %>
+
+<div class="event-grid">
+    <% eventDefs.forEach(def => { %>
+        <div class="event-card">
+
+            <div class="event-name"><%= def.eventname %></div>
+            <div class="event-description"><%= def.eventdescription %></div>
+
+            <!-- Expand-down Actions -->
+            <div class="hover-actions">
+                <a href="/events/<%= def.eventdefid %>" class="btn-action">More Info</a>
+                <a href="/rsvp/<%= def.eventdefid %>" class="btn-action">RSVP</a>
+            </div>
+
+        </div>
+    <% }) %>
+</div>
 <%- include('../common/footer.ejs') %>
+
 </body>
 </html>
