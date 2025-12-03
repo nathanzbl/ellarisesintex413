@@ -1,227 +1,208 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title data-i18n-key="doc_title">Ella Rises - Culturally Rooted, Education Focused</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+<title>Ella Rises</title>
+
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
 <style>
+/* ---------------- COLOR VARIABLES ---------------- */
 :root {
---pink: #FFD7D1;
---blue: #A8C0CC;
---text-gray: #4A4A4A;
---purple-accent: #C4B7D3;
---flower-red: #D9414E;
---dark-text: #1f2937;
---light-bg: #f7f7f7;
---border-color: rgba(0, 0, 0, 0.05);
+    --pink: #FFD7D1;
+    --er-pink: #F9AFB1;
+    --er-rose: #CE325B;
+    --dark-text: #1f2937;
+    --light-bg: #f7f7f7;
+    --text-gray: #4A4A4A;
+    --border-color: rgba(0,0,0,0.05);
+}
 
-        /* Added required color variables for the toggle buttons */
-        --er-cream:    #F9F5EA;
-        --er-blush:    #FFD8D1;
-        --er-rose:     #CE325B;
-    }
+/* ---------------- GLOBAL ---------------- */
+body {
+    margin: 0;
+    background-color: white;
+    font-family: 'Montserrat', sans-serif;
+}
 
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
+/* ---------------- HERO SLIDESHOW ---------------- */
+.hero-wrapper {
+    position: relative;
+    width: 100%;
+    height: 85vh;
+    overflow: hidden;
+}
 
-    body {
-        background-color: white;
-        font-family: 'Inter', 'Lato', sans-serif;
-        color: var(--dark-text);
-    }
-    
-    /* The rest of your existing CSS... */
-    .welcome {
-        font-family: serif;
-        font-weight: 1000;
-        font-size: 5rem;
-        width: 100%;
-        align-items: center;
-        display: flex;
-        justify-content: center;
-        background-color: #3A3F3B;
-    }
+.hero-slideshow img {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    transition: opacity 1.3s ease-in-out;
+}
 
-    .welcome img {
-        width: 50%;
-        display: flex;
-        align-items: center;
-        
-    }
+.hero-slideshow img.active {
+    opacity: 1;
+}
 
-        /* Hero Section */
-        header {
-            background: linear-gradient(to bottom, #FFD8D1, white);
-            padding: 50px 20px;
-            width: 100%;
-            min-height: 80vh; 
-            display: flex;
-            align-items: center;
-        }
-        .hero-container { max-width: 56rem; margin: 0 auto; text-align: center; }
-        .hero-container h1 { font-size: 3rem; font-weight: 700; color: var(--dark-text); font-family: 'Poppins', 'Montserrat', sans-serif; line-height: 1.25; }
-        @media (min-width: 768px) { .hero-container h1 { font-size: 3.75rem; } }
-        .hero-container p { margin-top: 24px; font-size: 1.25rem; color: var(--text-gray); max-width: 42rem; margin-left: auto; margin-right: auto; line-height: 1.75; }
-        .hero-buttons { margin-top: 40px; display: flex; gap: 16px; justify-content: center; }
+/* Dark overlay so text stands out */
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.45);
+    z-index: 1;
+}
 
-    /* CTA Button Styles */
-    .cta-btn { background: var(--flower-red); color: #fff; text-decoration: none; padding: 14px 28px; border-radius: 9999px; box-shadow: 0 4px 10px rgba(217, 65, 78, 0.4); transition: all 0.3s ease; border: none; cursor: pointer; font-size: 1rem; font-weight: 600; }
-    .cta-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(217, 65, 78, 0.5); }
-    .secondary-btn { background-color: white; color: var(--dark-text); text-decoration: none; border: 2px solid var(--purple-accent); padding: 12px 28px; border-radius: 9999px; font-weight: 500; cursor: pointer; transition: all 0.3s ease; font-size: 1rem; }
-    .secondary-btn:hover { background-color: var(--purple-accent); color: white; }
-    .hero-container img { max-width: 100%; height: auto; border-radius: 8px; margin-bottom: 32px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); }
+/* ---------------- HERO TEXT ---------------- */
+.hero-content {
+    position: absolute;
+    z-index: 2;
+    top: 50%;
+    width: 100%;
+    transform: translateY(-50%);
+    text-align: center;
+    padding: 0 2rem;
+}
 
+/* Pink-outlined white text */
+.text-outline {
+    color: white;
+    font-family: "DM Serif Display", serif;
+    text-shadow:
+        -1px -1px 0 var(--er-pink);
+}
 
-    /* --- NEW SECTION STYLES --- */
+/* Title */
+.hero-title {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    letter-spacing: 0.05em;
+}
 
-    .section {
-        padding: 80px 20px;
-        text-align: center;
-    }
+/* Subtitle */
+.hero-subtitle {
+    font-size: 1.7rem;
+    margin-bottom: 2rem;
+}
 
-    .section-light {
-        background-color: var(--light-bg);
-    }
-    
-    .section-content {
-        max-width: 72rem;
-        margin: 0 auto;
-    }
+/* Pink button */
+.cta-btn {
+    background: var(--er-pink);
+    color: white;
+    padding: 14px 32px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    text-decoration: none;
+    transition: 0.25s;
+    box-shadow: 0 8px 25px rgba(249,175,177,0.45);
+}
+.cta-btn:hover {
+    background: var(--er-rose);
+}
 
-    .section-content h2 {
-        font-size: 2.25rem;
-        font-weight: 700;
-        margin-bottom: 20px;
-        color: var(--flower-red); 
-    }
+/* ---------------- SECTION BELOW HERO ---------------- */
+.section {
+    padding: 80px 20px;
+    text-align: center;
+}
 
-    /* Stats Grid */
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 32px;
-        margin-top: 40px;
-    }
-    .stat-item {
-        padding: 24px;
-        background-color: white;
-        border-radius: 12px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-        transition: transform 0.3s ease;
-    }
-    .stat-item:hover { transform: translateY(-5px); }
-    .stat-item .number {
-        font-size: 3rem;
-        font-weight: 700;
-        color: var(--flower-red);
-        line-height: 1;
-    }
-    .stat-item .label {
-        margin-top: 8px;
-        font-size: 1rem;
-        font-weight: 500;
-        color: var(--text-gray);
-    }
+.section-light {
+    background-color: var(--light-bg);
+}
 
-    /* Program Cards Grid */
-    .program-card-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 40px;
-        margin-top: 40px;
-        text-align: left;
-    }
+.section-content {
+    max-width: 72rem;
+    margin: 0 auto;
+}
 
-    /* Program Card FIXES */
-    .program-card {
-        border: 1px solid var(--border-color);
-        border-radius: 12px;
-        padding: 0;
-        background-color: white;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-        transition: transform 0.3s ease;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-    }
-    .program-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    }
-    
-    /* Image Containment FIXES */
-    .program-card img {
-        width: 100%;
-        height: 250px;
-        object-fit: cover;
-        display: block;
-        margin-bottom: 0;
-    }
-    
-    /* Wrapper to re-introduce padding for text */
-    .program-content-wrapper {
-        padding: 32px;
-        flex-grow: 1; 
-    }
-    
-    .program-content-wrapper h3 {
-        font-size: 1.5rem;
-        font-weight: 600;
-        margin-top: 0;
-        margin-bottom: 10px;
-        color: var(--dark-text);
-    }
-    
-    .program-content-wrapper p {
-        font-size: 1rem;
-        color: var(--text-gray);
-        line-height: 1.6;
-    }
+.section-content h2 {
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: var(--dark-text);
+    margin-bottom: 20px;
+}
 
-    /* --- LANGUAGE TOGGLE STYLES (REQUIRED) --- */
-    /* Assuming the NAV structure is included and contains the .lang-toggle div */
-    .lang-toggle {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.25rem;
-        background: var(--er-cream);
-        border-radius: 0.75rem;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
+/* ---------------- STATS GRID ---------------- */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 32px;
+    margin-top: 40px;
+}
 
-    .lang-button {
-        background: none;
-        border: none;
-        cursor: pointer;
-        font-size: 1.5rem;
-        padding: 0.25rem 0.5rem;
-        border-radius: 0.5rem;
-        transition: transform 0.1s, background-color 0.2s;
-        outline: none;
-    }
+.stat-item {
+    padding: 24px;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    transition: 0.3s;
+}
+.stat-item:hover {
+    transform: translateY(-5px);
+}
 
-    .lang-button:hover {
-        transform: scale(1.05);
-        background-color: var(--er-blush);
-    }
-    
-    .lang-button.active {
-        background-color: var(--er-rose);
-        box-shadow: 0 0 0 2px var(--er-rose);
-        transform: scale(1.1);
-    }
-    /* End Language Toggle Styles */
+.stat-item .number {
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--er-rose);
+}
 
+.stat-item .label {
+    margin-top: 8px;
+    font-size: 1rem;
+    color: var(--text-gray);
+}
+
+/* ---------------- PROGRAM CARDS ---------------- */
+.program-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 40px;
+    margin-top: 40px;
+}
+
+.program-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    transition: 0.25s;
+}
+.program-card:hover {
+    transform: translateY(-5px);
+}
+
+.program-card img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+}
+
+.program-content-wrapper {
+    padding: 28px;
+}
+
+.program-content-wrapper h3 {
+    margin-top: 0;
+    font-size: 1.5rem;
+}
+
+.program-content-wrapper p {
+    color: var(--text-gray);
+    line-height: 1.6;
+}
 </style>
-
-
 </head>
+
 <body>
     <%- include('common/navbar.ejs') %>
 <main>
@@ -243,95 +224,118 @@
     </div>
 </header>
 
+<!-- ===================== HERO WITH SLIDESHOW ===================== -->
+<div class="hero-wrapper">
+
+    <div class="hero-slideshow">
+        <img src="/images/Homestemworkshop.jpg" class="active">
+        <img src="/images/HomeClassRoom.jpg">
+        <img src="/images/Homeclasshelp.jpg">
+        <img src="/images/HomeBYUtour.jpg">
+        <img src="/images/Homeanimationworkshop.jpg">
+    </div>
+
+    <div class="hero-overlay"></div>
+
+    <div class="hero-content">
+        <h1 class="hero-title text-outline">Ella Rises</h1>
+        <h2 class="hero-subtitle text-outline">Pursuing Higher Education. Embracing Heritage.</h2>
+        <a href="/donations" class="cta-btn">Donate to the Cause</a>
+    </div>
+</div>
+
+
+<!-- ===================== OUR MISSION ===================== -->
+<section class="section" id="mission">
+    <div class="section-content">
+        <h2>Our Mission</h2>
+        <p style="max-width: 750px; margin: auto; font-size: 1.2rem; line-height: 1.8;">
+            To empower the future generation of women by inviting young women to pursue higher education and embrace their heritage. 
+            We provide culturally rooted programs and educational experiences through our signature programs focusing on mariachi, ballet folklorico, and STEAM.
+        </p>
+    </div>
+</section>
+
+
+<!-- ===================== MAKING A LASTING IMPACT ===================== -->
 <section class="section section-light" id="impact">
     <div class="section-content">
-        <h2 data-i18n-key="impact_title" style="color: var(--dark-text);">Making a Lasting Impact</h2>
-        <p data-i18n-key="impact_text" style="margin-bottom: 40px;">Through your generous support, our signature programs and the Ella Rises Summit serve **over 150 young women each year**, helping them achieve educational goals and build confidence.</p>
-        
+        <h2>Making a Lasting Impact</h2>
+        <p style="margin-bottom: 40px;">
+            Through your generous support, our signature programs and the Ella Rises Summit serve over 150 young women each year.
+        </p>
+
         <div class="stats-grid">
             <div class="stat-item">
-                <div class="number" data-i18n-key="stat_1_num">150+</div>
-                <div class="label" data-i18n-key="stat_1_label">Young Women Served Annually</div>
+                <div class="number">150+</div>
+                <div class="label">Young Women Served Annually</div>
             </div>
             <div class="stat-item">
-                <div class="number" data-i18n-key="stat_2_num">3</div>
-                <div class="label" data-i18n-key="stat_2_label">Core Program Pillars (Mariachi, Folklorico, STEAM)</div>
+                <div class="number">3</div>
+                <div class="label">Core Program Pillars</div>
             </div>
             <div class="stat-item">
-                <div class="number" data-i18n-key="stat_3_num">100%</div>
-                <div class="label" data-i18n-key="stat_3_label">Focus on Culturally Rooted Education</div>
+                <div class="number">100%</div>
+                <div class="label">Focus on Culturally Rooted Education</div>
             </div>
         </div>
     </div>
 </section>
 
-<hr>
 
+<!-- ===================== PROGRAMS ===================== -->
 <section class="section" id="programs">
     <div class="section-content">
-        <h2 data-i18n-key="programs_title" style="color: var(--flower-red);">Our Signature Programs</h2>
-        <p data-i18n-key="programs_intro">We believe in a holistic approach to empowerment. Explore the key areas where our young women thrive.</p>
-        
+        <h2>Our Signature Programs</h2>
+
         <div class="program-card-grid">
-            
+
             <div class="program-card">
-                <img src="/images/BF_Single_RedDress.png" alt="Young woman in red folklorico dress">
+                <img src="/images/BF_Single_RedDress.png">
                 <div class="program-content-wrapper">
-                    <h3 data-i18n-key="card_mariachi_title">Mariachi Workshops</h3>
-                    <p data-i18n-key="card_mariachi_text">Develop musical talent, stage presence, and teamwork through the study and performance of traditional Mariachi music, deeply connecting participants with their cultural roots.</p>
+                    <h3>Mariachi Workshops</h3>
+                    <p>Develop musical talent, stage presence, and cultural connection.</p>
                 </div>
             </div>
 
             <div class="program-card">
-                <img src="/images/Mariachi_Single.png" alt="Young woman playing a mariachi instrument">
+                <img src="/images/Mariachi_Single.png">
                 <div class="program-content-wrapper">
-                    <h3 data-i18n-key="card_folklorico_title">Ballet Folklorico</h3>
-                    <p data-i18n-key="card_folklorico_text">Participants learn the vibrant and historic dance traditions of Mexico, fostering discipline, pride, and an appreciation for the rich history embedded in each regional dance style.</p>
+                    <h3>Ballet Folklorico</h3>
+                    <p>Learn vibrant regional dances that build pride and discipline.</p>
                 </div>
             </div>
 
             <div class="program-card">
-                <img src="/images/steamEllaRises.jpg" alt="Young women participating in a STEAM workshop">
+                <img src="/images/steamEllaRises.jpg">
                 <div class="program-content-wrapper">
-                    <h3 data-i18n-key="card_steam_title">STEAM Education</h3>
-                    <p data-i18n-key="card_steam_text">We provide hands-on, engaging workshops in Science, Technology, Engineering, Arts, and Math to encourage curiosity and prepare young women for future careers in these critical fields.</p>
+                    <h3>STEAM Education</h3>
+                    <p>Hands-on workshops encouraging curiosity and future careers.</p>
                 </div>
             </div>
+
         </div>
-        
+
         <div style="margin-top: 60px;">
-            <a href="/events" class="secondary-btn" style="background-color: var(--purple-accent); color: white; border: none;" data-i18n-key="btn_events">View All Events & Enroll Today</a>
+            <a href="/eventspublic" class="cta-btn" style="background: var(--er-rose);">View All Events</a>
         </div>
     </div>
 </section>
 
 <%- include('common/footer.ejs') %>
 
+
+<!-- ===================== SLIDESHOW SCRIPT ===================== -->
 <script>
-    // --- Initialization and Event Listeners ---
-    window.onload = () => {
-        // Check if the setLanguage function is available (it should be loaded from the included file)
-        if (typeof setLanguage === 'undefined') {
-            console.error('setLanguage function not found. Ensure spanishtranslationstorage.ejs is included correctly.');
-            return;
-        }
+const slides = document.querySelectorAll('.hero-slideshow img');
+let index = 0;
 
-        // Get user preference from localStorage, default to English ('en')
-        const userPref = localStorage.getItem('userLang') || 'en';
-        
-        // Apply the initial language immediately on load. 
-        setLanguage(userPref); 
-
-        // Add event listeners to the flag buttons (Assumes the buttons are present in navbar.ejs)
-        document.querySelectorAll('.lang-button').forEach(button => {
-            button.addEventListener('click', (event) => {
-                const newLang = event.currentTarget.getAttribute('data-lang');
-                setLanguage(newLang);
-            });
-        });
-    };
+setInterval(() => {
+    slides[index].classList.remove('active');
+    index = (index + 1) % slides.length;
+    slides[index].classList.add('active');
+}, 5000);
 </script>
-
 
 </body>
 </html>
