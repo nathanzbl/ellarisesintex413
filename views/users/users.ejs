@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Milestones | Ella Rises</title>
+    <title>Users | Ella Rises</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -55,7 +55,7 @@
             border-top: 6px solid var(--er-pink);
         }
 
-        .milestone-title {
+        .user-title { /* Renamed from .milestone-title */
             font-family: "DM Serif Display", serif;
             font-size: 2rem;
             text-align: center;
@@ -63,7 +63,7 @@
             margin: 0 0 0.25rem;
         }
 
-        .milestone-subtitle {
+        .user-subtitle { /* Renamed from .milestone-subtitle */
             font-size: 0.95rem;
             text-align: center;
             color: rgba(58, 63, 59, 0.7);
@@ -223,12 +223,12 @@
 
         }
 
-        .btn-add-milestone {
+        .btn-add-user { /* Renamed from .btn-add-milestone */
             background: var(--er-pink);
             color: #fff;
         }
         
-        .btn-add-milestone:hover {
+        .btn-add-user:hover { /* Renamed from .btn-add-milestone:hover */
             background: var(--er-rose);
             transform: translateY(-1px);
         }
@@ -249,24 +249,24 @@
             text-align: center;
         }
 
-        .btn-edit-milestone {
+        .btn-edit-user { /* Renamed from .btn-edit-milestone */
             background: var(--er-sage);
             color: #fff;
             box-shadow: none; /* Removed shadow on small buttons */
         }
         
-        .btn-edit-milestone:hover {
+        .btn-edit-user:hover { /* Renamed from .btn-edit-milestone:hover */
             background: var(--er-blue);
             transform: translateY(-1px);
         }
         
-        .btn-delete-milestone {
+        .btn-delete-user { /* Renamed from .btn-delete-milestone */
             background: var(--er-rose);
             color: #fff;
             box-shadow: none; /* Removed shadow on small buttons */
         }
         
-        .btn-delete-milestone:hover {
+        .btn-delete-user:hover { /* Renamed from .btn-delete-milestone:hover */
             background: var(--er-charcoal);
             transform: translateY(-1px);
         }
@@ -316,7 +316,7 @@
             overflow: hidden;
             overflow-x: auto;
             flex-wrap: nowrap;
-            -webkit-overflow-crolling: touch; 
+            -webkit-overflow-scrolling: touch; 
         }
         
         .page-link {
@@ -351,6 +351,31 @@
             cursor: default;
             pointer-events: none;
         }
+        
+        /* New Media Query for responsive search form */
+        @media (max-width: 768px) {
+            .controls-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .search-form {
+                flex-direction: column;
+                gap: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+            .search-group {
+                min-width: 100%;
+                flex-basis: 100% !important;
+            }
+            .controls-actions-group {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+            .add-button-wrapper {
+                text-align: left;
+                padding-bottom: 0;
+            }
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
@@ -361,49 +386,25 @@
         <div class="data-card">
             
             
-            <h1 class="milestone-title">Participant Milestones</h1>
-            <p class="milestone-subtitle">A view of all milestones recorded in the system.</p>
+            <h1 class="user-title">System Users</h1>
+            <p class="user-subtitle">A view of all user accounts and their roles.</p>
             <div class="add-button-wrapper">
-                <a href="/addmilestone" class="btn-action btn-add-milestone">Add Milestone</a>
+                <a href="/adduser" class="btn-action btn-add-user">Add User</a>
             </div>
 
             <div class="controls-bar">
                 
-                <!-- Search Form occupies the majority of the space -->
-                <form method="GET" action="/milestones" class="search-form">
+                <form method="GET" action="/users" class="search-form">
                     
-                    <div class="search-group" style="flex-basis: 25%;">
-                        <label for="search_name" class="search-label">Participant Name</label>
+                    <div class="search-group" style="flex-basis: 50%;">
+                        <label for="search_name" class="search-label">Username or Name</label>
                         <input 
                             type="text" 
                             name="search_name" 
                             id="search_name" 
                             class="search-input" 
-                            placeholder="e.g., Jane Doe"
+                            placeholder="e.g., JaneDoe or Jane Doe"
                             value="<%= typeof search_name !== 'undefined' ? search_name : '' %>"
-                        >
-                    </div>
-
-                    <div class="search-group" style="flex-basis: 25%;">
-                        <label for="search_milestone" class="search-label">Milestone Title</label>
-                        <input 
-                            type="text" 
-                            name="search_milestone" 
-                            id="search_milestone" 
-                            class="search-input" 
-                            placeholder="e.g., Diploma"
-                            value="<%= typeof search_milestone !== 'undefined' ? search_milestone : '' %>"
-                        >
-                    </div>
-                    
-                    <div class="search-group" style="flex-basis: 15%;">
-                        <label for="date" class="search-label">To Date</label>
-                        <input 
-                            type="date" 
-                            name="date" 
-                            id="date" 
-                            class="search-input"
-                            value="<%= typeof date !== 'undefined' ? date : '' %>"
                         >
                     </div>
 
@@ -412,14 +413,12 @@
                             <button type="submit" class="btn-search">Search</button>
                             
                             <% 
-                                // Check the three unique variables: search_name, search_milestone, date
-                                const isSearching = (typeof search_name !== 'undefined' && search_name) || 
-                                                    (typeof search_milestone !== 'undefined' && search_milestone) ||
-                                                    (typeof date !== 'undefined' && date);
+                                // Check the one unique variable: search_name
+                                const isSearching = (typeof search_name !== 'undefined' && search_name);
                             %>
 
                             <% if (isSearching) { %>
-                                <a href="/milestones" class="btn-clear">Clear Filters</a>
+                                <a href="/users" class="btn-clear">Clear Filters</a>
                             <% } %>
                         </div>
 
@@ -431,79 +430,101 @@
                 <div class="pagination-container">
                     <ul class="custom-pagination">
                         
-                        <!-- Previous Button -->
                         <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
-                            <!-- Preserve search terms in pagination links -->
-                            <a class="page-link" href="/milestones?page=<%= currentPage - 1 %><%= isSearching ? '&search_name=' + (search_name || '') + '&search_milestone=' + (search_milestone || '') + '&date=' + (date || '') : '' %>">Previous</a>
+                            <a class="page-link" href="/users?page=<%= currentPage - 1 %><%= isSearching ? '&search_name=' + (search_name || '') : '' %>">Previous</a>
                         </li>
 
-                        <!-- Page Number Links -->
-                        <% for(let i = 1; i <= totalPages; i++) { %>
+                        <%
+                            const maxPagesToShow = 7; 
+                            const sidePages = Math.floor(maxPagesToShow / 2);
+
+                            let startPage = Math.max(1, currentPage - sidePages);
+                            let endPage = Math.min(totalPages, currentPage + sidePages);
+
+                            // Adjust range if we're near the beginning
+                            if (endPage - startPage + 1 < maxPagesToShow) {
+                                startPage = Math.max(1, endPage - maxPagesToShow + 1);
+                            }
+                            // Adjust range if we're near the end
+                            if (endPage - startPage + 1 < maxPagesToShow) {
+                                endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+                            }
+                        %>
+
+                        <% if (startPage > 1) { %>
+                            <li class="page-item">
+                                <a class="page-link" href="/users?page=1<%= isSearching ? '&search_name=' + (search_name || '') : '' %>">1</a>
+                            </li>
+                            <% if (startPage > 2) { %>
+                                <li class="page-item disabled"><a class="page-link">...</a></li>
+                            <% } %>
+                        <% } %>
+
+                        <% for(let i = startPage; i <= endPage; i++) { %>
                             <li class="page-item <%= currentPage === i ? 'active' : '' %>">
-                                <!-- Preserve search terms in pagination links -->
-                                <a class="page-link" href="/milestones?page=<%= i %><%= isSearching ? '&search_name=' + (search_name || '') + '&search_milestone=' + (search_milestone || '') + '&date=' + (date || '') : '' %>"><%= i %></a>
+                                <a class="page-link" href="/users?page=<%= i %><%= isSearching ? '&search_name=' + (search_name || '') : '' %>"><%= i %></a>
                             </li>
                         <% } %>
 
-                        <!-- Next Button -->
+                        <% if (endPage < totalPages) { %>
+                            <% if (endPage < totalPages - 1) { %>
+                                <li class="page-item disabled"><a class="page-link">...</a></li>
+                            <% } %>
+                            <li class="page-item">
+                                <a class="page-link" href="/users?page=<%= totalPages %><%= isSearching ? '&search_name=' + (search_name || '') : '' %>"><%= totalPages %></a>
+                            </li>
+                        <% } %>
+
                         <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
-                            <!-- Preserve search terms in pagination links -->
-                            <a class="page-link" href="/milestones?page=<%= currentPage + 1 %><%= isSearching ? '&search_name=' + (search_name || '') + '&search_milestone=' + (search_milestone || '') + '&date=' + (date || '') : '' %>">Next</a>
+                            <a class="page-link" href="/users?page=<%= currentPage + 1 %><%= isSearching ? '&search_name=' + (search_name || '') : '' %>">Next</a>
                         </li>
                     </ul>
                 </div>
             <% } %>
-                
             <% if (typeof error_message !== 'undefined' && error_message) { %>
                 <div class="message-alert">
                     <%= error_message %>
                 </div>
             <% } %>
 
-            <% if (milestone.length === 0) { %>
+            <% if (users.length === 0) { %>
                 <div class="message-alert message-warning">
-                    No milestones found <%= isSearching ? 'matching your criteria.' : 'in the database.' %>
+                    No users found <%= isSearching ? 'matching your criteria.' : 'in the database.' %>
                 </div>
             <% } else { %>
                 <div class="table-responsive-wrapper">
                     <table class="table-custom">
                         <thead>
                             <tr>
-                                <th>Participant ID</th>
-                                <th>Participant Name</th>
-                                <th>Participant Email</th>
-                                <th>Milestone Title</th>
-                                <th>Date Achieved</th>
+                                <th>ID</th>
+                                <th>Username</th>
+                                <th>Role</th>
                                 <th>Edit</th>
                                 <th>Delete</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <% for (let iCount = 0; iCount < milestone.length; iCount++) { %>
+                            <% 
+                            // Assuming your server passes an array called 'users' 
+                            // with properties: id, username, and role
+                            for (let iCount = 0; iCount < users.length; iCount++) { 
+                            %>
                                 <tr>
-                                    <td><%= milestone[iCount].participantid %> </td>
-                                    <td><%= milestone[iCount].participantfirstname %> <%= milestone[iCount].participantlastname %></td>
-                                    <td><%= milestone[iCount].participantemail %> </td>
-                                    <td><%= milestone[iCount].milestonetitle %></td>
+                                    <td><%= users[iCount].id %> </td>
+                                    <td><%= users[iCount].username %></td>
+                                    <td><%= users[iCount].role %></td>
                                     <td>
-                                        <% 
-                                            const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
-                                            const dateValue = new Date(milestone[iCount].milestonedate);
-                                        %>
-                                        <%= dateValue.toLocaleDateString('en-US', dateOptions) %>
-                                    </td>
-                                    <td>
-                                        <form action="/editMilestone/<%= milestone[iCount].milestoneid %>" method="get">
-                                            <input type="submit" name="Edit" value="Edit" class="btn-small btn-edit-milestone"/>
+                                        <form action="/editUser/<%= users[iCount].id %>" method="get">
+                                            <input type="submit" name="Edit" value="Edit" class="btn-small btn-edit-user"/>
                                         </form>
                                     </td>
                                     <td>
                                         <form 
-                                            action="/deleteMilestone/<%= milestone[iCount].milestoneid %>" 
+                                            action="/deleteUser/<%= users[iCount].id %>" 
                                             method="post"
                                             onsubmit="return confirmDeletion(event);" 
                                         >
-                                            <input type="submit" name="Delete" value="Delete" class="btn-small btn-delete-milestone"/>
+                                            <input type="submit" name="Delete" value="Delete" class="btn-small btn-delete-user"/>
                                         </form>
                                     </td>
                                 </tr>
@@ -512,33 +533,6 @@
                     </table>
                 </div>
                 
-            <% } %>
-
-            <% if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
-                <div class="pagination-container">
-                    <ul class="custom-pagination">
-                        
-                        <!-- Previous Button -->
-                        <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
-                            <!-- Preserve search terms in pagination links -->
-                            <a class="page-link" href="/milestones?page=<%= currentPage - 1 %><%= isSearching ? '&search_name=' + (search_name || '') + '&search_milestone=' + (search_milestone || '') + '&date=' + (date || '') : '' %>">Previous</a>
-                        </li>
-
-                        <!-- Page Number Links -->
-                        <% for(let i = 1; i <= totalPages; i++) { %>
-                            <li class="page-item <%= currentPage === i ? 'active' : '' %>">
-                                <!-- Preserve search terms in pagination links -->
-                                <a class="page-link" href="/milestones?page=<%= i %><%= isSearching ? '&search_name=' + (search_name || '') + '&search_milestone=' + (search_milestone || '') + '&date=' + (date || '') : '' %>"><%= i %></a>
-                            </li>
-                        <% } %>
-
-                        <!-- Next Button -->
-                        <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
-                            <!-- Preserve search terms in pagination links -->
-                            <a class="page-link" href="/milestones?page=<%= currentPage + 1 %><%= isSearching ? '&search_name=' + (search_name || '') + '&search_milestone=' + (search_milestone || '') + '&date=' + (date || '') : '' %>">Next</a>
-                        </li>
-                    </ul>
-                </div>
             <% } %>
             
         </div>
