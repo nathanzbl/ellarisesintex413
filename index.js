@@ -20,6 +20,18 @@ let path = require("path");
 let bodyParser = require("body-parser");
 
 let app = express();
+const nodemailer = require("nodemailer");
+
+
+const surveyEmailTransporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,                  // e.g. smtp.office365.com
+  port: Number(process.env.SMTP_PORT) || 587,   // 587 for TLS
+  secure: false,                                // false for 587
+  auth: {
+    user: process.env.SMTP_USER,                // your Outlook or other SMTP user
+    pass: process.env.SMTP_PASS,                // password or API key
+  },
+});
 
 // Use EJS for the web pages - requires a views folder and all files are .ejs
 app.set("view engine", "ejs");
@@ -83,7 +95,11 @@ function setViewGlobals(req, res, next) {
 // Then, tell Express to use this function for all requests:
 app.use(setViewGlobals);
 
-
+// Helper function to capitalize the first character of a string
+function cap(str) {
+    if (!str) return str;
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
 // Content Security Policy middleware - allows localhost connections for development
 // This fixes the CSP violation error with Chrome DevTools
 app.use((req, res, next) => {
@@ -191,7 +207,6 @@ app.get("/surveys", (req, res) => {
         res.render("login", { error_message: "" });
     }
 });
-
 app.post("/survey", async (req, res) => {
   const {
     SurveyEmail,
@@ -201,8 +216,7 @@ app.post("/survey", async (req, res) => {
     SurveyUsefulnessScore,
     SurveyInstructorScore,
     SurveyRecommendationScore,
-
-    SurveyComments
+    SurveyComments,
   } = req.body;
 
   try {
@@ -223,7 +237,8 @@ app.post("/survey", async (req, res) => {
 
       return res.status(400).render("surveys", {
         events,
-        error_message: "We could not find that email in our records. Please use the email you used to register."
+        error_message:
+          "We could not find that email in our records. Please use the email you used to register.",
       });
     }
 
@@ -238,20 +253,47 @@ app.post("/survey", async (req, res) => {
     const overall = Math.round((sat + useful + instr + recom) / 4);
 
     // 2) Insert into survey table
-     await knex("survey").insert({
+    await knex("survey").insert({
       participantid: participantId,
       eventid: SurveyEventId,
-      recommendationid: recom,            // or whatever id you actually want here
+      recommendationid: recom, // or whatever id you actually want here
       surveysatisfactionscore: sat,
       surveyusefulnessscore: useful,
       surveyinstructorscore: instr,
       surveyrecommendationscore: recom,
-      surveyoverallscore: overall,        // now an int, not 1388.75
+      surveyoverallscore: overall,
       surveycomments: SurveyComments || null,
-      surveysubmissiondate: knex.fn.now()
+      surveysubmissiondate: knex.fn.now(),
     });
 
-    // 3) Redirect to a thank you page or something similar
+    // 3) Send confirmation email (do not block the user if this fails)
+    try {
+      await surveyEmailTransporter.sendMail({
+        from: `"${process.env.SMTP_FROM_NAME || "Ella Rises"}" <${
+          process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER
+        }>`,
+        to: SurveyEmail,
+        subject: "Thank you for completing the Ella Rises survey",
+        text:
+          "Thank you for taking the time to complete our post event survey. Your feedback helps us improve future Ella Rises events.",
+        html: `
+          <p>Hi,</p>
+          <p>Thank you for taking the time to complete our post event survey for Ella Rises.</p>
+          <p>Your feedback helps us improve future events and better support young women in STEAM.</p>
+          ${
+            SurveyEventDate
+              ? `<p><strong>Event date:</strong> ${SurveyEventDate}</p>`
+              : ""
+          }
+          <p>With gratitude,<br/>The Ella Rises Team</p>
+        `,
+      });
+    } catch (emailErr) {
+      console.error("Survey email send error:", emailErr);
+      // do not throw, user already submitted successfully
+    }
+
+    // 4) Redirect to a thank you page
     res.redirect("/survey/thankyou");
   } catch (err) {
     console.error("Survey submit error:", err);
@@ -262,10 +304,86 @@ app.post("/survey", async (req, res) => {
 
     res.status(500).render("surveys", {
       events,
-      error_message: "There was a problem saving your survey. Please try again."
+      error_message:
+        "There was a problem saving your survey. Please try again.",
     });
   }
 });
+
+// app.post("/survey", async (req, res) => {
+//   const {
+//     SurveyEmail,
+//     SurveyEventId,
+//     SurveyEventDate,
+//     SurveySatisfactionScore,
+//     SurveyUsefulnessScore,
+//     SurveyInstructorScore,
+//     SurveyRecommendationScore,
+
+//     SurveyComments
+//   } = req.body;
+
+//   try {
+//     // 1) Look up participant by email using knex.raw
+//     const emailResult = await knex.raw(
+//       "SELECT participantid, participantemail FROM participant WHERE participantemail = ?",
+//       [SurveyEmail]
+//     );
+
+//     // With Postgres, knex.raw returns { rows: [...] }
+//     const rows = emailResult.rows || emailResult;
+
+//     if (!rows || rows.length === 0) {
+//       // Email not found, reload page with error
+//       const events = await knex("eventdefinition")
+//         .select("eventdefid", "eventname")
+//         .orderBy("eventdefid", "asc");
+
+//       return res.status(400).render("surveys", {
+//         events,
+//         error_message: "We could not find that email in our records. Please use the email you used to register."
+//       });
+//     }
+
+//     const participantId = rows[0].participantid;
+
+//     // Parse scores to integers
+//     const sat = Number(SurveySatisfactionScore);
+//     const useful = Number(SurveyUsefulnessScore);
+//     const instr = Number(SurveyInstructorScore);
+//     const recom = Number(SurveyRecommendationScore);
+
+//     const overall = Math.round((sat + useful + instr + recom) / 4);
+
+//     // 2) Insert into survey table
+//      await knex("survey").insert({
+//       participantid: participantId,
+//       eventid: SurveyEventId,
+//       recommendationid: recom,            // or whatever id you actually want here
+//       surveysatisfactionscore: sat,
+//       surveyusefulnessscore: useful,
+//       surveyinstructorscore: instr,
+//       surveyrecommendationscore: recom,
+//       surveyoverallscore: overall,        // now an int, not 1388.75
+//       surveycomments: SurveyComments || null,
+//       surveysubmissiondate: knex.fn.now()
+//     });
+
+//     // 3) Redirect to a thank you page or something similar
+//     res.redirect("/survey/thankyou");
+//   } catch (err) {
+//     console.error("Survey submit error:", err);
+
+//     const events = await knex("eventdefinition")
+//       .select("eventdefid", "eventname")
+//       .orderBy("eventdefid", "asc");
+
+//     res.status(500).render("surveys", {
+//       events,
+//       error_message: "There was a problem saving your survey. Please try again."
+//     });
+//   }
+// });
 
 app.get("/survey/thankyou", (req, res) => {
     res.render("survey/surveyThankYou");
