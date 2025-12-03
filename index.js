@@ -102,7 +102,11 @@ app.get("/forbidden", (req, res) => {
 
 // 404 catch all
 
-
+app.use((req, res, next) => {
+    res.locals.currentUser = req.session.user || null;
+    res.locals.isLoggedIn = !!req.session.user;
+    next();
+});
 
 const knex = require("knex")({
     client: "pg",
@@ -122,22 +126,31 @@ const knex = require("knex")({
 app.use(express.urlencoded({extended: true}));
 
 // Global authentication middleware - runs on EVERY request
+// Global authentication middleware - runs on EVERY request
 app.use((req, res, next) => {
-    // Skip authentication for login routes
-    if (req.path === '/' || req.path === '/login' || req.path === '/logout' || req.path === '/donations' || req.path === '/register') {
-        //continue with the request path
+
+    // PUBLIC ROUTES: no login required
+    if (
+        req.path === '/' ||
+        req.path === '/login' ||
+        req.path === '/logout' ||
+        req.path === '/donations' ||
+        req.path === '/register' ||
+        req.path.startsWith('/eventspublic') ||
+        req.path.startsWith('/events/detail') ||
+        req.path.startsWith('/events/rsvp')
+    ) {
         return next();
     }
-    
-    // Check if user is logged in for all other routes
+
+    // ALL OTHER ROUTES MUST BE LOGGED IN
     if (req.session.isLoggedIn) {
-        //notice no return because nothing below it
-        next(); // User is logged in, continue
+        return next();
     } 
-    else {
-        res.render("login", { error_message: "Please log in to access this page" });
-    }
+    
+    return res.render("login", { error_message: "Please log in to access this page" });
 });
+
 
 // Main page route - notice it checks if they have logged in
 app.get("/login", (req, res) => {
@@ -1450,46 +1463,25 @@ app.get("/displayHobbies/:userId", (req, res) => {
 //  EVENT SYSTEM ROUTES (PUBLIC + MANAGER)
 // -----------------------------------------------------
 
-// Middleware: Only allow managers
-function requireManager(req, res, next) {
-    if (!req.session.user) return res.status(403).render("403");
+/* ================================================
+   1. PUBLIC ROUTES (NO LOGIN REQUIRED)
+   ================================================ */
 
-    const role = req.session.user.role.toLowerCase().trim();
-
-    if (role === "manager" || role === "m") {
-        return next();
-    }
-
-    return res.status(403).render("403");
-}
-
-// -----------------------------------------------------
-// PUBLIC: Show next upcoming event
-// -----------------------------------------------------
+// Public — Event List
 app.get("/eventspublic", async (req, res) => {
     try {
-        const nextEvent = await knex("event")
-            .join("eventdefinition", "event.eventdefid", "eventdefinition.eventdefid")
-            .select(
-                "event.eventid",
-                "event.eventdatetimestart",
-                "event.eventlocation",
-                "eventdefinition.eventname",
-                "eventdefinition.eventdescription"
-            )
-            .orderBy("event.eventdatetimestart", "asc")
-            .first();
+        const eventDefs = await knex("eventdefinition")
+            .select("eventdefid", "eventname", "eventdescription")
+            .orderBy("eventname");
 
-        res.render("eventspublic", { nextEvent });
+        res.render("events/eventspublic", { eventDefs });
     } catch (err) {
         console.error("Error loading public event list:", err);
-        res.render("eventspublic", { nextEvent: null });
+        res.render("events/eventspublic", { eventDefs: [] });
     }
 });
 
-// -----------------------------------------------------
-// PUBLIC: Event Details Page
-// -----------------------------------------------------
+// Public — Event Detail Page
 app.get("/events/detail/:id", async (req, res) => {
     try {
         const event = await knex("event")
@@ -1513,9 +1505,7 @@ app.get("/events/detail/:id", async (req, res) => {
     }
 });
 
-// -----------------------------------------------------
-// PUBLIC: RSVP Form Page
-// -----------------------------------------------------
+// Public — RSVP Page
 app.get("/events/rsvp/:id", async (req, res) => {
     try {
         const event = await knex("event")
@@ -1538,12 +1528,10 @@ app.get("/events/rsvp/:id", async (req, res) => {
     }
 });
 
-// -----------------------------------------------------
-// PUBLIC: Submit RSVP (placeholder)
-// -----------------------------------------------------
+// Public — Submit RSVP
 app.post("/events/rsvp/:id", async (req, res) => {
     try {
-        // TODO: Insert RSVP row into "eventrsvp" table later
+        // TODO: add DB insert later
         res.render("rsvpsuccess");
     } catch (err) {
         console.error("Error submitting RSVP:", err);
@@ -1551,10 +1539,24 @@ app.post("/events/rsvp/:id", async (req, res) => {
     }
 });
 
-// -----------------------------------------------------
-// ADD EVENT FOR A SPECIFIC DAY (from calendar modal)
-// MUST COME BEFORE ANY /events/:eventdefid ROUTES
-// -----------------------------------------------------
+/* ================================================
+   2. MANAGER-ONLY ROUTES
+   ================================================ */
+
+// Middleware: Only allow managers
+function requireManager(req, res, next) {
+    if (!req.session.user) return res.status(403).render("403");
+
+    const role = req.session.user.role.toLowerCase().trim();
+
+    if (role === "manager" || role === "m") {
+        return next();
+    }
+
+    return res.status(403).render("403");
+}   
+
+// Add Event via Calendar Modal — MUST COME FIRST
 app.post("/events/:eventdefid/day/:date/add", requireManager, async (req, res) => {
     const { eventdefid, date } = req.params;
 
@@ -1577,11 +1579,7 @@ app.post("/events/:eventdefid/day/:date/add", requireManager, async (req, res) =
     }
 });
 
-// -----------------------------------------------------
-// ADD EVENT (MANUAL ADD EVENT FORM)
-// -----------------------------------------------------
-
-// Show Add Event Form
+// Manual Add Event Form
 app.get("/events/add", requireManager, (req, res) => {
     res.render("events/addevent", { error_message: "" });
 });
@@ -1613,9 +1611,7 @@ app.post("/events/add", requireManager, async (req, res) => {
     }
 });
 
-// -----------------------------------------------------
-// EVENT LIST (UNIQUE EVENT TYPES)
-// -----------------------------------------------------
+// Manager — Event List
 app.get("/events", requireManager, async (req, res) => {
     try {
         const eventDefs = await knex("eventdefinition")
@@ -1629,9 +1625,7 @@ app.get("/events", requireManager, async (req, res) => {
     }
 });
 
-// -----------------------------------------------------
-// EVENT DETAILS FOR A SPECIFIC DAY
-// -----------------------------------------------------
+// Manager — Event Details for a Day
 app.get("/events/:eventdefid/day/:date", requireManager, async (req, res) => {
     const { eventdefid, date } = req.params;
 
@@ -1658,9 +1652,7 @@ app.get("/events/:eventdefid/day/:date", requireManager, async (req, res) => {
     res.render("events/eventdetails", { events, dateFormatted });
 });
 
-// -----------------------------------------------------
-// EVENT CALENDAR PAGE
-// -----------------------------------------------------
+// Manager — Event Calendar
 app.get("/events/:eventdefid", requireManager, async (req, res) => {
     try {
         const eventDef = await knex("eventdefinition")
@@ -1670,10 +1662,6 @@ app.get("/events/:eventdefid", requireManager, async (req, res) => {
         const events = await knex("event")
             .where("eventdefid", req.params.eventdefid)
             .select("eventid", "eventdatetimestart");
-
-        console.log("EVENTDEFID:", req.params.eventdefid);
-        console.log("RAW EVENTS:", events);
-        events.forEach(ev => console.log(" - eventdatetimestart:", ev.eventdatetimestart));
 
         const datesAvailable = events.map(ev => {
             const d = new Date(ev.eventdatetimestart);
@@ -1688,9 +1676,7 @@ app.get("/events/:eventdefid", requireManager, async (req, res) => {
     }
 });
 
-// -----------------------------------------------------
-// EDIT EVENT
-// -----------------------------------------------------
+// Manager — Edit Event
 app.get("/events/edit/:id", requireManager, async (req, res) => {
     try {
         const event = await knex("event")
@@ -1712,7 +1698,7 @@ app.get("/events/edit/:id", requireManager, async (req, res) => {
     }
 });
 
-// Submit edit
+// Manager — Submit Event Edit
 app.post("/events/edit/:id", requireManager, async (req, res) => {
     try {
         const event = await knex("event")
@@ -1744,9 +1730,7 @@ app.post("/events/edit/:id", requireManager, async (req, res) => {
     }
 });
 
-// -----------------------------------------------------
-// DELETE EVENT
-// -----------------------------------------------------
+// Manager — Delete Event
 app.post("/events/delete/:id", requireManager, async (req, res) => {
     try {
         await knex("event")
@@ -1759,6 +1743,7 @@ app.post("/events/delete/:id", requireManager, async (req, res) => {
         res.status(500).render("404");
     }
 });
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

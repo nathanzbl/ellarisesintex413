@@ -81,7 +81,11 @@
         <div class="nav-links">
             <a href="/">Home</a>
             <a href="/donations">Donations</a>
-            <a href="/events">Events</a>
+            <% if (typeof currentUser !== "undefined" && currentUser) { %>
+                <a href="/events" class="nav-link">Events</a>
+            <% } else { %>
+                <a href="/eventspublic" class="nav-link">Events</a>
+            <% } %>
             <!-- Only show restricted links if logged in -->
             <% if (typeof isLoggedIn !== 'undefined' && isLoggedIn) { %>
                 <a href="/milestones">Milestones</a>
