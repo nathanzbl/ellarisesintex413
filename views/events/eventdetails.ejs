@@ -141,7 +141,7 @@
 
 <body>
 
-<%- include('../navbar.ejs') %>
+<%- include('../common/navbar.ejs') %>
 
 <h1 class="page-title">Event Details</h1>
 <div class="date-heading"><strong>Date:</strong> <%= dateFormatted %></div>
@@ -179,6 +179,6 @@
     <% }) %>
 
 </div>
-
+<%- include('../common/footer.ejs') %>
 </body>
 </html>

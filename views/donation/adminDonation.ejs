@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Add Donation | Ella Rises</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:wght@400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --er-blue:     #99B7C6;
+      --er-lavender: #978EC4;
+      --er-cream:    #F9F5EA;
+      --er-blush:    #FFD8D1;
+      --er-pink:     #F9AFB1;
+      --er-sage:     #9AB59D;
+      --er-charcoal: #3A3F3B;
+      --er-peach:    #F4B89D;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: 'Montserrat', sans-serif;
+      background: var(--er-cream);
+      color: var(--er-charcoal);
+    }
+
+    /* MAIN LAYOUT */
+
+    .page-wrapper {
+      max-width: 980px;
+      margin: 72px auto 48px;
+      padding: 0 24px 40px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 2.4rem;
+      margin: 0 0 4px;
+      color: var(--er-lavender);
+    }
+
+    .subtitle {
+      margin: 0;
+      font-size: 0.95rem;
+      color: #555;
+      max-width: 520px;
+    }
+
+    /* CARD */
+
+    .card {
+      background: linear-gradient(135deg, #ffffff, #fffaf5);
+      border-radius: 20px;
+      border: 1px solid #f0e2d9;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.05);
+      padding: 24px 26px 26px;
+    }
+
+    /* FORM LAYOUT */
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px 20px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* make inputs and selects match cleanly */
+input,
+select {
+  padding: 9px 11px;
+  border-radius: 10px;
+  border: 1px solid #d6d6d6;
+  font-size: 0.95rem;
+  font-family: inherit;
+  background-color: #fff;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease,
+              background-color 0.15s ease;
+}
+
+/* remove default browser arrow */
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  padding-right: 40px; /* room for our custom arrow */
+  background-color: #fffdfb;
+}
+
+/* wrapper for custom arrow */
+.field-select {
+  position: relative;
+}
+
+/* custom arrow */
+.field-select::after {
+  content: "▾";
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.7rem;
+  color: #999;
+  pointer-events: none;
+}
+
+/* keep focus state consistent */
+input:focus,
+select:focus {
+  border-color: var(--er-lavender);
+  box-shadow: 0 0 0 2px rgba(151,142,196,0.2);
+  background-color: #fffefe;
+}
+
+
+    /* CHECKBOX */
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .checkbox-row input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+
+    .checkbox-row label {
+      text-transform: none;
+      letter-spacing: 0;
+      font-weight: 500;
+      color: #444;
+    }
+
+    /* ACTIONS */
+
+    .form-actions {
+      margin-top: 8px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 18px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      font-family: inherit;
+      text-decoration: none;
+      text-align: center;
+      line-height: 1.1;
+      transition: background-color 0.15s ease, color 0.15s ease,
+                  box-shadow 0.15s ease, transform 0.05s ease;
+    }
+
+    .btn-primary {
+      background: var(--er-lavender);
+      color: #fff;
+      box-shadow: 0 7px 16px rgba(151,142,196,0.35);
+    }
+
+    .btn-primary:hover {
+      background: #7c73c1;
+      transform: translateY(-1px);
+      box-shadow: 0 9px 20px rgba(151,142,196,0.45);
+    }
+
+    .btn-secondary {
+      background: #fff;
+      color: var(--er-charcoal);
+      border: 1px solid #d0d0d0;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--er-lavender);
+      color: var(--er-lavender);
+      background: #faf7ff;
+    }
+
+    /* MESSAGES */
+
+    .error-message {
+      margin: 0 0 14px;
+      font-size: 0.86rem;
+      font-weight: 500;
+      color: #b3261e;
+    }
+
+    /* SMALL SCREENS */
+
+    @media (max-width: 640px) {
+      .page-wrapper {
+        margin-top: 56px;
+        padding: 0 16px 32px;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      .card {
+        padding: 20px 18px 22px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <%- include('../common/navbar.ejs') %>
+   <%- include('../spanishtranslationstorage.ejs') %> 
+
+  <div class="page-wrapper">
+    <header>
+      <div>
+        <h1>Add Donation</h1>
+        <p class="subtitle">
+          Record a new donation for an existing participant and event. If donor is not an existing participant, create a new participant record first.
+        </p>
+      </div>
+
+      <a href="/donations" class="btn btn-secondary">Back to donations</a>
+    </header>
+
+    <div class="card">
+      <% if (error_message) { %>
+        <p class="error-message"><%= error_message %></p>
+      <% } %>
+
+      <form method="post" action="/donations/new">
+        <div class="form-row">
+          <div class="field">
+            <label for="firstname">First Name</label>
+            <input
+              type="text"
+              id="firstname"
+              name="firstname"
+              required
+            />
+          </div>
+
+          <div class="field">
+            <label for="lastname">Last Name</label>
+            <input
+              type="text"
+              id="lastname"
+              name="lastname"
+              required
+            />
+          </div>
+
+          <div class="field field-select">
+  <label for="eventid">Event</label>
+  <select id="eventid" name="eventDefId" required>
+    <option value="">Click to select an event</option>
+    <% if (Array.isArray(events)) { %>
+      <% events.forEach(function(evt) { %>
+        <option value="<%= evt.eventdefid %>">
+          <%= evt.eventdefid %> - <%= evt.eventname %>
+        </option>
+      <% }); %>
+    <% } %>
+  </select>
+</div>
+
+        </div>
+
+        <div class="form-row">
+          <div class="field">
+            <label for="donationamount">Amount (USD)</label>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              id="donationamount"
+              name="donationamount"
+              required
+            />
+          </div>
+
+          <div class="field">
+            <label for="donationdate">Donation date</label>
+            <input
+              type="date"
+              id="donationdate"
+              name="donationdate"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Anonymous</label>
+          <div class="checkbox-row">
+            <input type="checkbox" id="isanonymous" name="isanonymous" />
+            <label for="isanonymous">
+              Hide donor name from public reports
+            </label>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <a href="/donations" class="btn btn-secondary">Cancel</a>
+          <button type="submit" class="btn btn-primary">Save donation</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

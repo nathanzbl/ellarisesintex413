@@ -229,8 +229,7 @@
     </style>
 </head>
 <body>
-    <!-- Assuming the existence of a common navigation bar -->
-    <%- include('../navbar.ejs') %>
+    <%- include('../common/navbar.ejs') %>
 
     <div class="main-content">
         <div class="data-card">
@@ -355,8 +354,50 @@
                                value="<%= participant.participantzip || '' %>" 
                                required>
                     </div>
+                    </div>
 
-                </div>
+                                    <div class="mb-3">
+                                        <label for="dob" class="field-label">Date of Birth:</label>
+                                        <input type="date" 
+                                               class="date-input" 
+                                               id="dob" 
+                                               name="dob" 
+                                               value="<%= participant.participantdob ? new Date(participant.participantdob).toISOString().split('T')[0] : '' %>">
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="schoolOrEmployer" class="field-label">School or Employer:</label>
+                                        <input type="text" 
+                                               class="text-input" 
+                                               id="schoolOrEmployer" 
+                                               name="schoolOrEmployer" 
+                                               value="<%= participant.participantschooloremployer || '' %>" 
+                                               placeholder="Current school or place of employment">
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="fieldOfInterest" class="field-label">Field of Interest:</label>
+                                        <input type="text" 
+                                               class="text-input" 
+                                               id="fieldOfInterest" 
+                                               name="fieldOfInterest" 
+                                               value="<%= participant.participantfieldofinterest || '' %>" 
+                                               placeholder="e.g., Healthcare, Technology, Education">
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="totalDonations" class="field-label">Total Donation dollar amount:</label>
+                                        <input type="number" 
+                                               class="text-input" 
+                                               id="totalDonations" 
+                                               name="totalDonations" 
+                                               value="<%= participant.totaldonations || 0 %>" 
+                                               step="0.01"
+                                               min="0"
+                                               style="background-color: var(--er-cream); opacity: 0.8;"
+                                               readonly>
+                                    </div>
+
                 
                 <h2 class="section-title">Milestone History</h2>
                 
@@ -394,5 +435,7 @@
             
         </div>
     </div>
+    <%- include('../common/footer.ejs') %>
+
 </body>
 </html>

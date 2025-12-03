@@ -1,0 +1,124 @@
+<% if (typeof error_message !== 'undefined' && error_message) { %>
+                <div class="message-alert" style="color: var(--er-rose); background: rgba(206, 50, 91, 0.07); padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
+                    Error: <%= error_message %>
+                </div>
+            <% } %>
+
+            
+            <h2 class="section-header">Personal Profile</h2>
+            <% if (user.participantid) { %>
+                <div class="profile-grid">
+                    
+                    <div class="profile-item">
+                        <div class="profile-label">Full Name</div>
+                        <div class="profile-value"><%= user.participantfirstname %> <%= user.participantlastname %></div>
+                    </div>
+                    
+                    <div class="profile-item">
+                        <div class="profile-label">Email</div>
+                        <div class="profile-value"><%= user.participantemail %></div>
+                    </div>
+                    
+                    <div class="profile-item">
+                        <div class="profile-label">Phone</div>
+                        <div class="profile-value"><%= user.participantphone || 'N/A' %></div>
+                    </div>
+
+                    <div class="profile-item">
+                        <div class="profile-label">Date of Birth</div>
+                        <% 
+                            let dob = user.participantdob ? new Date(user.participantdob) : null;
+                            let dobFormatted = dob ? dob.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A';
+                        %>
+                        <div class="profile-value"><%= dobFormatted %></div>
+                    </div>
+
+                    <div class="profile-item">
+                        <div class="profile-label">Field of Interest</div>
+                        <div class="profile-value"><%= user.fieldofinterest || 'N/A' %></div>
+                    </div>
+
+                    <div class="profile-item">
+                        <div class="profile-label">Employer / School</div>
+                        <div class="profile-value"><%= user.employerschool || 'N/A' %></div>
+                    </div>
+
+                    <div class="profile-item" style="grid-column: span 2; text-align: center;">
+                        <div class="profile-label">Total Donations Contributed</div>
+                        <div class="profile-value" style="font-size: 1.5rem; color: var(--er-rose);">
+                            $<%= (user.totalDonations || 0).toFixed(2) %>
+                        </div>
+                    </div>
+                </div>
+            <% } else { %>
+                <div class="message-alert text-center message-warning">
+                    Participant details not found.
+                </div>
+            <% } %>
+
+
+            
+            <h2 class="section-header">Milestones Achieved</h2>
+            <div class="table-responsive">
+                <% if (milestones && milestones.length > 0) { %>
+                    <table class="table-dashboard">
+                        <thead>
+                            <tr>
+                                <th>Milestone Title</th>
+                                <th>Date Achieved</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% milestones.forEach(m => { %>
+                                <tr>
+                                    <td><%= m.milestonetitle %></td>
+                                    <td>
+                                        <% 
+                                            const mDate = new Date(m.milestonedate);
+                                            const mDateFormatted = mDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+                                        %>
+                                        <%= mDateFormatted %>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                <% } else { %>
+                    <div class="message-alert text-center message-warning">
+                        No milestones recorded yet.
+                    </div>
+                <% } %>
+            </div>
+
+            
+            <h2 class="section-header">Donation History</h2>
+            <div class="table-responsive">
+                <% if (donations && donations.length > 0) { %>
+                    <table class="table-dashboard">
+                        <thead>
+                            <tr>
+                                <th>Amount</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% donations.forEach(d => { %>
+                                <tr>
+                                    <td style="color: var(--er-sage);">$<%= d.amount.toFixed(2) %></td>
+                                    <td>
+                                        <% 
+                                            const dDate = new Date(d.donationdate);
+                                            const dDateFormatted = dDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                                        %>
+                                        <%= dDateFormatted %>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                <% } else { %>
+                    <div class="message-alert text-center message-warning">
+                        No donations recorded yet.
+                    </div>
+                <% } %>
+            </div> -->
