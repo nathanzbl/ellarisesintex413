@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Manage All Events | Ella Rises</title>
+
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --er-blue:#99B7C6;
+        --er-lavender:#978EC4;
+        --er-cream:#F9F5EA;
+        --er-blush:#FFD8D1;
+        --er-pink:#F9AFB1;
+        --er-sage:#9AB59D;
+        --er-charcoal:#3A3F3B;
+        --er-rose:#CE325B;
+    }
+
+    body {
+        margin: 0;
+        background: var(--er-cream);
+        font-family: "Montserrat", sans-serif;
+    }
+
+    .page-title {
+        text-align: center;
+        font-family: "DM Serif Display", serif;
+        font-size: 2.4rem;
+        margin-top: 2rem;
+    }
+
+    .container {
+        width: 90%;
+        max-width: 1200px;
+        margin: 2rem auto;
+        background: white;
+        padding: 2rem;
+        border-radius: 1.5rem;
+        border-top: 8px solid var(--er-pink);
+        box-shadow: 0 10px 32px rgba(0,0,0,0.08);
+    }
+
+    /* --- SEARCH INPUT LAYOUT FIX --- */
+    .search-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 1.3rem 1.8rem; /* more spacing between rows & columns */
+        margin-bottom: 2rem;
+    }
+
+    .search-group label {
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        display: block;
+    }
+
+    .search-group input,
+    .search-group select {
+        width: 100%;
+        padding: 12px;
+        border-radius: 0.75rem;
+        border: 1.5px solid var(--er-blush);
+    }
+
+    .search-actions {
+        margin-top: 0.7rem;
+    }
+
+    .btn-search {
+        background: var(--er-sage);
+        border: none;
+        padding: 0.9rem 1.7rem;
+        color: white;
+        font-weight: 600;
+        border-radius: 0.75rem;
+        cursor: pointer;
+        width: 100%;
+    }
+
+    /* TABLE STYLE */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1.5rem;
+    }
+
+    thead {
+        background: var(--er-charcoal);
+        color: white;
+    }
+
+    th, td {
+        padding: 1rem;
+        border-bottom: 1px solid var(--er-blush);
+    }
+
+    tr:nth-child(even) {
+        background: var(--er-cream);
+    }
+
+    .delete-btn {
+        background: var(--er-rose);
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 0.75rem;
+        cursor: pointer;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .edit-btn {
+        background: var(--er-blue);
+        color: white;
+        border: none;
+        padding: 0.5rem 1.1rem;
+        border-radius: 0.75rem;
+        cursor: pointer;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+</style>
+
+</head>
+<body>
+
+<%- include('../common/navbar.ejs') %>
+
+<h1 class="page-title">Manage All Events</h1>
+
+<div class="container">
+
+    <form method="GET" action="/events/manage/all">
+
+        <div class="search-row">
+
+            <div class="search-group">
+                <label>Event Name</label>
+                <input type="text" name="search_name" value="<%= search_name || '' %>">
+            </div>
+
+            <div class="search-group">
+                <label>Location</label>
+                <input type="text" name="search_location" value="<%= search_location || '' %>">
+            </div>
+
+            <div class="search-group">
+                <label>Event Type</label>
+                <select name="search_type">
+                    <option value="">All</option>
+                    <option value="Service" <%= search_type === "Service" ? "selected" : "" %>>Service</option>
+                    <option value="Workshop" <%= search_type === "Workshop" ? "selected" : "" %>>Workshop</option>
+                    <option value="Activity" <%= search_type === "Activity" ? "selected" : "" %>>Activity</option>
+                    <option value="Other" <%= search_type === "Other" ? "selected" : "" %>>Other</option>
+                </select>
+            </div>
+
+            <div class="search-group">
+                <label>Start Date (min)</label>
+                <input type="date" name="search_start" value="<%= search_start || '' %>">
+            </div>
+
+            <div class="search-group">
+                <label>Start Date (max)</label>
+                <input type="date" name="search_end" value="<%= search_end || '' %>">
+            </div>
+
+            <div class="search-group search-actions">
+                <button class="btn-search" type="submit">Search</button>
+            </div>
+
+        </div>
+    </form>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Event Name</th>
+                <th>Type</th>
+                <th>Location</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Edit</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+
+
+        <tbody>
+            <% events.forEach(ev => { %>
+                <tr>
+                    <td><%= ev.eventname %></td>
+                    <td><%= ev.eventtype %></td>
+                    <td><%= ev.eventlocation %></td>
+                    <td><%= ev.startFormatted %></td>
+                    <td><%= ev.endFormatted %></td>
+                    <td>
+                        <a href="/events/edit/<%= ev.eventid %>" class="edit-btn">Edit</a>
+                    </td>
+                    <td>
+                        <form action="/events/delete/<%= ev.eventid %>" method="post">
+                            <button class="delete-btn">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            <% }) %>
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>
+
