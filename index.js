@@ -1339,7 +1339,7 @@ app.post("/addParticipant", async (req, res) => {
     }
 });
 
-// GET /editParticipant/:id - Display the form for a single participant (Read Single/Update Form)
+// GET /editParticipant/:id - Display the Participant Profile/Edit Form
 app.get("/editParticipant/:id", (req, res) => {    
     if (!req.session.isLoggedIn) {
         return res.render("login", { error_message: "" });
@@ -1351,24 +1351,41 @@ app.get("/editParticipant/:id", (req, res) => {
         isManager: req.session.user.role === 'manager'
     } : { username: 'Guest', role: 'guest' };
 
-    knex("participant")
-        .where({ participantid: participantId })
-        .first()
-        .then((participant) => {
-            if (!participant) {
-                // Set temporary message in session before redirecting
-                req.session.message = { type: 'error', text: `Participant with ID ${participantId} not found.` };
-                return res.status(404).redirect("/participants"); 
-            }
-            // Ensure error_message is passed to edit form
-            res.render("participant/editparticipant", { participant, user, error_message: "" }); 
-        })
-        .catch((err) => {
-            console.error("Error fetching participant:", err.message);
-            // Fallback render to the list view
-             req.session.message = { type: 'error', text: 'Unable to load participant for editing.' };
-            res.status(500).redirect("/participants");
-        });   
+    // *** FIX: Use Promise.all to fetch both participant data and milestones ***
+    Promise.all([
+        // 1. Fetch Participant Details
+        knex("participant").where({ participantid: participantId }).first(),
+
+        // 2. NEW MILESTONE QUERY: Query the 'milestone' table directly using the participantId
+        knex("milestone")
+            .select(
+                "milestonetitle", // Matches the new table schema
+                "milestonedate"   // Matches the new table schema
+            )
+            .where({ participantid: participantId })
+            .orderBy("milestonedate", "desc") // Sort by date for better viewing
+    ])
+    .then(([participant, milestones]) => { // Destructure results
+        if (!participant) {
+            req.session.message = { type: 'error', text: `Participant with ID ${participantId} not found.` };
+            return res.status(404).redirect("/participants"); 
+        }
+        
+        // Pass the corrected data to the EJS template
+        res.render("participant/editparticipant", { 
+            participant, 
+            milestones, // <-- This array now contains { milestonetitle, milestonedate }
+            user, 
+            error_message: "" 
+        }); 
+    })
+    .catch((err) => {
+        // Log the error so you can see if the Knex query is failing
+        console.error("Error fetching participant and milestones:", err.message); 
+        
+        req.session.message = { type: 'error', text: 'Unable to load participant profile.' };
+        res.status(500).redirect("/participants");
+    });   
 });
 
 // POST /editParticipant/:id - Handle form submission for editing (Update Action)

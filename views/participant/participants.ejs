@@ -498,12 +498,26 @@
                 <table class="table-custom">
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>First Name</th>
-                            <th>Last Name</th>
-                            <th>Email</th>
-                            <th>Contact Number</th>
-                            <th colspan="2">Actions</th>
+                            <td><%= participants[iCount].participantid %></td>
+                            
+                            <td><%= participants[iCount].participantfirstname %></td>
+                            <td><%= participants[iCount].participantlastname %></td>
+                            <td><%= participants[iCount].participantemail %></td>
+                            <td><%= participants[iCount].participantphone || 'N/A' %></td>
+                            
+                            <td>
+                                <a href="/editParticipant/<%= participants[iCount].participantid %>" class="btn-small btn-delete-milestone">View/Edit</a>
+                            </td>
+                            <td>
+                                <!-- Form for deletion, uses SweetAlert2 for confirmation -->
+                                <form 
+                                    action="/deleteParticipant/<%= participants[iCount].participantid %>" 
+                                    method="post"
+                                    onsubmit="return confirmDeletion(event);" 
+                                >
+                                    <input type="submit" name="Delete" value="Delete" class="btn-small btn-delete-milestone"/>
+                                </form>
+                            </td>
                         </tr>
                     </thead>
                     <tbody>
