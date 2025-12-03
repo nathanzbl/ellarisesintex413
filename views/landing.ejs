@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ella Rises</title>
+<title data-i18n-key="doc_title">Ella Rises</title>
 
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
@@ -239,17 +239,16 @@ body {
 
     <div class="hero-content">
         <h1 class="hero-title text-outline">Ella Rises</h1>
-        <h2 class="hero-subtitle text-outline">Pursuing Higher Education. Embracing Heritage.</h2>
-        <a href="/donations" class="cta-btn">Donate to the Cause</a>
+        <h2 class="hero-subtitle text-outline" data-i18n-key="hero_headline">Pursuing Higher Education. Embracing Heritage.</h2>
+        <a href="/donations" class="cta-btn" data-i18n-key="btn_donate">Donate to the Cause</a>
     </div>
 </div>
 
 
-<!-- ===================== OUR MISSION ===================== -->
 <section class="section" id="mission">
     <div class="section-content">
-        <h2>Our Mission</h2>
-        <p style="max-width: 750px; margin: auto; font-size: 1.2rem; line-height: 1.8;">
+        <h2 data-i18n-key="nav_home">Our Mission</h2> 
+        <p style="max-width: 750px; margin: auto; font-size: 1.2rem; line-height: 1.8;" data-i18n-key="hero_text">
             To empower the future generation of women by inviting young women to pursue higher education and embrace their heritage. 
             We provide culturally rooted programs and educational experiences through our signature programs focusing on mariachi, ballet folklorico, and STEAM.
         </p>
@@ -257,67 +256,65 @@ body {
 </section>
 
 
-<!-- ===================== MAKING A LASTING IMPACT ===================== -->
 <section class="section section-light" id="impact">
     <div class="section-content">
-        <h2>Making a Lasting Impact</h2>
-        <p style="margin-bottom: 40px;">
+        <h2 data-i18n-key="impact_title">Making a Lasting Impact</h2>
+        <p style="margin-bottom: 40px;" data-i18n-key="impact_text">
             Through your generous support, our signature programs and the Ella Rises Summit serve over 150 young women each year.
         </p>
 
         <div class="stats-grid">
             <div class="stat-item">
-                <div class="number">150+</div>
-                <div class="label">Young Women Served Annually</div>
+                <div class="number" data-i18n-key="stat_1_num">150+</div>
+                <div class="label" data-i18n-key="stat_1_label">Young Women Served Annually</div>
             </div>
             <div class="stat-item">
-                <div class="number">3</div>
-                <div class="label">Core Program Pillars</div>
+                <div class="number" data-i18n-key="stat_2_num">3</div>
+                <div class="label" data-i18n-key="stat_2_label">Core Program Pillars</div>
             </div>
             <div class="stat-item">
-                <div class="number">100%</div>
-                <div class="label">Focus on Culturally Rooted Education</div>
+                <div class="number" data-i18n-key="stat_3_num">100%</div>
+                <div class="label" data-i18n-key="stat_3_label">Focus on Culturally Rooted Education</div>
             </div>
         </div>
     </div>
 </section>
 
 
-<!-- ===================== PROGRAMS ===================== -->
 <section class="section" id="programs">
     <div class="section-content">
-        <h2>Our Signature Programs</h2>
+        <h2 data-i18n-key="programs_title">Our Signature Programs</h2>
 
         <div class="program-card-grid">
 
             <div class="program-card">
                 <img src="/images/BF_Single_RedDress.png">
                 <div class="program-content-wrapper">
-                    <h3>Mariachi Workshops</h3>
-                    <p>Develop musical talent, stage presence, and cultural connection.</p>
+                    <h3 data-i18n-key="card_mariachi_title">Mariachi Workshops</h3>
+                    <p data-i18n-key="card_mariachi_text_short">Develop musical talent, stage presence, and cultural connection.</p>
                 </div>
             </div>
 
             <div class="program-card">
                 <img src="/images/Mariachi_Single.png">
                 <div class="program-content-wrapper">
-                    <h3>Ballet Folklorico</h3>
-                    <p>Learn vibrant regional dances that build pride and discipline.</p>
+                    <h3 data-i18n-key="card_folklorico_title">Ballet Folklorico</h3>
+                    <p data-i18n-key="card_folklorico_text_short">Learn vibrant regional dances that build pride and discipline.</p>
                 </div>
             </div>
 
             <div class="program-card">
                 <img src="/images/steamEllaRises.jpg">
                 <div class="program-content-wrapper">
-                    <h3>STEAM Education</h3>
-                    <p>Hands-on workshops encouraging curiosity and future careers.</p>
+                    <h3 data-i18n-key="card_steam_title">STEAM Education</h3>
+                    <p data-i18n-key="card_steam_text_short">Hands-on workshops encouraging curiosity and future careers.</p>
                 </div>
             </div>
 
         </div>
 
         <div style="margin-top: 60px;">
-            <a href="/eventspublic" class="cta-btn" style="background: var(--er-rose);">View All Events</a>
+            <a href="/eventspublic" class="cta-btn" style="background: var(--er-rose);" data-i18n-key="btn_events">View All Events</a>
         </div>
     </div>
 </section>
@@ -325,7 +322,6 @@ body {
 <%- include('common/footer.ejs') %>
 
 
-<!-- ===================== SLIDESHOW SCRIPT ===================== -->
 <script>
 const slides = document.querySelectorAll('.hero-slideshow img');
 let index = 0;

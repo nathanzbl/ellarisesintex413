@@ -148,7 +148,6 @@ const knex = require("knex")({
 app.use(express.urlencoded({extended: true}));
 
 // Global authentication middleware - runs on EVERY request
-// Global authentication middleware - runs on EVERY request
 app.use((req, res, next) => {
 
     // PUBLIC ROUTES: no login required
@@ -158,6 +157,7 @@ app.use((req, res, next) => {
         req.path === '/logout' ||
         req.path === '/donations' ||
         req.path === '/register' ||
+        req.path === '/teapot' ||
         req.path.startsWith('/eventspublic') ||
         req.path.startsWith('/events/detail') ||
         req.path.startsWith('/events/rsvp')
@@ -166,10 +166,13 @@ app.use((req, res, next) => {
     }
 
     // ALL OTHER ROUTES MUST BE LOGGED IN
+    // Note: Manager/Admin routes rely on specific middleware (e.g., requireManager) later on.
     if (req.session.isLoggedIn) {
         return next();
     } 
     
+    // Save the intended destination path to the session before redirecting to login
+    req.session.redirectTo = req.originalUrl;
     return res.render("login", { error_message: "Please log in to access this page" });
 });
 
@@ -1158,8 +1161,12 @@ app.post('/login', async (req, res) => {
         };
         // Mark session as logged in so the auth middleware allows access
         req.session.isLoggedIn = true;
-        // Redirect to main page
-        return res.redirect('/');
+        
+        // Redirect to the stored URL or default to the landing page ('/')
+        const redirectTo = req.session.redirectTo || '/';
+        delete req.session.redirectTo; // Clear the stored destination
+
+        return res.redirect(redirectTo);
 
     } catch (error) {
         console.error('Login error:', error);
@@ -1336,6 +1343,7 @@ app.get('/milestones', async (req, res) => {
       return query;
     };
 
+
     // Total count for pagination
     const countRow = await applyFilters(baseQuery.clone())
       .countDistinct({ total: "m.milestoneid" })
@@ -1387,8 +1395,8 @@ app.get('/milestones', async (req, res) => {
   }
 });
 
-// Add Milestone Post Route
-app.post("/addmilestone", (req, res) => {
+// Add Milestone Post Route - Access restricted to 'manager' role
+app.post("/addmilestone", requireManager, (req, res) => {
     const { milestonetitle, milestonedate } = req.body;
     let { participantIdentifier } = req.body; 
     
@@ -1458,20 +1466,15 @@ app.post("/addmilestone", (req, res) => {
         });
 });
 
-// add milestone get route
-app.get("/addMilestone", (req, res) => {
-    if (req.session.isLoggedIn) {
-        res.render("milestone/addmilestone",
+// add milestone get route - Access restricted to 'manager' role
+app.get("/addMilestone", requireManager, (req, res) => {
+    res.render("milestone/addmilestone",
             { error_message: "" }
         );
-    }
-    else {
-        res.render("login", { error_message: "" });
-    }  
 });
 
-// edit milestone get route
-app.get("/editMilestone/:id", (req, res) => {    
+// edit milestone get route - Access restricted to 'manager' role
+app.get("/editMilestone/:id", requireManager, (req, res) => {    
     const milestoneId = req.params.id;
     knex("milestone")
         .where({ milestoneid: milestoneId })
@@ -1494,8 +1497,8 @@ app.get("/editMilestone/:id", (req, res) => {
         });   
 });
 
-// Edit Milestone POST Route
-app.post("/editMilestone/:id", (req, res) => {
+// Edit Milestone POST Route - Access restricted to 'manager' role
+app.post("/editMilestone/:id", requireManager, (req, res) => {
     const milestoneID = req.params.id;
     
     const { milestonetitle, milestonedate } = req.body; 
@@ -1578,8 +1581,8 @@ app.post("/editMilestone/:id", (req, res) => {
 })
 
 
-// delete milestone
-app.post("/deleteMilestone/:id", (req, res) => {
+// delete milestone - Access restricted to 'manager' role
+app.post("/deleteMilestone/:id", requireManager, (req, res) => {
     knex("milestone").where("milestoneid", req.params.id).del().then(milestone => {
         res.redirect("/milestones");
     }).catch(err => {
@@ -1590,7 +1593,6 @@ app.post("/deleteMilestone/:id", (req, res) => {
 
 // -----------------------------------------------------
 // HELPER FUNCTION: Fetch paginated participants
-// (Updated to ensure limit and offset are correctly applied)
 // -----------------------------------------------------
 const fetchAllParticipants = async (limit, offset) => {
     try {
@@ -1616,12 +1618,13 @@ const fetchAllParticipants = async (limit, offset) => {
     }
 };
 
+// -----------------------------------------------------
+// PARTICIPANT ROUTES - Access restricted to 'manager' role
+// -----------------------------------------------------
 
 // GET /participants - Display the list of all participants with pagination and search
-app.get('/participants', async (req, res) => {
-    if (!req.session.isLoggedIn) {
-        return res.render("login", { error_message: "" });
-    }
+app.get('/participants', requireManager, async (req, res) => {
+    
     // Setup user object for EJS rendering
     const user = req.session.user ? {
         ...req.session.user,
@@ -1761,11 +1764,9 @@ app.get('/participants', async (req, res) => {
     }
 });
 
-// GET /addParticipant - Display the form (Create Form)
-app.get("/addParticipant", (req, res) => {
-    if (!req.session.isLoggedIn) {
-        return res.render("login", { error_message: "" });
-    }
+// GET /addParticipant - Display the form (Create Form) - Access restricted to 'manager' role
+app.get("/addParticipant", requireManager, (req, res) => {
+    
     const user = req.session.user ? {
         ...req.session.user,
         name: req.session.user.username,
@@ -1776,8 +1777,8 @@ app.get("/addParticipant", (req, res) => {
     res.render("participant/addparticipant", { message: null, user: user, error_message: "" });
 });
 
-// POST /addParticipant - Handle form submission (Create Action)
-app.post("/addParticipant", async (req, res) => {
+// POST /addParticipant - Handle form submission (Create Action) - Access restricted to 'manager' role
+app.post("/addParticipant", requireManager, async (req, res) => {
     // Assuming fields like firstName, lastName, email, etc.
     const { firstName, lastName, email } = req.body; 
     
@@ -1821,8 +1822,8 @@ app.post("/addParticipant", async (req, res) => {
     }
 });
 
-// GET /editParticipant/:id - Display the Participant Profile/Edit Form
-app.get('/editParticipant/:id', async (req, res) => {
+// GET /editParticipant/:id - Display the Participant Profile/Edit Form - Access restricted to 'manager' role
+app.get('/editParticipant/:id', requireManager, async (req, res) => {
     const participantId = req.params.id;
     try {
         // 1. Fetch Participant Details (Ensure all columns are selected)
@@ -1832,14 +1833,14 @@ app.get('/editParticipant/:id', async (req, res) => {
                 'participantfirstname',
                 'participantlastname',
                 'participantemail',
-                'participantphone',   // <--- ADD THIS
-                'participantcity',    // <--- ADD THIS
-                'participantstate',   // <--- ADD THIS
+                'participantphone',   
+                'participantcity',    
+                'participantstate',   
                 'participantzip',
                  'participantdob',
                   'participantschooloremployer',
                   'participantfieldofinterest' ,
-                  'totaldonations' // <--- ADD THIS
+                  'totaldonations' 
                 // ... any other columns you need ...
             )
             .where({ participantid: participantId })
@@ -1872,18 +1873,18 @@ app.get('/editParticipant/:id', async (req, res) => {
     }
 });
 
-// POST /editParticipant/:id - Handle form submission for editing (Update Action)
-app.post('/editParticipant/:id', async (req, res) => {
+// POST /editParticipant/:id - Handle form submission for editing (Update Action) - Access restricted to 'manager' role
+app.post('/editParticipant/:id', requireManager, async (req, res) => {
     const participantId = req.params.id;
     // Destructure all fields from the form submission
     const { 
         firstName, 
         lastName, 
         email, 
-        phone,    // <--- ADD THIS
-        city,     // <--- ADD THIS
-        state,    // <--- ADD THIS
-        zip       // <--- ADD THIS
+        phone,    
+        city,     
+        state,    
+        zip       
     } = req.body;
 
     // Basic validation (ensure required fields are present)
@@ -1919,12 +1920,8 @@ app.post('/editParticipant/:id', async (req, res) => {
     }
 });
 
-// POST /deleteParticipant/:id - Delete a participant (Delete Action)
-app.post("/deleteParticipant/:id", (req, res) => {
-    if (req.session.user.role !== 'manager') {
-        req.session.message = { type: 'error', text: 'Authorization denied.' };
-        return res.redirect("/participants");
-    }
+// POST /deleteParticipant/:id - Delete a participant (Delete Action) - Access restricted to 'manager' role
+app.post("/deleteParticipant/:id", requireManager, (req, res) => {
     
     knex("participant")
         .where("participantid", req.params.id)
@@ -2213,16 +2210,23 @@ app.post("/events/rsvp/:id", async (req, res) => {
    2. MANAGER-ONLY ROUTES
    ================================================ */
 
-// Middleware: Only allow managers
+// Middleware: Only allow managers (role 'manager' or 'm')
 function requireManager(req, res, next) {
-    if (!req.session.user) return res.status(403).render("403");
+    // 1. Check if user is logged in
+    if (!req.session.isLoggedIn || !req.session.user) {
+        // Redirect to login, storing the original path
+        req.session.redirectTo = req.originalUrl;
+        return res.render("login", { error_message: "Please log in to access this page" });
+    }
 
+    // 2. Check for required role
     const role = req.session.user.role.toLowerCase().trim();
 
     if (role === "manager" || role === "m") {
         return next();
     }
 
+    // 3. User is logged in but does not have the manager role
     return res.status(403).render("403");
 }   
 
@@ -2418,9 +2422,12 @@ app.post("/events/delete/:id", requireManager, async (req, res) => {
     }
 });
 
+app.get("/teapot", (req, res) => {
+    // Renders the teapot.ejs file located in the views folder
+    res.render("teapot"); 
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
-
