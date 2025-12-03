@@ -1098,27 +1098,6 @@ app.get('/donations/new', async (req, res) => {
   }
 });
 
-app.get("/users", (req, res) => {
-    // Check if user is logged in
-    if (req.session.isLoggedIn) { 
-        knex.select().from("users")
-            .then(users => {
-                console.log(`Successfully retrieved ${users.length} users from database`);
-                res.render("displayUsers", {users: users});
-            })
-            .catch((err) => {
-                console.error("Database query error:", err.message);
-                res.render("displayUsers", {
-                    users: [],
-                    error_message: `Database error: ${err.message}. Please check if the 'users' table exists.`
-                });
-            });
-    } 
-    else {
-        res.render("login", { error_message: "" });
-    }
-});
-
 app.get("/", (req, res) => {
     res.render("landing");
 });
@@ -1193,110 +1172,98 @@ app.get("/donations", (req, res) => {
     res.render("donation/donations");
 });
 
-app.get('/profile', (req, res) => {
-    // 1. Check if the user object exists in the session
+app.get('/profile', async (req, res) => {
+    
+    // 1. Check if the user object exists in the session (Guard Clause)
     const currentUser = req.session.user;
 
-    if (!currentUser) {
-        // Handle case where user is not logged in
+    if (!currentUser || !currentUser.id) {
+
         return res.redirect('/login'); 
     }
+    
+    const userId = currentUser.id;
 
-    // 2. Pass the user data into the 'users' object for the EJS template
-    res.render('profile', {
-        // The EJS template expects 'users.username'
-        users: { 
-            username: currentUser.username,
-            role: currentUser.role // Optional, but good practice
-            // You can pass other properties if needed
-        },
-        // You can also pass the full object if you need more properties:
-        // profileData: currentUser 
-    });
+    // --- QUERY 1: Fetch Profile Data (User + Participant Info) ---
+    const profileQuery = `
+        SELECT 
+            u.username, 
+            u.role, 
+            u.id, 
+            p.*
+        FROM 
+            users u
+        JOIN 
+            participant p ON p.participantid = u.id
+        WHERE 
+            u.id = ?; 
+    `;
+
+    // --- QUERY 2: Fetch Donation History ---
+    const donationHistoryQuery = `
+        SELECT 
+            donationnumber,
+            donationdate, 
+            donationamount
+            FROM 
+            donation 
+        WHERE 
+            participantid = ?
+        ORDER BY 
+            donationdate DESC; -- Ordering by date descending (newest first)
+    `;
+
+    // --- QUERY 3: Fetch Milestones History ---
+    const milestoneQuery = `
+        SELECT 
+            milestonetitle, 
+            milestonedate
+        FROM 
+            milestone 
+        WHERE 
+            participantid = ?
+        ORDER BY 
+            milestonedate DESC; -- Ordering by date descending (newest first)
+    `;
+
+    try {
+        // EXECUTE QUERY 1: Get Profile Data
+        const profileResult = await knex.raw(profileQuery, [userId]); 
+        const profileData = profileResult.rows[0]; 
+
+
+        if (!profileData) {
+            return res.status(404).send('Profile data not found. Check if user is in participant table.');
+        }
+
+        // EXECUTE QUERY 2: Get Donation History
+        const donationResult = await knex.raw(donationHistoryQuery, [userId]); 
+        const donationHistory = donationResult.rows; 
+
+        // EXECUTE QUERY 3: Get Milestones History
+        const milestoneResult = await knex.raw(milestoneQuery, [userId]); 
+        const milestonesHistory = milestoneResult.rows; 
+
+        // 4. Render the page, passing ALL three sets of data
+        res.render('profile', {
+            users: { 
+                ...profileData,
+            },
+            donations: donationHistory,
+            milestones: milestonesHistory // <-- NEW DATA SET
+        });
+
+    } catch (error) {
+        console.error('Error fetching data:', error);
+        // The previous console output was very helpful! Keep an eye on the terminal 
+        // for specific errors if this fails.
+        res.status(500).send('Server Error retrieving data.');
+    }
 });
 
-// app.get('/profile', async (req, res) => {
-//     // We assume 'isLoggedIn' and 'participantid' are stored on the session after login
-//     if (!req.session.isLoggedIn || !req.session.user || !req.session.user.participantid) {
-//         // If not logged in, redirect to login page
-//         return res.render("login", { error_message: "Please log in to view the dashboard." });
-//     }
-
-//     const participantId = req.session.user.participantid;
-//     let participantProfile = null;
-//     let milestones = [];
-//     let donations = [];
-//     let totalDonations = 0;
-
-//     try {
-//         // --- 2. Fetch Participant Profile (Required fields for display) ---
-//         participantProfile = await knex('participant')
-//             .select(
-//                 'participantid',
-//                 'participantfirstname',
-//                 'participantlastname',
-//                 'participantemail',
-//                 'participantphone',
-//                 'participantdob',
-//                 'fieldofinterest',
-//                 'employerschool'
-//             )
-//             .where({ participantid: participantId })
-//             .first();
-
-//         if (!participantProfile) {
-//             throw new Error("Participant profile not found.");
-//         }
-        
-//         // --- 3. Fetch Milestones (Title and Date) ---
-//         milestones = await knex('milestone')
-//             .select('milestonetitle', 'milestonedate')
-//             .where({ participantid: participantId })
-//             .orderBy('milestonedate', 'desc');
-
-//         // --- 4. Fetch Donations and Calculate Total ---
-        
-//         // Fetch detailed donation history (Amount and Date)
-//         donations = await knex('donation')
-//             .select('amount', 'donationdate')
-//             .where({ participantid: participantId })
-//             .orderBy('donationdate', 'desc');
-            
-//         // Calculate total donations contributed by this participant
-//         const totalResult = await knex('donation')
-//             .where({ participantid: participantId })
-//             .sum('amount as total');
-        
-//         totalDonations = totalResult[0].total || 0;
-
-//         // --- 5. Combine Data and Render ---
-        
-//         // Augment the profile data with the calculated total donations
-//         const userData = {
-//             ...participantProfile,
-//             totalDonations: totalDonations
-//         };
-
-//         res.render('userDashboard', {
-//             user: userData, // Main user profile data (used for title, grid, total)
-//             milestones: milestones,
-//             donations: donations,
-//             error_message: null
-//         });
-
-//     } catch (error) {
-//         console.error("Dashboard Data Fetch Error:", error.message);
-        
-//         // Render a degraded view with an error message
-//         res.render('userDashboard', {
-//             // Pass minimal user info to avoid crash, ensuring participantid is null/undefined
-//             user: { username: req.session.user.username || 'Error', participantid: null }, 
-//             milestones: [],
-//             donations: [],
-//             error_message: `Unable to load dashboard data: ${error.message}`
-//         });
-//     }
-// });
+// -----------------------------------------------------
+// MILESTONE ROUTES - Access restricted to 'manager' role
+// -----------------------------------------------------
 
 // Milestones list + search
 app.get('/milestones', async (req, res) => {
@@ -1305,7 +1272,7 @@ app.get('/milestones', async (req, res) => {
   let { page, search_name, search_milestone, date } = req.query;
 
   // Normalize query params
-  let currentPage = parseInt(page, pageSize);
+  let currentPage = parseInt(page, 10);
   if (isNaN(currentPage) || currentPage < 1) {
     currentPage = 1;
   }
@@ -1367,7 +1334,8 @@ app.get('/milestones', async (req, res) => {
         "p.participantemail",
         "p.participantid"
       )
-      .orderBy("m.milestonedate", "desc")
+      .orderBy("p.participantid", "asc")
+      .orderBy("m.milestoneid", "asc")
       .limit(pageSize)
       .offset(offset);
 
@@ -1395,86 +1363,8 @@ app.get('/milestones', async (req, res) => {
   }
 });
 
-// Add Milestone Post Route - Access restricted to 'manager' role
-app.post("/addmilestone", requireManager, (req, res) => {
-    const { milestonetitle, milestonedate } = req.body;
-    let { participantIdentifier } = req.body; 
-    
-    participantIdentifier = participantIdentifier.trim();
-    
-    // validation check
-    if (!milestonetitle || !milestonedate || !participantIdentifier) {
-        // FIX: Pass error_message string directly for validation error
-        return res.status(400).render("milestone/addmilestone", { 
-            error_message: "Milestone Title, Date, and Participant Identifier are required."
-        });
-    }
-
-    let participantIdToInsert;
-    let lookupQuery = knex("participant").select("participantid");
-    
-    // Check if the input is a number (meaning they entered an ID)
-    if (!isNaN(parseInt(participantIdentifier))) {
-        lookupQuery = lookupQuery.where({
-            participantid: parseInt(participantIdentifier)
-        });
-        console.log(`Looking up participant by ID: ${participantIdentifier}`);
-    } else {
-        lookupQuery = lookupQuery.where({
-            participantemail: participantIdentifier
-        });
-        console.log(`Looking up participant by Email: ${participantIdentifier}`);
-    }
-    
-    // Execute the built query
-    lookupQuery.first() 
-        .then((participant) => {
-            if (!participant) {
-                throw new Error(`Participant identifier "${participantIdentifier}" not found. Please verify the ID or Email.`);
-            }
-            
-            // Store the unique ID
-            participantIdToInsert = participant.participantid;
-
-            const newMilestone = {
-                milestonetitle,
-                milestonedate,
-                participantid: participantIdToInsert
-            };
-
-            // Return the insert query to continue the promise chain
-            return knex("milestone").insert(newMilestone);
-        })
-        .then(() => {
-            // Success: Insertion complete
-            res.redirect("/milestones");
-        })
-        .catch((err) => {
-            // Error handling
-            let errorMessage = "Unable to save Milestone. Please try again.";
-            
-            if (err.message.includes("Participant identifier")) {
-                errorMessage = err.message;
-            } else {
-                console.error("Error in add Milestone process:", err.message);
-            }
-
-            // FIX: Pass error_message string directly for database/lookup errors
-            res.status(500).render("milestone/addmilestone", { 
-                 error_message: errorMessage
-            });
-        });
-});
-
-// add milestone get route - Access restricted to 'manager' role
-app.get("/addMilestone", requireManager, (req, res) => {
-    res.render("milestone/addmilestone",
-            { error_message: "" }
-        );
-});
-
 // edit milestone get route - Access restricted to 'manager' role
-app.get("/editMilestone/:id", requireManager, (req, res) => {    
+app.get("/editMilestone/:id", requireManager, (req, res) => {
     const milestoneId = req.params.id;
     knex("milestone")
         .where({ milestoneid: milestoneId })
@@ -1486,7 +1376,7 @@ app.get("/editMilestone/:id", requireManager, (req, res) => {
                     error_message: "Milestone not found."
                 });
             }
-            res.render("milestone/milestone/editmilestone", { milestone, error_message: "" });
+            res.render("milestone/editmilestone", { milestone, error_message: "" });
         })
         .catch((err) => {
             console.error("Error fetching milestone:", err.message);
@@ -1494,18 +1384,16 @@ app.get("/editMilestone/:id", requireManager, (req, res) => {
                 workshops: [],
                 error_message: "Unable to load milestone for editing."
             });
-        });   
+        });
 });
 
 // Edit Milestone POST Route - Access restricted to 'manager' role
 app.post("/editMilestone/:id", requireManager, (req, res) => {
     const milestoneID = req.params.id;
-    
-    const { milestonetitle, milestonedate } = req.body; 
-    
-    if (!milestonetitle || !milestonedate) { 
+    const { milestonetitle, milestonedate } = req.body;
+    if (!milestonetitle || !milestonedate) {
         return knex("milestone")
-            .where({ milestoneid: milestoneID }) 
+            .where({ milestoneid: milestoneID })
             .first()
             .then((milestone) => {
                 if (!milestone) {
@@ -1528,13 +1416,11 @@ app.post("/editMilestone/:id", requireManager, (req, res) => {
                 });
             });
     }
-
     // --- Prepare Update Object ---
     const updatedMilestone = {
         milestonetitle,
         milestonedate
     };
-    
     // --- Run Update Query ---
     knex("milestone")
         .where({ milestoneid: milestoneID }) // Target the specific milestone
@@ -1552,7 +1438,6 @@ app.post("/editMilestone/:id", requireManager, (req, res) => {
         })
         .catch((err) => {
             console.error("Error updating milestone:", err.message);
-            
             // On update failure, refetch the original milestone data and display the error
             knex("milestone")
                 .where({ milestoneid: milestoneID })
@@ -1578,8 +1463,7 @@ app.post("/editMilestone/:id", requireManager, (req, res) => {
                     });
                 });
         });
-})
-
+});
 
 // delete milestone - Access restricted to 'manager' role
 app.post("/deleteMilestone/:id", requireManager, (req, res) => {
@@ -1589,6 +1473,72 @@ app.post("/deleteMilestone/:id", requireManager, (req, res) => {
         console.error(err);
         res.status(500).json({err});
     })
+});
+
+app.get("/addMilestone", requireManager, (req, res) => {
+    res.render("milestone/addmilestone",
+            { error_message: "" }
+        );
+});
+
+app.post("/addmilestone", requireManager, (req, res) => {
+    const { milestonetitle, milestonedate } = req.body;
+    let { participantIdentifier } = req.body;
+    participantIdentifier = participantIdentifier.trim();
+    // validation check
+    if (!milestonetitle || !milestonedate || !participantIdentifier) {
+        // FIX: Pass error_message string directly for validation error
+        return res.status(400).render("milestone/addmilestone", {
+            error_message: "Milestone Title, Date, and Participant Identifier are required."
+        });
+    }
+    let participantIdToInsert;
+    let lookupQuery = knex("participant").select("participantid");
+    // Check if the input is a number (meaning they entered an ID)
+    if (!isNaN(parseInt(participantIdentifier))) {
+        lookupQuery = lookupQuery.where({
+            participantid: parseInt(participantIdentifier)
+        });
+        console.log(`Looking up participant by ID: ${participantIdentifier}`);
+    } else {
+        lookupQuery = lookupQuery.where({
+            participantemail: participantIdentifier
+        });
+        console.log(`Looking up participant by Email: ${participantIdentifier}`);
+    }
+    // Execute the built query
+    lookupQuery.first()
+        .then((participant) => {
+            if (!participant) {
+                throw new Error(`Participant identifier "${participantIdentifier}" not found. Please verify the ID or Email.`);
+            }
+            // Store the unique ID
+            participantIdToInsert = participant.participantid;
+            const newMilestone = {
+                milestonetitle,
+                milestonedate,
+                participantid: participantIdToInsert
+            };
+            // Return the insert query to continue the promise chain
+            return knex("milestone").insert(newMilestone);
+        })
+        .then(() => {
+            // Success: Insertion complete
+            res.redirect("/milestones");
+        })
+        .catch((err) => {
+            // Error handling
+            let errorMessage = "Unable to save Milestone. Please try again.";
+            if (err.message.includes("Participant identifier")) {
+                errorMessage = err.message;
+            } else {
+                console.error("Error in add Milestone process:", err.message);
+            }
+            // FIX: Pass error_message string directly for database/lookup errors
+            res.status(500).render("milestone/addmilestone", {
+                 error_message: errorMessage
+            });
+        });
 });
 
 // -----------------------------------------------------
@@ -1852,13 +1802,13 @@ app.get('/editParticipant/:id', requireManager, async (req, res) => {
             return res.redirect('/participants');
         }
 
-        // 2. Fetch Milestones
+        // Fetch Milestones
         const milestones = await knex('milestone')
             .select('milestonetitle', knex.raw('TO_CHAR(milestonedate, \'YYYY-MM-DD\') as milestonedate'))
             .where({ participantid: participantId })
             .orderBy('milestonedate', 'desc');
 
-        // 3. Render the page
+        // Render the page
         res.render('participant/editparticipant', { 
             participant: participant, 
             milestones: milestones,
@@ -2020,111 +1970,6 @@ app.post('/register', async (req, res) => {
         });
     }
 });
-
-app.post("/deleteUser/:id", (req, res) => {
-    knex("users").where("id", req.params.id).del().then(users => {
-        res.redirect("/users");
-    }).catch(err => {
-        console.error(err);
-        res.status(500).json({err});
-    })
-});
-app.get("/editUser/:id", (req, res) => {
-    const userId = req.params.id;
-    knex("users")
-        .where({ id: userId })
-        .first()
-        .then((user) => {
-            if (!user) {
-                return res.status(404).render("displayUsers", {
-                    users: [],
-                    error_message: "User not found."
-                });
-            }
-            res.render("editUser", { user });
-        })
-        .catch((err) => {
-            console.error("Error fetching user for edit:", err.message);
-            res.status(500).render("displayUsers", {
-                users: [],
-                error_message: "Unable to load user for editing."
-            });
-        });
-});
-
-app.post("/editUser/:id", upload.single("profileImage"), (req, res) => {
-    const userId = req.params.id;
-    const { username, password, existingImage } = req.body;
-    if (!username || !password) {
-        return knex("users")
-            .where({ id: userId })
-            .first()
-            .then((user) => {
-                if (!user) {
-                    return res.status(404).render("displayUsers", {
-                        users: [],
-                        error_message: "User not found."
-                    });
-                }
-                res.status(400).render("editUser", {
-                    user,
-                    error_message: "Username and password are required."
-                });
-            })
-            .catch((err) => {
-                console.error("Error fetching user:", err.message);
-                res.status(500).render("displayUsers", {
-                    users: [],
-                    error_message: "Unable to load user for editing."
-                });
-            });
-    }
-    const profileImagePath = req.file ? `/images/uploads/${req.file.filename}` : existingImage || null;
-    const updatedUser = {
-        username,
-        password,
-        profile_image: profileImagePath
-    };
-    knex("users")
-        .where({ id: userId })
-        .update(updatedUser)
-        .then((rowsUpdated) => {
-            if (rowsUpdated === 0) {
-                return res.status(404).render("displayUsers", {
-                    users: [],
-                    error_message: "User not found."
-                });
-            }
-            res.redirect("/users");
-        })
-        .catch((err) => {
-            console.error("Error updating user:", err.message);
-            knex("users")
-                .where({ id: userId })
-                .first()
-                .then((user) => {
-                    if (!user) {
-                        return res.status(404).render("displayUsers", {
-                            users: [],
-                            error_message: "User not found."
-                        });
-                    }
-                    res.status(500).render("editUser", {
-                        user,
-                        error_message: "Unable to update user. Please try again."
-                    });
-                })
-                .catch((fetchErr) => {
-                    console.error("Error fetching user after update failure:", fetchErr.message);
-                    res.status(500).render("displayUsers", {
-                        users: [],
-                        error_message: "Unable to update user."
-                    });
-                });
-        });
-});
-
-
 
 // -----------------------------------------------------
 //  EVENT SYSTEM ROUTES (PUBLIC + MANAGER)
@@ -2583,6 +2428,91 @@ app.post("/events/delete/:id", requireManager, async (req, res) => {
         console.error("Error deleting event:", err);
         res.status(500).render("404");
     }
+});
+
+// Users list + search (Pagination and Filtering)
+app.get('/users', async (req, res) => {
+  // Use the same pageSize for consistent pagination
+  const pageSize = 100;
+
+  let { page, search_name } = req.query;
+
+  let currentPage = parseInt(page, 10);
+  if (isNaN(currentPage) || currentPage < 1) {
+    currentPage = 1;
+  }
+
+  search_name = search_name ? search_name.trim() : "";
+
+  try {
+    // base query for the 'users' table
+    const baseQuery = knex("users"); 
+
+    // Reusable filter function
+    const applyFilters = (query) => {
+      if (search_name) {
+        const searchTerm = `%${search_name.toLowerCase()}%`;
+        
+        // filter users by checking username OR combined first/last name
+        query.where(function() {
+          this
+            // Match on username
+            .whereRaw("LOWER(username) LIKE ?", [searchTerm])
+            // OR Match on "First Last"
+            .orWhereRaw(
+              "LOWER(firstname || ' ' || lastname) LIKE ?",
+              [searchTerm]
+            );
+        });
+      }
+
+      return query;
+    };
+
+
+    // total count for pagination
+    const countRow = await applyFilters(baseQuery.clone())
+      .countDistinct({ total: "id" })
+      .first();
+
+    const totalRows = parseInt(countRow?.total || 0, 10);
+    const totalPages = totalRows > 0 ? Math.ceil(totalRows / pageSize) : 1;
+
+    // clamp page to valid range
+    const safePage = Math.min(currentPage, totalPages);
+    const offset = (safePage - 1) * pageSize;
+
+    // actual data query
+    const users = await applyFilters(baseQuery.clone())
+      .select(
+        "id",
+        "username",
+        "role", 
+      )
+      // Use a unique ID for stable ordering, required for robust pagination
+      .orderBy("id", "asc") 
+      .limit(pageSize)
+      .offset(offset);
+
+    // Render the new EJS view and pass the data 
+    res.render("users/users", {
+      users,
+      currentPage: safePage,
+      totalPages,
+      search_name,
+      error_message: ""
+    });
+  } catch (err) {
+    console.error("Error loading users:", err);
+
+    res.render("users/users", {
+      users: [],
+      currentPage: 1,
+      totalPages: 0,
+      search_name,
+      error_message: "There was a problem loading user data."
+    });
+  }
 });
 
 app.get("/teapot", (req, res) => {
