@@ -1157,35 +1157,36 @@ app.get('/profile', async (req, res) => {
     }
 });
 
-// Milestones list + search
-app.get('/milestones', async (req, res) => {
-  const pageSize = 100;
+// // Milestones list + search
+// app.get('/milestones', async (req, res) => {
+//   const pageSize = 100;
 
-  let { page, search_name, search_milestone, date } = req.query;
+//   let { page, search_name, search_milestone, date } = req.query;
 
-  // Normalize query params
-  let currentPage = parseInt(page, pageSize);
-  if (isNaN(currentPage) || currentPage < 1) {
-    currentPage = 1;
-  }
+//   // Normalize query params
+//   let currentPage = parseInt(page, pageSize);
+//   if (isNaN(currentPage) || currentPage < 1) {
+//     currentPage = 1;
+//   }
 
-  search_name = search_name ? search_name.trim() : "";
-  search_milestone = search_milestone ? search_milestone.trim() : "";
-  date = date ? date.trim() : "";
+//   search_name = search_name ? search_name.trim() : "";
+//   search_milestone = search_milestone ? search_milestone.trim() : "";
+//   date = date ? date.trim() : "";
 
-  try {
-    const baseQuery = knex("milestone as m")
-      .innerJoin("participant as p", "m.participantid", "p.participantid");
+//   try {
+//     const baseQuery = knex("milestone as m")
+//       .innerJoin("participant as p", "m.participantid", "p.participantid");
 
-    // Reusable filter function
-    const applyFilters = (query) => {
-      if (search_name) {
-        // Match on "First Last"
-        query.whereRaw(
-          "LOWER(p.participantfirstname || ' ' || p.participantlastname) LIKE ?",
-          [`%${search_name.toLowerCase()}%`]
-        );
-      }
+//     // Reusable filter function
+//     const applyFilters = (query) => {
+//       if (search_name) {
+//         // Match on "First Last"
+//         query.whereRaw(
+//           "LOWER(p.participantfirstname || ' ' || p.participantlastname) LIKE ?",
+//           [`%${search_name.toLowerCase()}%`]
+//         );
+//       }
+
 // Milestone Routes
 // Access restricted to 'manager' role
 app.get("/milestones", requireManager, async (req, res) => {
