@@ -6,340 +6,340 @@
     <title>Participants | Ella Rises</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:wght@400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:wght@400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-<style>
-    :root {
-        --er-blue:     #99B7C6;
-        --er-lavender: #978EC4;
-        --er-cream:    #F9F5EA;
-        --er-blush:    #FFD8D1;
-        --er-pink:     #F9AFB1;
-        --er-sage:     #9AB59D;
-        --er-charcoal: #3A3F3B;
-        --er-peach:    #F4B092;
-        --er-rose:     #CE325B;
-    }
+    <style>
+        :root {
+            --er-blue:     #99B7C6;
+            --er-lavender: #978EC4;
+            --er-cream:    #F9F5EA;
+            --er-blush:    #FFD8D1;
+            --er-pink:     #F9AFB1;
+            --er-sage:     #9AB59D;
+            --er-charcoal: #3A3F3B;
+            --er-peach:    #F4B092;
+            --er-rose:     #CE325B;
+        }
 
-    * { box-sizing: border-box; }
+        * { box-sizing: border-box; }
 
-    body {
-        margin: 0;
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 0;
-        font-family: "Montserrat", system-ui, sans-serif;
-        background: var(--er-cream);
-        color: var(--er-charcoal);
-    }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0;
+            font-family: "Montserrat", system-ui, sans-serif;
+            background: var(--er-cream);
+            color: var(--er-charcoal);
+        }
 
-    .main-content {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 2rem 1rem;
-        width: 100%;
-    }
+        .main-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+            width: 100%;
+        }
 
-    .data-card {
-        max-width: 1200px;
-        width: 100%;
-        padding: 2.5rem 2.25rem;
-        border-radius: 1.5rem;
-        background-color: #ffffff;
-        box-shadow: 0 14px 40px rgba(0, 0, 0, 0.08);
-        border-top: 6px solid var(--er-pink);
-    }
+        .data-card {
+            max-width: 1200px;
+            width: 100%;
+            padding: 2.5rem 2.25rem;
+            border-radius: 1.5rem;
+            background-color: #ffffff;
+            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.08);
+            border-top: 6px solid var(--er-pink);
+        }
 
-    .milestone-title {
-        font-family: "DM Serif Display", serif;
-        font-size: 2rem;
-        text-align: center;
-        letter-spacing: 0.06em;
-        margin: 0 0 0.25rem;
-    }
+        .milestone-title {
+            font-family: "DM Serif Display", serif;
+            font-size: 2rem;
+            text-align: center;
+            letter-spacing: 0.06em;
+            margin: 0 0 0.25rem;
+        }
 
-    .milestone-subtitle {
-        font-size: 0.95rem;
-        text-align: center;
-        color: rgba(58, 63, 59, 0.7);
-        margin-bottom: 2rem;
-    }
-    
-    /* --- NEW CONTROL BAR STYLING --- */
-    .controls-bar {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: flex-end; 
-        justify-content: space-between; 
-        margin-bottom: 1.5rem;
-        padding-bottom: 1.5rem;
-        border-bottom: 1px solid var(--er-blush);
-    }
-    
-    .search-form {
-        display: flex;
-        flex-grow: 1; 
-        flex-wrap: wrap; 
-        gap: 1rem;
-        align-items: flex-end;
-        max-width: 100%; 
-    }
+        .milestone-subtitle {
+            font-size: 0.95rem;
+            text-align: center;
+            color: rgba(58, 63, 59, 0.7);
+            margin-bottom: 2rem;
+        }
+        
+        /* --- NEW CONTROL BAR STYLING --- */
+        .controls-bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end; 
+            justify-content: space-between; 
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--er-blush);
+        }
+        
+        .search-form {
+            display: flex;
+            flex-grow: 1; 
+            flex-wrap: wrap; 
+            gap: 1rem;
+            align-items: flex-end;
+            max-width: 100%; 
+        }
 
-    .add-button-wrapper {
-        text-align: center;
-        flex-shrink: 0; 
-        padding-bottom: 0.7rem; /* Vertically align with Search button */
-    }
-    /* --- END NEW CONTROL BAR STYLING --- */
-
-
-    /* --- SEARCH AND FILTER STYLES --- */
-    .search-group {
-        display: flex;
-        flex-direction: column;
-        flex-grow: 1;
-        min-width: 120px; /* Adjusted slightly smaller for 4 fields */
-    }
-    
-    .search-label {
-        font-size: 0.75rem;
-        font-weight: 500;
-        margin-bottom: 0.5rem;
-        color: var(--er-charcoal);
-        text-transform: uppercase;
-    }
-    
-    .search-input {
-        padding: 0.7rem 1rem;
-        border: 2px solid var(--er-blush);
-        border-radius: 0.75rem;
-        font-family: inherit;
-        font-size: 0.9rem;
-        outline: none;
-        transition: border-color 0.2s ease;
-    }
-    
-    .search-input:focus {
-        border-color: var(--er-pink);
-    }
-
-    .btn-search, .btn-clear {
-        padding: 0.7rem 1rem;
-        border-radius: 999px;
-        border: none;
-        font-weight: 600;
-        font-size: 0.85rem;
-        text-transform: uppercase;
-        cursor: pointer;
-        transition: all 0.18s ease;
-        width: 100%; 
-    }
-
-    .btn-search {
-        background: var(--er-sage);
-        color: white;
-        box-shadow: 0 5px 12px rgba(154, 181, 157, 0.4);
-    }
-    .btn-search:hover {
-        background: rgba(154, 181, 157, 0.8);
-    }
-    
-    .btn-clear {
-        background: var(--er-blush);
-        color: var(--er-charcoal);
-        text-decoration: none;
-        display: inline-block;
-        text-align: center;
-        margin-top: 0; 
-    }
-    .btn-clear:hover {
-        background: var(--er-pink);
-        color: white;
-    }
-
-    .search-actions-wrapper {
-        display: flex;
-        gap: 0.5rem;
-        justify-content: space-between;
-        width: 100%; 
-    }
-    .search-actions-wrapper .btn-search,
-    .search-actions-wrapper .btn-clear {
-         width: auto; 
-    }
-    /* --- END SEARCH STYLES --- */
+        .add-button-wrapper {
+            text-align: center;
+            flex-shrink: 0; 
+            padding-bottom: 0.7rem; /* Vertically align with Search button */
+        }
+        /* --- END NEW CONTROL BAR STYLING --- */
 
 
-    /* --- TABLE STYLES --- */
-    .table-responsive {
-        overflow-x: auto; 
-        width: 100%;
-        margin-top: 1.5rem;
-    }
+        /* --- SEARCH AND FILTER STYLES --- */
+        .search-group {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            min-width: 120px; 
+        }
+        
+        .search-label {
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--er-charcoal);
+            text-transform: uppercase;
+        }
+        
+        .search-input {
+            padding: 0.7rem 1rem;
+            border: 2px solid var(--er-blush);
+            border-radius: 0.75rem;
+            font-family: inherit;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+        
+        .search-input:focus {
+            border-color: var(--er-pink);
+        }
 
-    .table-custom {
-        width: 100%;
-        min-width: 800px; /* Increased min-width for more columns */
-        border-collapse: collapse;
-    }
+        .btn-search, .btn-clear {
+            padding: 0.7rem 1rem;
+            border-radius: 999px;
+            border: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.18s ease;
+            width: 100%; 
+        }
 
-    .table-custom thead tr {
-        background-color: var(--er-charcoal);
-        color: var(--er-cream);
-        font-size: 0.8rem;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-    }
-    
-    .table-custom th,
-    .table-custom td {
-        padding: 1rem 1.25rem;
-        text-align: left;
-        border-bottom: 1px solid var(--er-blush);
-        white-space: nowrap; /* Prevents wrapping in small cells */
-    }
+        .btn-search {
+            background: var(--er-sage);
+            color: white;
+            box-shadow: 0 5px 12px rgba(154, 181, 157, 0.4);
+        }
+        .btn-search:hover {
+            background: rgba(154, 181, 157, 0.8);
+        }
+        
+        .btn-clear {
+            background: var(--er-blush);
+            color: var(--er-charcoal);
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            margin-top: 0; 
+        }
+        .btn-clear:hover {
+            background: var(--er-pink);
+            color: white;
+        }
 
-    .table-custom tbody tr:nth-child(even) {
-        background-color: var(--er-cream);
-    }
-    /* --- END TABLE STYLES --- */
+        .search-actions-wrapper {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: space-between;
+            width: 100%; 
+        }
+        .search-actions-wrapper .btn-search,
+        .search-actions-wrapper .btn-clear {
+             width: auto; 
+        }
+        /* --- END SEARCH STYLES --- */
 
 
-    .btn-action {
-        padding: 0.7rem 1rem;
-        border-radius: 999px;
-        border: none;
-        font-weight: 600;
-        font-size: 0.85rem;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        cursor: pointer;
-        box-shadow: 0 10px 24px rgba(206, 50, 91, 0.25);
-        transition: all 0.18s ease;
-        text-decoration: none;
-        display: inline-block; 
+        /* --- TABLE STYLES --- */
+        .table-responsive {
+            overflow-x: auto; 
+            width: 100%;
+            margin-top: 1.5rem;
+        }
 
-    }
+        .table-custom {
+            width: 100%;
+            min-width: 800px; 
+            border-collapse: collapse;
+        }
 
-    .btn-add-milestone {
-        background: var(--er-pink);
-        color: #fff;
-    }
-    
-    .btn-add-milestone:hover {
-        background: var(--er-rose);
-        transform: translateY(-1px);
-    }
+        .table-custom thead tr {
+            background-color: var(--er-charcoal);
+            color: var(--er-cream);
+            font-size: 0.8rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        
+        .table-custom th,
+        .table-custom td {
+            padding: 1rem 1.25rem;
+            text-align: left;
+            border-bottom: 1px solid var(--er-blush);
+            white-space: nowrap; 
+        }
 
-    .btn-small {
-        padding: 0.75rem 1rem;
-        border-radius: 999px;
-        border: none;
-        font-weight: 600;
-        font-size: 0.65rem;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        cursor: pointer;
-        box-shadow: 0 5px 12px rgba(32, 131, 47, 0.25);
-        transition: all 0.18s ease;
-        text-decoration: none;
-        display: inline-block;
-        text-align: center;
-    }
+        .table-custom tbody tr:nth-child(even) {
+            background-color: var(--er-cream);
+        }
+        /* --- END TABLE STYLES --- */
 
-    .btn-delete-milestone {
-        background: var(--er-sage);
-        color: #fff;
-    }
-    
-    .btn-delete-milestone:hover {
-        background: var(--er-blue);
-        transform: translateY(-1px);
-    }
 
-    .btn-logout {
-        background: var(--er-charcoal);
-        color: #fff;
-    }
-    
-    .btn-logout:hover {
-        background: rgba(58, 63, 59, 0.8);
-        transform: translateY(-1px);
-    }
+        .btn-action {
+            padding: 0.7rem 1rem;
+            border-radius: 999px;
+            border: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 0 10px 24px rgba(206, 50, 91, 0.25);
+            transition: all 0.18s ease;
+            text-decoration: none;
+            display: inline-block; 
 
-    .message-alert {
-        text-align: center;
-        color: var(--er-rose);
-        background: rgba(206, 50, 91, 0.07);
-        padding: 0.8rem 1.2rem;
-        border-radius: 0.75rem;
-        margin-bottom: 1.5rem;
-    }
+        }
 
-    .message-warning {
-        color: var(--er-charcoal);
-        background: var(--er-blush);
-        border: 1px solid var(--er-pink);
-    }
-    
-    .text-center-wrapper {
-         text-align: center;
-         margin-top: 2rem;
-    }
+        .btn-add-milestone {
+            background: var(--er-pink);
+            color: #fff;
+        }
+        
+        .btn-add-milestone:hover {
+            background: var(--er-rose);
+            transform: translateY(-1px);
+        }
 
-    .pagination-container {
-        display: flex;
-        justify-content: center;
-        margin-top: 2rem;
-    }
+        .btn-small {
+            padding: 0.75rem 1rem;
+            border-radius: 999px;
+            border: none;
+            font-weight: 600;
+            font-size: 0.65rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 0 5px 12px rgba(32, 131, 47, 0.25);
+            transition: all 0.18s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
 
-    .custom-pagination {
-        display: flex;
-        list-style: none;
-        padding: 0;
-        border-radius: 0.75rem;
-        overflow: hidden; 
-    }
-    
-    .page-link {
-        text-decoration: none;
-        color: var(--er-charcoal);
-        padding: 0.75rem 1rem;
-        border: 1px solid var(--er-blush);
-        transition: background-color 0.2s ease;
-        font-size: 0.9rem;
-        font-weight: 500;
-    }
+        .btn-delete-milestone {
+            background: var(--er-sage);
+            color: #fff;
+        }
+        
+        .btn-delete-milestone:hover {
+            background: var(--er-blue);
+            transform: translateY(-1px);
+        }
 
-    .page-item:not(:first-child) .page-link {
-        border-left: none;
-    }
+        .btn-logout {
+            background: var(--er-charcoal);
+            color: #fff;
+        }
+        
+        .btn-logout:hover {
+            background: rgba(58, 63, 59, 0.8);
+            transform: translateY(-1px);
+        }
 
-    .page-item.active .page-link {
-        background-color: var(--er-pink);
-        border-color: var(--er-pink);
-        color: white;
-        box-shadow: 0 4px 10px rgba(249, 175, 177, 0.4);
-        z-index: 1; 
-    }
+        .message-alert {
+            text-align: center;
+            color: var(--er-rose);
+            background: rgba(206, 50, 91, 0.07);
+            padding: 0.8rem 1.2rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
 
-    .page-link:hover {
-        background-color: var(--er-blush);
-    }
-    
-    .page-item.disabled .page-link {
-        color: rgba(58, 63, 59, 0.5);
-        background-color: var(--er-cream);
-        cursor: default;
-        pointer-events: none;
-    }
-</style>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        .message-warning {
+            color: var(--er-charcoal);
+            background: var(--er-blush);
+            border: 1px solid var(--er-pink);
+        }
+        
+        .text-center-wrapper {
+             text-align: center;
+             margin-top: 2rem;
+        }
+
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .custom-pagination {
+            display: flex;
+            list-style: none;
+            padding: 0;
+            border-radius: 0.75rem;
+            overflow: hidden; 
+        }
+        
+        .page-link {
+            text-decoration: none;
+            color: var(--er-charcoal);
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--er-blush);
+            transition: background-color 0.2s ease;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .page-item:not(:first-child) .page-link {
+            border-left: none;
+        }
+
+        .page-item.active .page-link {
+            background-color: var(--er-pink);
+            border-color: var(--er-pink);
+            color: white;
+            box-shadow: 0 4px 10px rgba(249, 175, 177, 0.4);
+            z-index: 1; 
+        }
+
+        .page-link:hover {
+            background-color: var(--er-blush);
+        }
+        
+        .page-item.disabled .page-link {
+            color: rgba(58, 63, 59, 0.5);
+            background-color: var(--er-cream);
+            cursor: default;
+            pointer-events: none;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 
 </head>
@@ -349,7 +349,6 @@
 <div class="main-content">
     <div class="data-card">
         
-        <!-- Ella Rises Youth Program Photo and Caption -->
         <div class="image-header-container" style="text-align: center; margin-bottom: 2rem;">
             <img src="/images/ellarisesYouth.avif" 
                 alt="Ella Rises Youth Program Participants" 
@@ -364,13 +363,10 @@
         <div class="add-button-wrapper">
                 <a href="/addParticipant" class="btn-action btn-add-milestone">Add Participant</a>
             </div>
-        <!-- START TOP CONTROLS BAR: SEARCH FILTERS AND ADD BUTTON -->
         <div class="controls-bar">
             
-            <!-- Search Form (Takes up majority of the space) -->
             <form method="GET" action="/participants" class="search-form">
                 
-                <!-- Search by Name -->
                 <div class="search-group" style="flex-basis: 20%;">
                     <label for="search_name" class="search-label">Name</label>
                     <input 
@@ -383,7 +379,6 @@
                     >
                 </div>
 
-                <!-- Search by ID -->
                 <div class="search-group" style="flex-basis: 10%;">
                     <label for="search_id" class="search-label">ID</label>
                     <input 
@@ -396,7 +391,6 @@
                     >
                 </div>
                 
-                <!-- Search by Email -->
                 <div class="search-group" style="flex-basis: 25%;">
                     <label for="search_email" class="search-label">Email</label>
                     <input 
@@ -409,7 +403,6 @@
                     >
                 </div>
 
-                <!-- Search by Phone -->
                 <div class="search-group" style="flex-basis: 15%;">
                     <label for="search_phone" class="search-label">Phone</label>
                     <input 
@@ -425,7 +418,6 @@
 
                 <div class="search-group" style="flex-basis: 15%; flex-grow: 0;">
                     
-                    <!-- Wrapper for horizontal alignment of Search/Clear buttons -->
                     <div class="search-actions-wrapper"> 
                         <button type="submit" class="btn-search">Search</button>
                         
@@ -445,9 +437,6 @@
             </form>
             
         </div>
-        <!-- END TOP CONTROLS BAR -->
-
-
         <% 
         // Display Pagination at the Top (if multiple pages exist)
         if (typeof totalPages !== 'undefined' && totalPages > 1) { 
@@ -455,19 +444,16 @@
             <div class="pagination-container">
                 <ul class="custom-pagination">
                     
-                    <!-- Previous Button -->
                     <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
                         <a class="page-link" href="/participants?page=<%= currentPage - 1 %><%= isSearching ? '&search_name=' + (search_name || '') + '&search_id=' + (search_id || '') + '&search_email=' + (search_email || '') + '&search_phone=' + (search_phone || '') : '' %>">Previous</a>
                     </li>
 
-                    <!-- Page Number Links -->
                     <% for(let i = 1; i <= totalPages; i++) { %>
                         <li class="page-item <%= currentPage === i ? 'active' : '' %>">
                             <a class="page-link" href="/participants?page=<%= i %><%= isSearching ? '&search_name=' + (search_name || '') + '&search_id=' + (search_id || '') + '&search_email=' + (search_email || '') + '&search_phone=' + (search_phone || '') : '' %>"><%= i %></a>
                         </li>
                     <% } %>
 
-                    <!-- Next Button -->
                     <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
                         <a class="page-link" href="/participants?page=<%= currentPage + 1 %><%= isSearching ? '&search_name=' + (search_name || '') + '&search_id=' + (search_id || '') + '&search_email=' + (search_email || '') + '&search_phone=' + (search_phone || '') : '' %>">Next</a>
                     </li>
@@ -493,31 +479,17 @@
                 <% } %>
             </div>
         <% } else { %>
-            <!-- Added table-responsive for mobile view -->
             <div class="table-responsive">
                 <table class="table-custom">
                     <thead>
                         <tr>
-                            <td><%= participants[iCount].participantid %></td>
-                            
-                            <td><%= participants[iCount].participantfirstname %></td>
-                            <td><%= participants[iCount].participantlastname %></td>
-                            <td><%= participants[iCount].participantemail %></td>
-                            <td><%= participants[iCount].participantphone || 'N/A' %></td>
-                            
-                            <td>
-                                <a href="/editParticipant/<%= participants[iCount].participantid %>" class="btn-small btn-delete-milestone">View/Edit</a>
-                            </td>
-                            <td>
-                                <!-- Form for deletion, uses SweetAlert2 for confirmation -->
-                                <form 
-                                    action="/deleteParticipant/<%= participants[iCount].participantid %>" 
-                                    method="post"
-                                    onsubmit="return confirmDeletion(event);" 
-                                >
-                                    <input type="submit" name="Delete" value="Delete" class="btn-small btn-delete-milestone"/>
-                                </form>
-                            </td>
+                            <th>Participant ID</th>
+                            <th>First Name</th>
+                            <th>Last Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>View/Edit</th>
+                            <th>Delete</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -531,10 +503,9 @@
                                 <td><%= participants[iCount].participantphone || 'N/A' %></td>
                                 
                                 <td>
-                                    <a href="/editParticipant/<%= participants[iCount].participantid %>" class="btn-small btn-delete-milestone">Edit</a>
+                                    <a href="/editParticipant/<%= participants[iCount].participantid %>" class="btn-small btn-delete-milestone">View/Edit</a>
                                 </td>
                                 <td>
-                                    <!-- Form for deletion, uses SweetAlert2 for confirmation -->
                                     <form 
                                         action="/deleteParticipant/<%= participants[iCount].participantid %>" 
                                         method="post"
@@ -549,8 +520,6 @@
                 </table>
             </div>
         <% } %>
-
-        <% // The bottom pagination is removed as requested, keeping only the top one %>
         
     </div>
 </div>
@@ -560,8 +529,8 @@
 <script>
 // SweetAlert2 Confirmation Dialog for Deletion
 function confirmDeletion(event) {
-event.preventDefault();
-const form = event.currentTarget;
+    event.preventDefault();
+    const form = event.currentTarget;
 
     Swal.fire({
         title: "Are you sure?",
