@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Add Participant | Ella Rises</title>
+    <title><%= isPublic ? 'Register' : 'Add Participant' %> | Ella Rises</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -44,6 +44,11 @@
             justify-content: center;
             padding: 2rem 1rem;
             width: 100%;
+        }
+
+        .main-content.public {
+            align-items: flex-start;
+            padding-top: 3rem;
         }
 
         .data-card {
@@ -175,16 +180,25 @@
             border-top: 1px solid var(--er-blush);
             margin: 2rem 0;
         }
+
+        .section-divider {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--er-charcoal);
+            margin: 2rem 0 1rem;
+        }
     </style>
 </head>
 <body>
-    <%- include('../common/navbar.ejs') %>
+    <% if (!isPublic) { %>
+        <%- include('../common/navbar.ejs') %>
+    <% } %>
 
-    <div class="main-content">
+    <div class="main-content <%= isPublic ? 'public' : '' %>">
         <div class="data-card">
-            
-            <h1 class="milestone-title">Add New Participant</h1>
-            <p class="milestone-subtitle">Enter all required data for the new participant.</p>
+
+            <h1 class="milestone-title"><%= isPublic ? 'Create Your Account' : 'Add New Participant' %></h1>
+            <p class="milestone-subtitle"><%= isPublic ? 'Register to join the Ella Rises community.' : 'Enter all required data for the new participant.' %></p>
             
             <% if (error_message) { %>
                 <div class="message-alert" style="color: var(--er-rose); background: rgba(206, 50, 91, 0.07);">
@@ -192,39 +206,159 @@
                  </div>
             <% } %>
 
-            <form action="/addParticipant" method="post">
+            <form action="<%= isPublic ? '/addParticipantPublic' : '/addParticipant' %>" method="post">
+
+                <% if (isPublic) { %>
+                    <div class="section-divider">Account Information</div>
+
+                    <div class="mb-3">
+                        <label for="username" class="field-label">Username:</label>
+                        <input
+                            type="text"
+                            class="text-input"
+                            id="username"
+                            name="username"
+                            placeholder="Choose a username"
+                            required
+                        >
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="field-label">Password:</label>
+                        <input
+                            type="password"
+                            class="text-input"
+                            id="password"
+                            name="password"
+                            placeholder="Choose a secure password"
+                            required
+                        >
+                    </div>
+
+                    <div class="section-divider">Personal Information</div>
+                <% } %>
 
                 <div class="mb-3">
                     <label for="firstName" class="field-label">First Name:</label>
-                    <input 
-                        type="text" 
-                        class="text-input" 
-                        id="firstName" 
-                        name="firstName" 
-                        placeholder="e.g., Jane" 
+                    <input
+                        type="text"
+                        class="text-input"
+                        id="firstName"
+                        name="firstName"
+                        placeholder="e.g., Jane"
                         required
                     >
                 </div>
-                
+
                 <div class="mb-3">
                     <label for="lastName" class="field-label">Last Name:</label>
                     <input type="text" class="text-input" id="lastName" name="lastName" placeholder="e.g., Doe" required>
                 </div>
-                
+
                 <div class="mb-3">
                     <label for="email" class="field-label">Email:</label>
                     <input type="email" class="text-input" id="email" name="email" placeholder="e.g., jane.doe@example.com" required>
                 </div>
-                
+
+                <div class="mb-3">
+                    <label for="phone" class="field-label">
+                        <span>Phone Number</span>
+                        <span style="font-weight: 400; font-size: 0.7rem; color: #999;">Optional</span>
+                    </label>
+                    <input type="tel"
+                           class="text-input"
+                           id="phone"
+                           name="phone"
+                           pattern="[\(]?[0-9]{3}[\)]?[\s\-]?[0-9]{3}[\s\-]?[0-9]{4}"
+                           title="Enter a valid phone number (e.g., 555-555-5555 or (555) 555-5555)"
+                           placeholder="e.g., (555) 555-5555 or 555-555-5555">
+                </div>
+
+                <div class="mb-3">
+                    <label for="city" class="field-label">
+                        <span>City</span>
+                        <span style="font-weight: 400; font-size: 0.7rem; color: #999;">Optional</span>
+                    </label>
+                    <input type="text"
+                           class="text-input"
+                           id="city"
+                           name="city"
+                           placeholder="e.g., Austin">
+                </div>
+
+                <div class="mb-3">
+                    <label for="state" class="field-label">
+                        <span>State</span>
+                        <span style="font-weight: 400; font-size: 0.7rem; color: #999;">Optional</span>
+                    </label>
+                    <input type="text"
+                           class="text-input"
+                           id="state"
+                           name="state"
+                           maxlength="2"
+                           pattern="[A-Za-z]{2}"
+                           title="Enter 2-letter state code (e.g., TX, CA, NY)"
+                           placeholder="e.g., TX">
+                </div>
+
+                <div class="mb-3">
+                    <label for="zip" class="field-label">
+                        <span>Zip Code</span>
+                        <span style="font-weight: 400; font-size: 0.7rem; color: #999;">Optional</span>
+                    </label>
+                    <input type="text"
+                           class="text-input"
+                           id="zip"
+                           name="zip"
+                           pattern="[0-9]{5}(-[0-9]{4})?"
+                           title="Enter 5-digit zip code or 9-digit zip+4 (e.g., 12345 or 12345-6789)"
+                           placeholder="e.g., 12345">
+                </div>
+
+                <div class="mb-3">
+                    <label for="dob" class="field-label">
+                        <span>Date of Birth</span>
+                        <span style="font-weight: 400; font-size: 0.7rem; color: #999;">Optional</span>
+                    </label>
+                    <input type="date"
+                           class="date-input"
+                           id="dob"
+                           name="dob">
+                </div>
+
+                <div class="mb-3">
+                    <label for="schoolOrEmployer" class="field-label">
+                        <span>School or Employer</span>
+                        <span style="font-weight: 400; font-size: 0.7rem; color: #999;">Optional</span>
+                    </label>
+                    <input type="text"
+                           class="text-input"
+                           id="schoolOrEmployer"
+                           name="schoolOrEmployer"
+                           placeholder="Current school or place of employment">
+                </div>
+
+                <div class="mb-3">
+                    <label for="fieldOfInterest" class="field-label">
+                        <span>Field of Interest</span>
+                        <span style="font-weight: 400; font-size: 0.7rem; color: #999;">Optional</span>
+                    </label>
+                    <input type="text"
+                           class="text-input"
+                           id="fieldOfInterest"
+                           name="fieldOfInterest"
+                           placeholder="e.g., Healthcare, Technology, Education">
+                </div>
+
                 <hr>
 
                 <div class="text-center-wrapper">
-                    <input type="submit" value="Save Participant" class="btn-action btn-save-milestone">
-                    <a href="/participants" class="btn-action btn-back">Back to Participants</a>
+                    <input type="submit" value="<%= isPublic ? 'Create Account' : 'Save Participant' %>" class="btn-action btn-save-milestone">
+                    <a href="<%= isPublic ? '/login' : '/participants' %>" class="btn-action btn-back"><%= isPublic ? 'Back to Login' : 'Back to Participants' %></a>
                 </div>
-            
+
             </form>
-            
+
         </div>
     </div>
     <%- include('../common/footer.ejs') %>
