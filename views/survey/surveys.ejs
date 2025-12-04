@@ -313,33 +313,38 @@
                         required>
                 </div>
 
-                <!-- Event Attended Select -->
+                <!-- Event Type Select -->
                 <div class="mb-3">
                     <div class="field-label">
-                        <span class="label-main" data-i18n-key="survey_label_event">Event Attended</span>
+                        <span class="label-main" data-i18n-key="survey_label_event_type">Event Type</span>
                         <span class="label-hint" data-i18n-key="survey_hint_required">Required</span>
                     </div>
-                    <select name="SurveyEventDefId" class="event-select" required>
-                        <!-- Translatable default option -->
-                        <option value="" disabled selected data-i18n-key="survey_option_select">Select an event...</option>
-                        <% if (typeof events !== 'undefined' && Array.isArray(events) && events.length > 0) { %>
-                            <% events.forEach(function(evt) { %>
-                                <option value="<%= evt.eventdefid %>"><%= evt.eventdefid %> - <%= evt.eventname %></option>
+                    <select id="eventTypeSelect" class="event-select" required>
+                        <option value="" disabled selected data-i18n-key="survey_option_select_type">Select an event type...</option>
+                        <% if (typeof eventDefinitions !== 'undefined' && Array.isArray(eventDefinitions) && eventDefinitions.length > 0) { %>
+                            <% eventDefinitions.forEach(function(eventDef) { %>
+                                <% if (eventsData[eventDef.eventdefid] && eventsData[eventDef.eventdefid].length > 0) { %>
+                                    <option value="<%= eventDef.eventdefid %>"><%= eventDef.eventname %></option>
+                                <% } %>
                             <% }); %>
                         <% } else { %>
-                            <!-- Translatable fallback option -->
                             <option value="" disabled data-i18n-key="survey_option_none">No events available</option>
                         <% } %>
                     </select>
                 </div>
 
-                <!-- Event Date Field -->
+                <!-- Event Date Select (dynamically populated) -->
                 <div class="mb-3">
                     <div class="field-label">
-                        <span class="label-main" data-i18n-key="survey_label_date">Event Date</span>
+                        <span class="label-main" data-i18n-key="survey_label_event_date">Event Date</span>
                         <span class="label-hint" data-i18n-key="survey_hint_required">Required</span>
                     </div>
-                    <input type="date" name="SurveyEventDate" class="date-input" required>
+                    <select name="SurveyEventId" id="eventDateSelect" class="event-select" required disabled>
+                        <option value="" disabled selected data-i18n-key="survey_option_select_date">Select an event type first...</option>
+                    </select>
+                    <p style="font-size: 0.85rem; color: #666; margin-top: 0.5rem; font-style: italic;">
+                        Showing the 5 most recent dates for the selected event
+                    </p>
                 </div>
 
                 <% 
@@ -393,6 +398,43 @@
             <p class="thankyou-hint" data-i18n-key="survey_thankyou_hint">Your feedback helps shape future Ella Rises events.</p>
         </div>
     </div>
+
+    <script>
+        // Store events data from server
+        const eventsData = <%- JSON.stringify(eventsData) %>;
+
+        // Get dropdown elements
+        const eventTypeSelect = document.getElementById('eventTypeSelect');
+        const eventDateSelect = document.getElementById('eventDateSelect');
+
+        // Listen for event type selection
+        eventTypeSelect.addEventListener('change', function() {
+            const selectedEventDefId = this.value;
+
+            // Clear previous options
+            eventDateSelect.innerHTML = '<option value="" disabled selected>Select a date...</option>';
+
+            if (selectedEventDefId && eventsData[selectedEventDefId]) {
+                const dates = eventsData[selectedEventDefId];
+
+                // Populate date dropdown with the 5 most recent dates
+                dates.forEach(function(eventData) {
+                    const option = document.createElement('option');
+                    option.value = eventData.eventid;
+                    option.textContent = eventData.displayDate;
+                    eventDateSelect.appendChild(option);
+                });
+
+                // Enable the date dropdown
+                eventDateSelect.disabled = false;
+            } else {
+                // No dates available for this event type
+                eventDateSelect.innerHTML = '<option value="" disabled selected>No dates available</option>';
+                eventDateSelect.disabled = true;
+            }
+        });
+    </script>
+
     <%- include('../common/footer.ejs') %>
     <!-- Include the script for initialization after all content -->
     <%- include('../spanishtranslationstorage.ejs') %>

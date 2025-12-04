@@ -265,33 +265,63 @@ app.get("/login", (req, res) => {
     }
 });
 
-app.get("/surveys", (req, res) => {
+// Helper function to fetch events data for survey form
+async function getSurveyEventsData() {
+  const eventDefinitions = await knex("eventdefinition")
+    .select("eventdefid", "eventname")
+    .orderBy("eventname");
+
+  const eventsData = {};
+  for (const eventDef of eventDefinitions) {
+    const recentDates = await knex("event")
+      .where("eventdefid", eventDef.eventdefid)
+      .select("eventid", "eventdatetimestart")
+      .orderBy("eventdatetimestart", "desc")
+      .limit(5);
+
+    if (recentDates.length > 0) {
+      eventsData[eventDef.eventdefid] = recentDates.map(evt => ({
+        eventid: evt.eventid,
+        eventdatetimestart: evt.eventdatetimestart,
+        displayDate: new Date(evt.eventdatetimestart).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "numeric"
+        })
+      }));
+    }
+  }
+
+  return { eventDefinitions, eventsData };
+}
+
+app.get("/surveys", async (req, res) => {
     // Check if user is logged in
-    if (req.session.isLoggedIn) {        
-        knex.select("eventdefid","eventname").from("eventdefinition").orderBy("eventdefid", "asc")
-            .then(events => {
-                res.render("survey/surveys", {
-                    events: events,
-                    error_message: null
-                });
-            })
-            .catch((err) => {
-                console.error("Database query error:", err.message);
-                res.render("survey/surveys", {
-                    events: [],
-                    error_message: `Database error: ${err.message}`
-                });
+    if (req.session.isLoggedIn) {
+        try {
+            const surveyData = await getSurveyEventsData();
+            res.render("survey/surveys", {
+                ...surveyData,
+                error_message: null
             });
-    } 
+        } catch (err) {
+            console.error("Database query error:", err.message);
+            res.render("survey/surveys", {
+                eventDefinitions: [],
+                eventsData: {},
+                error_message: `Database error: ${err.message}`
+            });
+        }
+    }
     else {
         res.render("login", { error_message: "" });
     }
 });
+
 app.post("/survey", async (req, res) => {
   const {
     SurveyEmail,
-    SurveyEventDefId,
-    SurveyEventDate,
+    SurveyEventId,
     SurveySatisfactionScore,
     SurveyUsefulnessScore,
     SurveyInstructorScore,
@@ -300,56 +330,43 @@ app.post("/survey", async (req, res) => {
   } = req.body;
 
   try {
-    // 1) Look up participant by email
-    const emailResult = await knex.raw(
-      "SELECT participantid, participantemail FROM participant WHERE participantemail = ?",
-      [SurveyEmail]
-    );
-
-    const rawDate = SurveyEventDate;
-    const isoDate = new Date(rawDate).toISOString().slice(0, 10);
-
-    // 2) Look up event by eventdefid + date (ignore time)
-    const eventResult = await knex.raw(
-      `
-      SELECT eventid
-      FROM event
-      WHERE eventdefid = ?
-        AND eventdatetimestart::date = ?::date
-      LIMIT 1
-      `,
-      [SurveyEventDefId, isoDate]
-    );
-
-    const eventRows = eventResult.rows || eventResult;
-    if (!eventRows || eventRows.length === 0) {
-      const events = await knex("eventdefinition")
-        .select("eventdefid", "eventname")
-        .orderBy("eventdefid", "asc");
-
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!SurveyEmail || !emailRegex.test(SurveyEmail)) {
+      const surveyData = await getSurveyEventsData();
       return res.status(400).render("survey/surveys", {
-        events,
-        error_message:
-          "We could not find that event in our records. Please verify the event and date.",
+        ...surveyData,
+        error_message: "Please enter a valid email address (e.g., name@example.com).",
       });
     }
 
-    const eventId = eventRows[0].eventid;
+    // Validate event selection
+    if (!SurveyEventId) {
+      const surveyData = await getSurveyEventsData();
+      return res.status(400).render("survey/surveys", {
+        ...surveyData,
+        error_message: "Please select an event from the dropdown.",
+      });
+    }
+
+    // 1) Look up participant by email
+    const emailResult = await knex.raw(
+      "SELECT participantid, participantemail FROM participant WHERE LOWER(participantemail) = LOWER(?)",
+      [SurveyEmail.trim()]
+    );
 
     const rows = emailResult.rows || emailResult;
     if (!rows || rows.length === 0) {
-      const events = await knex("eventdefinition")
-        .select("eventdefid", "eventname")
-        .orderBy("eventdefid", "asc");
-
+      const surveyData = await getSurveyEventsData();
       return res.status(400).render("survey/surveys", {
-        events,
+        ...surveyData,
         error_message:
           "We could not find that email in our records. Please use the email you used to register.",
       });
     }
 
     const participantId = rows[0].participantid;
+    const eventId = SurveyEventId;
 
     // Parse scores
     const sat = Number(SurveySatisfactionScore);
@@ -2152,21 +2169,31 @@ app.get("/addParticipant", requireManager, (req, res) => {
 // POST /addParticipant - Handle form submission (Create Action) - Access restricted to 'manager' role
 app.post("/addParticipant", requireManager, async (req, res) => {
     // Assuming fields like firstName, lastName, email, etc.
-    const { firstName, lastName, email } = req.body; 
-    
+    const { firstName, lastName, email } = req.body;
+
     const user = req.session.user ? {
         ...req.session.user,
         name: req.session.user.username,
         isManager: req.session.user.role === 'manager'
     } : { username: 'Guest', role: 'guest' };
-    
+
     // Basic Validation
     if (!firstName || !lastName || !email) {
         // Pass validation error via error_message
-        return res.status(400).render("participant/addparticipant", { 
+        return res.status(400).render("participant/addparticipant", {
             user: user,
-            message: null, 
+            message: null,
             error_message: "All fields (First Name, Last Name, Email) are required."
+        });
+    }
+
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        return res.status(400).render("participant/addparticipant", {
+            user: user,
+            message: null,
+            error_message: "Please enter a valid email address."
         });
     }
 
@@ -2263,6 +2290,40 @@ app.post('/editParticipant/:id', requireManager, async (req, res) => {
     if (!firstName || !lastName || !email) {
         req.session.error_message = 'First Name, Last Name, and Email are required.';
         return res.redirect(`/editParticipant/${participantId}`);
+    }
+
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        req.session.error_message = 'Please enter a valid email address.';
+        return res.redirect(`/editParticipant/${participantId}`);
+    }
+
+    // Phone validation (if provided)
+    if (phone && phone.trim() !== '') {
+        const phoneRegex = /^[\(]?[0-9]{3}[\)]?[\s\-]?[0-9]{3}[\s\-]?[0-9]{4}$/;
+        if (!phoneRegex.test(phone)) {
+            req.session.error_message = 'Please enter a valid phone number (e.g., 555-555-5555 or (555) 555-5555).';
+            return res.redirect(`/editParticipant/${participantId}`);
+        }
+    }
+
+    // Zip code validation (if provided)
+    if (zip && zip.trim() !== '') {
+        const zipRegex = /^[0-9]{5}(-[0-9]{4})?$/;
+        if (!zipRegex.test(zip)) {
+            req.session.error_message = 'Please enter a valid 5-digit zip code or 9-digit zip+4 (e.g., 12345 or 12345-6789).';
+            return res.redirect(`/editParticipant/${participantId}`);
+        }
+    }
+
+    // State validation (if provided)
+    if (state && state.trim() !== '') {
+        const stateRegex = /^[A-Za-z]{2}$/;
+        if (!stateRegex.test(state)) {
+            req.session.error_message = 'Please enter a valid 2-letter state code (e.g., TX, CA, NY).';
+            return res.redirect(`/editParticipant/${participantId}`);
+        }
     }
 
     try {
@@ -2824,8 +2885,105 @@ app.post("/events/edit/:id", requireManager, async (req, res) => {
     }
 });
 
+// Dashboard route with statistics
+app.get("/dashboard", requireManager, async (req, res) => {
+    try {
+        const selectedYear = req.query.year || new Date().getFullYear();
+
+        // 1. Total Participants Count
+        const participantCount = await knex("participant").count("* as count").first();
+
+        // 2. Total Donations (all time)
+        const totalDonationsResult = await knex("donation")
+            .sum("donationamount as total")
+            .first();
+        const totalDonations = totalDonationsResult.total || 0;
+
+        // 3. Average Donation per Participant
+        const avgDonation = participantCount.count > 0
+            ? (totalDonations / participantCount.count).toFixed(2)
+            : 0;
+
+        // 4. Total Events Held
+        const eventCount = await knex("event").count("* as count").first();
+
+        // 5. Milestone Completion Percentage
+        const totalMilestones = await knex("milestone").count("* as count").first();
+        const completedMilestones = await knex("milestone")
+            .where("milestonedate", "<", knex.fn.now())
+            .count("* as count")
+            .first();
+        const completionPercentage = totalMilestones.count > 0
+            ? ((completedMilestones.count / totalMilestones.count) * 100).toFixed(1)
+            : 0;
+
+        // 6. Donations by Month for Selected Year
+        const donationsByMonth = await knex("donation")
+            .select(knex.raw("EXTRACT(MONTH FROM donationdate) as month"))
+            .sum("donationamount as total")
+            .whereRaw("EXTRACT(YEAR FROM donationdate) = ?", [selectedYear])
+            .groupBy(knex.raw("EXTRACT(MONTH FROM donationdate)"))
+            .orderBy("month");
+
+        // Format donations data for chart (fill in missing months with 0)
+        const monthlyData = Array.from({ length: 12 }, (_, i) => {
+            const monthData = donationsByMonth.find(d => parseInt(d.month) === i + 1);
+            return monthData ? parseFloat(monthData.total) : 0;
+        });
+
+        // 8. Get available years for dropdown
+        const availableYearsResult = await knex("donation")
+            .select(knex.raw("DISTINCT EXTRACT(YEAR FROM donationdate) as year"))
+            .orderBy("year", "desc");
+        const availableYears = availableYearsResult.map(r => parseInt(r.year));
+
+        // 7. Upcoming Birthdays (this week)
+        const birthdaysResult = await knex.raw(`
+            SELECT participantfirstname, participantlastname, participantdob
+            FROM participant
+            WHERE participantdob IS NOT NULL
+              AND (
+                (EXTRACT(MONTH FROM participantdob), EXTRACT(DAY FROM participantdob)) IN (
+                  SELECT EXTRACT(MONTH FROM date)::int, EXTRACT(DAY FROM date)::int
+                  FROM generate_series(CURRENT_DATE, CURRENT_DATE + INTERVAL '6 days', INTERVAL '1 day') AS date
+                )
+              )
+            ORDER BY EXTRACT(MONTH FROM participantdob), EXTRACT(DAY FROM participantdob)
+            LIMIT 50
+        `);
+        const upcomingBirthdays = birthdaysResult.rows;
+
+        res.render("tableau", {
+            stats: {
+                totalParticipants: participantCount.count,
+                totalDonations: parseFloat(totalDonations).toFixed(2),
+                avgDonation: avgDonation,
+                totalEvents: eventCount.count,
+                completionPercentage: completionPercentage,
+                completedMilestones: completedMilestones.count,
+                totalMilestones: totalMilestones.count
+            },
+            monthlyData: monthlyData,
+            selectedYear: parseInt(selectedYear),
+            availableYears: availableYears,
+            upcomingBirthdays: upcomingBirthdays
+        });
+    } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+        res.status(500).render("tableau", {
+            stats: {},
+            monthlyData: [],
+            selectedYear: new Date().getFullYear(),
+            availableYears: [],
+            upcomingBirthdays: [],
+            error_message: "Error loading dashboard data"
+        });
+    }
+});
+
+// Legacy tableau route (redirect to dashboard)
 app.get("/tableau", requireManager, async (req, res) => {
-    res.render("tableau");
+    res.redirect("/dashboard");
 });
 
 // -----------------------------------------------------
