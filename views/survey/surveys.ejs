@@ -319,7 +319,7 @@
                         <span class="label-main" data-i18n-key="survey_label_event">Event Attended</span>
                         <span class="label-hint" data-i18n-key="survey_hint_required">Required</span>
                     </div>
-                    <select name="SurveyEventId" class="event-select" required>
+                    <select name="SurveyEventDefId" class="event-select" required>
                         <!-- Translatable default option -->
                         <option value="" disabled selected data-i18n-key="survey_option_select">Select an event...</option>
                         <% if (typeof events !== 'undefined' && Array.isArray(events) && events.length > 0) { %>
