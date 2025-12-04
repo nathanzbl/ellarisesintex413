@@ -16,6 +16,10 @@ const session = require("express-session");
 
 let path = require("path");
 
+
+
+
+
 // Allows you to read the body of incoming HTTP requests and makes that data available on req.body
 let bodyParser = require("body-parser");
 
@@ -34,6 +38,13 @@ const mailSender = {
   address: "hello@byuisresearch.com",
   name: "Ella Rises",
 };
+
+
+app.get("/favicon.ico", (req, res) => {
+  const iconPath = path.join(__dirname, "favicon.ico");
+  console.log("Serving favicon from:", iconPath);
+  res.sendFile(iconPath);
+});
 
 
 
