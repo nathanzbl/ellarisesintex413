@@ -93,18 +93,21 @@ app.use(
 // session middleware
 function setViewGlobals(req, res, next) {
     // 1. Pass isLoggedIn status globally
-    res.locals.isLoggedIn = req.session.isLoggedIn || false; 
+    res.locals.isLoggedIn = req.session.isLoggedIn || false;
 
     // 2. Pass the user object globally, providing a safe fallback if no session user exists
     if (req.session.user) {
         // Pass the full user object from the session
-        res.locals.user = req.session.user; 
+        res.locals.user = req.session.user;
+        // Pass the user role separately for easy access in views
+        res.locals.userRole = req.session.user.role;
     } else {
         // Provide a default/fallback user object to prevent 'user is not defined' errors
         res.locals.user = { username: 'Guest', role: 'guest' };
+        res.locals.userRole = 'guest';
     }
-    
-    next(); 
+
+    next();
 }
 // Then, tell Express to use this function for all requests:
 app.use(setViewGlobals);
@@ -182,15 +185,26 @@ app.use((req, res, next) => {
         return next();
     }
 
-    // ALL OTHER ROUTES MUST BE LOGGED IN
-    // Note: Manager/Admin routes rely on specific middleware (e.g., requireManager) later on.
-    if (req.session.isLoggedIn) {
-        return next();
-    } 
-    
-    // Save the intended destination path to the session before redirecting to login
-    req.session.redirectTo = req.originalUrl;
-    return res.render("login", { error_message: "Please log in to access this page" });
+    // Check if user is logged in
+    if (!req.session.isLoggedIn) {
+        // Save the intended destination path to the session before redirecting to login
+        req.session.redirectTo = req.originalUrl;
+        return res.render("login", { error_message: "Please log in to access this page" });
+    }
+
+    // User is logged in - now check role-based permissions
+    const userRole = req.session.user ? req.session.user.role : null;
+
+    // ROLE-BASED ACCESS CONTROL
+    // Milestones and Participants require 'viewer' or 'manager' role
+    if (req.path.startsWith('/milestones') || req.path.startsWith('/participants')) {
+        if (userRole !== 'viewer' && userRole !== 'manager') {
+            return res.status(403).render("403");
+        }
+    }
+
+    // User has appropriate permissions
+    return next();
 });
 
 app.get('/profile_dashboard', async (req, res) => {
@@ -1914,7 +1928,7 @@ const fetchAllParticipants = async (limit, offset) => {
 // -----------------------------------------------------
 
 // GET /participants - Display the list of all participants with pagination and search
-app.get('/participants', requireManager, async (req, res) => {
+app.get('/participants', requireViewerOrManager, async (req, res) => {
   // Setup user object for EJS rendering
   const user = req.session.user
     ? {
@@ -2406,7 +2420,27 @@ function requireManager(req, res, next) {
 
     // 3. User is logged in but does not have the manager role
     return res.status(403).render("403");
-}   
+}
+
+// Middleware: Allow both viewers and managers (read-only pages)
+function requireViewerOrManager(req, res, next) {
+    // 1. Check if user is logged in
+    if (!req.session.isLoggedIn || !req.session.user) {
+        // Redirect to login, storing the original path
+        req.session.redirectTo = req.originalUrl;
+        return res.render("login", { error_message: "Please log in to access this page" });
+    }
+
+    // 2. Check for required role
+    const role = req.session.user.role.toLowerCase().trim();
+
+    if (role === "viewer" || role === "manager" || role === "m") {
+        return next();
+    }
+
+    // 3. User is logged in but does not have viewer or manager role
+    return res.status(403).render("403");
+}
 
 // -----------------------------------------------------
 // MANAGER — Search All Events (Joined)
@@ -2614,7 +2648,7 @@ app.post("/events/add", requireManager, upload.single("eventimage"), async (req,
 });
 
 // Manager — Event List
-app.get("/events", requireManager, async (req, res) => {
+app.get("/events", requireViewerOrManager, async (req, res) => {
     try {
         const eventDefs = await knex("eventdefinition")
         .select(

@@ -464,7 +464,9 @@
               <th class="text-right">Amount</th>
               <th>Date</th>
               <th>Anonymous</th>
+              <% if (typeof userRole !== 'undefined' && userRole === 'manager') { %>
               <th>Actions</th>
+              <% } %>
             </tr>
           </thead>
 
@@ -486,6 +488,7 @@
                       <span class="tag tag-visible">Visible</span>
                     <% } %>
                   </td>
+                  <% if (typeof userRole !== 'undefined' && userRole === 'manager') { %>
                   <td>
                     <a
                       href="/donations/<%= donation.donationid %>/edit"
@@ -507,11 +510,12 @@
                       />
                     </form>
                   </td>
+                  <% } %>
                 </tr>
               <% }); %>
             <% } else { %>
               <tr>
-                <td colspan="7" style="text-align:center; padding:1.5rem 1.25rem;">
+                <td colspan="<%= (typeof userRole !== 'undefined' && userRole === 'manager') ? 7 : 6 %>" style="text-align:center; padding:1.5rem 1.25rem;">
                   No donations found with the current filters.
                 </td>
               </tr>

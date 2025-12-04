@@ -420,7 +420,9 @@
                 <th class="score-col">Overall</th>
                 <th>Comments</th>
                 <th>Submitted</th>
+                <% if (typeof userRole !== 'undefined' && userRole === 'manager') { %>
                 <th>Actions</th>
+                <% } %>
               </tr>
             </thead>
 
@@ -463,6 +465,7 @@
                       minute: "2-digit"
                     }) %>
                   </td>
+                  <% if (typeof userRole !== 'undefined' && userRole === 'manager') { %>
                   <td>
                     <a
                       href="/survey/<%= s.surveyid %>/edit?<%=
@@ -484,6 +487,7 @@
                       <button type="submit" class="delete-button">Delete</button>
                     </form>
                   </td>
+                  <% } %>
                 </tr>
               <% }); %>
             </tbody>
