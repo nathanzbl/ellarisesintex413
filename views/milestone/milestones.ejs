@@ -46,7 +46,7 @@
         }
 
         .data-card {
-            max-width: 1200px; /* Wider for table content */
+            max-width: 1200px;
             width: 100%;
             padding: 2.5rem 2.25rem;
             border-radius: 1.5rem;
@@ -69,41 +69,39 @@
             color: rgba(58, 63, 59, 0.7);
             margin-bottom: 2rem;
         }
-        
-        /* --- NEW CONTROL BAR STYLING --- */
+
         .controls-bar {
             display: flex;
             flex-wrap: wrap;
-            align-items: flex-end; /* Aligns items to the bottom */
+            align-items: flex-end;
             justify-content: space-between;
             margin-bottom: 1.5rem;
             padding-bottom: 1.5rem;
             border-bottom: 1px solid var(--er-blush);
         }
-        
+
         .search-form {
             display: flex;
             flex-grow: 1;
-            flex-wrap: wrap; /* Allows wrapping on mobile */
+            flex-wrap: wrap;
             gap: 1rem;
             align-items: flex-end;
-            max-width: 100%; /* Fill container from the left */
+            max-width: 100%;
         }
 
         .add-button-wrapper {
             text-align: center;
-            flex-shrink: 0; 
-            padding-bottom: 0.7rem; /* Vertically align with Search button */
+            flex-shrink: 0;
+            padding-bottom: 0.7rem;
         }
 
-        /* --- SEARCH AND FILTER STYLES --- */
         .search-group {
             display: flex;
             flex-direction: column;
             flex-grow: 1;
-            min-width: 150px; /* Ensures fields are usable on small screens */
+            min-width: 150px;
         }
-        
+
         .search-label {
             font-size: 0.75rem;
             font-weight: 500;
@@ -111,7 +109,7 @@
             color: var(--er-charcoal);
             text-transform: uppercase;
         }
-        
+
         .search-input {
             padding: 0.7rem 1rem;
             border: 2px solid var(--er-blush);
@@ -121,12 +119,13 @@
             outline: none;
             transition: border-color 0.2s ease;
         }
-        
+
         .search-input:focus {
             border-color: var(--er-pink);
         }
 
-        .btn-search, .btn-clear {
+        .btn-search,
+        .btn-clear {
             padding: 0.7rem 1rem;
             border-radius: 999px;
             border: none;
@@ -143,10 +142,11 @@
             color: white;
             box-shadow: 0 5px 12px rgba(154, 181, 157, 0.4);
         }
+
         .btn-search:hover {
             background: rgba(154, 181, 157, 0.8);
         }
-        
+
         .btn-clear {
             background: var(--er-blush);
             color: var(--er-charcoal);
@@ -155,16 +155,16 @@
             text-align: center;
             margin-top: 0.5rem;
         }
+
         .btn-clear:hover {
             background: var(--er-pink);
             color: white;
         }
 
-        /* Group for Search + Clear (column) and Add (right) */
         .controls-actions-group {
             display: flex;
             gap: 0.75rem;
-            align-items: flex;
+            align-items: flex-start;
         }
 
         .search-controls {
@@ -186,7 +186,7 @@
             letter-spacing: 0.08em;
             text-transform: uppercase;
         }
-        
+
         .table-custom th,
         .table-custom td {
             padding: 1rem 1.25rem;
@@ -195,12 +195,9 @@
         }
 
         .table-responsive-wrapper {
-            /* Enables horizontal scrolling when content overflows */
-            overflow-x: auto; 
-            /* Ensures the wrapper uses all available width */
-            width: 100%; 
-            /* Optional: Makes the scrollbar look better on WebKit browsers (Chrome, Safari) */
-            -webkit-overflow-scrolling: touch; 
+            overflow-x: auto;
+            width: 100%;
+            -webkit-overflow-scrolling: touch;
         }
 
         .table-custom tbody tr:nth-child(even) {
@@ -219,15 +216,14 @@
             box-shadow: 0 10px 24px rgba(206, 50, 91, 0.25);
             transition: all 0.18s ease;
             text-decoration: none;
-            display: inline-block; 
-
+            display: inline-block;
         }
 
         .btn-add-milestone {
             background: var(--er-pink);
             color: #fff;
         }
-        
+
         .btn-add-milestone:hover {
             background: var(--er-rose);
             transform: translateY(-1px);
@@ -252,33 +248,22 @@
         .btn-edit-milestone {
             background: var(--er-sage);
             color: #fff;
-            box-shadow: none; /* Removed shadow on small buttons */
+            box-shadow: none;
         }
-        
+
         .btn-edit-milestone:hover {
             background: var(--er-blue);
             transform: translateY(-1px);
         }
-        
+
         .btn-delete-milestone {
             background: var(--er-rose);
             color: #fff;
-            box-shadow: none; /* Removed shadow on small buttons */
+            box-shadow: none;
         }
-        
+
         .btn-delete-milestone:hover {
             background: var(--er-charcoal);
-            transform: translateY(-1px);
-        }
-
-
-        .btn-logout {
-            background: var(--er-charcoal);
-            color: #fff;
-        }
-        
-        .btn-logout:hover {
-            background: rgba(58, 63, 59, 0.8);
             transform: translateY(-1px);
         }
 
@@ -296,62 +281,51 @@
             background: var(--er-blush);
             border: 1px solid var(--er-pink);
         }
-        
-        .text-center-wrapper {
-             text-align: center;
-             margin-top: 2rem;
-        }
 
-        .pagination-container {
+        /* new pagination styles */
+        .pagination {
+            margin-top: 24px;
             display: flex;
             justify-content: center;
-            margin-top: 2rem;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            font-size: 0.9rem;
         }
 
-        .custom-pagination {
-            display: flex;
-            list-style: none;
-            padding: 0;
-            border-radius: 0.75rem;
-            overflow: hidden;
-            overflow-x: auto;
-            flex-wrap: nowrap;
-            -webkit-overflow-crolling: touch; 
-        }
-        
-        .page-link {
+        .page-link,
+        .page-link-disabled {
+            padding: 6px 11px;
+            border-radius: 999px;
+            border: 1px solid #ddd;
             text-decoration: none;
             color: var(--er-charcoal);
-            padding: 0.75rem 1rem;
-            border: 1px solid var(--er-blush);
-            transition: background-color 0.2s ease;
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-
-        .page-item:not(:first-child) .page-link {
-            border-left: none;
-        }
-
-        .page-item.active .page-link {
-            background-color: var(--er-pink);
-            border-color: var(--er-pink);
-            color: white;
-            box-shadow: 0 4px 10px rgba(249, 175, 177, 0.4);
-            z-index: 1; 
+            background: #fff;
+            transition: background-color 0.15s ease,
+                        border-color 0.15s ease,
+                        color 0.15s ease;
         }
 
         .page-link:hover {
-            background-color: var(--er-blush);
+            border-color: var(--er-lavender);
+            color: var(--er-lavender);
+            background: #faf7ff;
         }
-        
-        .page-item.disabled .page-link {
-            color: rgba(58, 63, 59, 0.5);
-            background-color: var(--er-cream);
-            cursor: default;
+
+        .page-current {
+            background: var(--er-lavender);
+            color: #fff;
+            border-color: var(--er-lavender);
+            font-weight: 600;
+        }
+
+        .page-link-disabled {
+            opacity: 0.4;
             pointer-events: none;
+            cursor: default;
         }
     </style>
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
@@ -359,26 +333,22 @@
 
     <div class="main-content">
         <div class="data-card">
-            
-            
             <h1 class="milestone-title">Participant Milestones</h1>
             <p class="milestone-subtitle">A view of all milestones recorded in the system.</p>
+
             <div class="add-button-wrapper">
                 <a href="/addmilestone" class="btn-action btn-add-milestone">Add Milestone</a>
             </div>
 
             <div class="controls-bar">
-                
-                <!-- Search Form occupies the majority of the space -->
                 <form method="GET" action="/milestones" class="search-form">
-                    
                     <div class="search-group" style="flex-basis: 25%;">
                         <label for="search_name" class="search-label">Participant Name</label>
-                        <input 
-                            type="text" 
-                            name="search_name" 
-                            id="search_name" 
-                            class="search-input" 
+                        <input
+                            type="text"
+                            name="search_name"
+                            id="search_name"
+                            class="search-input"
                             placeholder="e.g., Jane Doe"
                             value="<%= typeof search_name !== 'undefined' ? search_name : '' %>"
                         >
@@ -386,22 +356,22 @@
 
                     <div class="search-group" style="flex-basis: 25%;">
                         <label for="search_milestone" class="search-label">Milestone Title</label>
-                        <input 
-                            type="text" 
-                            name="search_milestone" 
-                            id="search_milestone" 
-                            class="search-input" 
+                        <input
+                            type="text"
+                            name="search_milestone"
+                            id="search_milestone"
+                            class="search-input"
                             placeholder="e.g., Diploma"
                             value="<%= typeof search_milestone !== 'undefined' ? search_milestone : '' %>"
                         >
                     </div>
-                    
+
                     <div class="search-group" style="flex-basis: 15%;">
                         <label for="date" class="search-label">To Date</label>
-                        <input 
-                            type="date" 
-                            name="date" 
-                            id="date" 
+                        <input
+                            type="date"
+                            name="date"
+                            id="date"
                             class="search-input"
                             value="<%= typeof date !== 'undefined' ? date : '' %>"
                         >
@@ -410,57 +380,29 @@
                     <div class="search-group controls-actions-group" style="flex-basis: 20%; flex-grow: 0;">
                         <div class="search-controls">
                             <button type="submit" class="btn-search">Search</button>
-                            
-                            <% 
-                                // Check the three unique variables: search_name, search_milestone, date
-                                const isSearching = (typeof search_name !== 'undefined' && search_name) || 
-                                                    (typeof search_milestone !== 'undefined' && search_milestone) ||
-                                                    (typeof date !== 'undefined' && date);
+
+                            <%
+                              const isSearching =
+                                (typeof search_name !== 'undefined' && search_name) ||
+                                (typeof search_milestone !== 'undefined' && search_milestone) ||
+                                (typeof date !== 'undefined' && date);
                             %>
 
                             <% if (isSearching) { %>
                                 <a href="/milestones" class="btn-clear">Clear Filters</a>
                             <% } %>
                         </div>
-
                     </div>
                 </form>
             </div>
 
-            <% if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
-                <div class="pagination-container">
-                    <ul class="custom-pagination">
-                        
-                        <!-- Previous Button -->
-                        <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
-                            <!-- Preserve search terms in pagination links -->
-                            <a class="page-link" href="/milestones?page=<%= currentPage - 1 %><%= isSearching ? '&search_name=' + (search_name || '') + '&search_milestone=' + (search_milestone || '') + '&date=' + (date || '') : '' %>">Previous</a>
-                        </li>
-
-                        <!-- Page Number Links -->
-                        <% for(let i = 1; i <= totalPages; i++) { %>
-                            <li class="page-item <%= currentPage === i ? 'active' : '' %>">
-                                <!-- Preserve search terms in pagination links -->
-                                <a class="page-link" href="/milestones?page=<%= i %><%= isSearching ? '&search_name=' + (search_name || '') + '&search_milestone=' + (search_milestone || '') + '&date=' + (date || '') : '' %>"><%= i %></a>
-                            </li>
-                        <% } %>
-
-                        <!-- Next Button -->
-                        <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
-                            <!-- Preserve search terms in pagination links -->
-                            <a class="page-link" href="/milestones?page=<%= currentPage + 1 %><%= isSearching ? '&search_name=' + (search_name || '') + '&search_milestone=' + (search_milestone || '') + '&date=' + (date || '') : '' %>">Next</a>
-                        </li>
-                    </ul>
-                </div>
-            <% } %>
-                
-            <% if (typeof error_message !== 'undefined' && error_message) { %>
+            <% if (error_message) { %>
                 <div class="message-alert">
                     <%= error_message %>
                 </div>
             <% } %>
 
-            <% if (milestone.length === 0) { %>
+            <% if (!milestone || milestone.length === 0) { %>
                 <div class="message-alert message-warning">
                     No milestones found <%= isSearching ? 'matching your criteria.' : 'in the database.' %>
                 </div>
@@ -479,31 +421,34 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <% for (let iCount = 0; iCount < milestone.length; iCount++) { %>
+                            <% for (let i = 0; i < milestone.length; i++) { %>
                                 <tr>
-                                    <td><%= milestone[iCount].participantid %> </td>
-                                    <td><%= milestone[iCount].participantfirstname %> <%= milestone[iCount].participantlastname %></td>
-                                    <td><%= milestone[iCount].participantemail %> </td>
-                                    <td><%= milestone[iCount].milestonetitle %></td>
+                                    <td><%= milestone[i].participantid %></td>
                                     <td>
-                                        <% 
-                                            const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
-                                            const dateValue = new Date(milestone[iCount].milestonedate);
+                                        <%= milestone[i].participantfirstname %>
+                                        <%= milestone[i].participantlastname %>
+                                    </td>
+                                    <td><%= milestone[i].participantemail %></td>
+                                    <td><%= milestone[i].milestonetitle %></td>
+                                    <td>
+                                        <%
+                                          const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+                                          const dateValue = new Date(milestone[i].milestonedate);
                                         %>
                                         <%= dateValue.toLocaleDateString('en-US', dateOptions) %>
                                     </td>
                                     <td>
-                                        <form action="/editMilestone/<%= milestone[iCount].milestoneid %>" method="get">
-                                            <input type="submit" name="Edit" value="Edit" class="btn-small btn-edit-milestone"/>
+                                        <form action="/editMilestone/<%= milestone[i].milestoneid %>" method="get">
+                                            <input type="submit" name="Edit" value="Edit" class="btn-small btn-edit-milestone" />
                                         </form>
                                     </td>
                                     <td>
-                                        <form 
-                                            action="/deleteMilestone/<%= milestone[iCount].milestoneid %>" 
+                                        <form
+                                            action="/deleteMilestone/<%= milestone[i].milestoneid %>"
                                             method="post"
-                                            onsubmit="return confirmDeletion(event);" 
+                                            onsubmit="return confirmDeletion(event);"
                                         >
-                                            <input type="submit" name="Delete" value="Delete" class="btn-small btn-delete-milestone"/>
+                                            <input type="submit" name="Delete" value="Delete" class="btn-small btn-delete-milestone" />
                                         </form>
                                     </td>
                                 </tr>
@@ -511,60 +456,120 @@
                         </tbody>
                     </table>
                 </div>
-                
             <% } %>
 
-            <% if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
-                <div class="pagination-container">
-                    <ul class="custom-pagination">
-                        
-                        <!-- Previous Button -->
-                        <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
-                            <!-- Preserve search terms in pagination links -->
-                            <a class="page-link" href="/milestones?page=<%= currentPage - 1 %><%= isSearching ? '&search_name=' + (search_name || '') + '&search_milestone=' + (search_milestone || '') + '&date=' + (date || '') : '' %>">Previous</a>
-                        </li>
+            <% if (pagination && pagination.totalPages > 1) { %>
+                <div class="pagination">
+                    <%
+                      const hasPrev = pagination.currentPage > 1;
+                      const hasNext = pagination.currentPage < pagination.totalPages;
 
-                        <!-- Page Number Links -->
-                        <% for(let i = 1; i <= totalPages; i++) { %>
-                            <li class="page-item <%= currentPage === i ? 'active' : '' %>">
-                                <!-- Preserve search terms in pagination links -->
-                                <a class="page-link" href="/milestones?page=<%= i %><%= isSearching ? '&search_name=' + (search_name || '') + '&search_milestone=' + (search_milestone || '') + '&date=' + (date || '') : '' %>"><%= i %></a>
-                            </li>
+                      function pageUrl(page) {
+                        let url = "/milestones?page=" + page;
+
+                        if (search_name && search_name.trim() !== "") {
+                          url += "&search_name=" + encodeURIComponent(search_name.trim());
+                        }
+                        if (search_milestone && search_milestone.trim() !== "") {
+                          url += "&search_milestone=" + encodeURIComponent(search_milestone.trim());
+                        }
+                        if (date && date.trim() !== "") {
+                          url += "&date=" + encodeURIComponent(date.trim());
+                        }
+
+                        return url;
+                      }
+                    %>
+
+                    <% if (hasPrev) { %>
+                        <a class="page-link" href="<%= pageUrl(pagination.currentPage - 1) %>">
+                            Prev
+                        </a>
+                    <% } else { %>
+                        <span class="page-link-disabled">Prev</span>
+                    <% } %>
+
+                    <% if (pagination.windowStart > 1) { %>
+                        <a
+                          class="page-link <%= pagination.currentPage === 1 ? 'page-current' : '' %>"
+                          href="<%= pageUrl(1) %>"
+                        >
+                          1
+                        </a>
+
+                        <% if (pagination.windowStart > 2) { %>
+                          <a
+                            class="page-link"
+                            href="<%= pageUrl(Math.max(1, pagination.windowStart - pagination.windowSize)) %>"
+                          >
+                            ...
+                          </a>
+                        <% } %>
+                    <% } %>
+
+                    <% for (let p = pagination.windowStart; p <= pagination.windowEnd; p++) { %>
+                        <a
+                          class="page-link <%= p === pagination.currentPage ? 'page-current' : '' %>"
+                          href="<%= pageUrl(p) %>"
+                        >
+                          <%= p %>
+                        </a>
+                    <% } %>
+
+                    <% if (pagination.windowEnd < pagination.totalPages) { %>
+                        <% if (pagination.windowEnd < pagination.totalPages - 1) { %>
+                          <a
+                            class="page-link"
+                            href="<%= pageUrl(Math.min(pagination.totalPages, pagination.windowEnd + pagination.windowSize)) %>"
+                          >
+                            ...
+                          </a>
                         <% } %>
 
-                        <!-- Next Button -->
-                        <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
-                            <!-- Preserve search terms in pagination links -->
-                            <a class="page-link" href="/milestones?page=<%= currentPage + 1 %><%= isSearching ? '&search_name=' + (search_name || '') + '&search_milestone=' + (search_milestone || '') + '&date=' + (date || '') : '' %>">Next</a>
-                        </li>
-                    </ul>
+                        <a
+                          class="page-link <%= pagination.currentPage === pagination.totalPages ? 'page-current' : '' %>"
+                          href="<%= pageUrl(pagination.totalPages) %>"
+                        >
+                          <%= pagination.totalPages %>
+                        </a>
+                    <% } %>
+
+                    <% if (hasNext) { %>
+                        <a class="page-link" href="<%= pageUrl(pagination.currentPage + 1) %>">
+                            Next
+                        </a>
+                    <% } else { %>
+                        <span class="page-link-disabled">Next</span>
+                    <% } %>
                 </div>
             <% } %>
-            
+
         </div>
     </div>
+
     <%- include('../common/footer.ejs') %>
-</body>
-<script>
-    function confirmDeletion(event) {
-    // Prevent the form from submitting immediately
-    event.preventDefault(); 
 
-    const form = event.currentTarget; // Get the form element that triggered the submit
+    <script>
+        function confirmDeletion(event) {
+            event.preventDefault();
+            const form = event.currentTarget;
 
-    Swal.fire({
-        title: "Are you sure?",
-        text: "You won't be able to revert this!",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#CE325B", 
-        cancelButtonColor: "#9AB59D",
-        confirmButtonText: "Yes, delete it!"
-    }).then((result) => {
-        if (result.isConfirmed) {
-            form.submit();
+            Swal.fire({
+                title: "Are you sure?",
+                text: "You will not be able to revert this.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#CE325B",
+                cancelButtonColor: "#9AB59D",
+                confirmButtonText: "Yes, delete it."
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+
+            return false;
         }
-    });
-}
-</script>
+    </script>
+</body>
 </html>

@@ -29,12 +29,13 @@
         font-family: "DM Serif Display", serif;
         font-size: 2.4rem;
         margin-top: 2rem;
+        color: var(--er-charcoal);
     }
 
     .container {
         width: 90%;
         max-width: 1200px;
-        margin: 2rem auto;
+        margin: 2rem auto 3rem;
         background: white;
         padding: 2rem;
         border-radius: 1.5rem;
@@ -42,88 +43,220 @@
         box-shadow: 0 10px 32px rgba(0,0,0,0.08);
     }
 
-    /* --- SEARCH INPUT LAYOUT FIX --- */
+    /* --- SEARCH INPUT LAYOUT --- */
     .search-row {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-        gap: 1.3rem 1.8rem; /* more spacing between rows & columns */
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 1.8rem 2.2rem;
         margin-bottom: 2rem;
+        border-bottom: 1px solid var(--er-blush);
+        padding-bottom: 2rem;
+        padding-top: 0.5rem;
+    }
+
+    .search-group {
+        display: flex;
+        flex-direction: column;
     }
 
     .search-group label {
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         font-weight: 600;
-        margin-bottom: 0.25rem;
+        margin-bottom: 0.5rem;
         display: block;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--er-charcoal);
     }
 
     .search-group input,
     .search-group select {
         width: 100%;
-        padding: 12px;
+        padding: 0.85rem 1rem;
         border-radius: 0.75rem;
         border: 1.5px solid var(--er-blush);
+        font-size: 0.9rem;
+        font-family: inherit;
+        outline: none;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        box-sizing: border-box;
+    }
+    .search-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+        justify-content: flex-end;
+        margin-top: auto;
     }
 
-    .search-actions {
-        margin-top: 0.7rem;
-    }
+    .btn-search,
+            .btn-clear {
+                border: none;
+                padding: 0.9rem 1.7rem;
+                font-weight: 600;
+                border-radius: 999px;
+                cursor: pointer;
+                width: 100%;
+                font-size: 0.85rem;
+                text-transform: uppercase;
+                letter-spacing: 0.04em;
+                transition: all 0.15s ease;
+                box-sizing: border-box;
+                display: block;
+                line-height: 1;
+            }
 
     .btn-search {
         background: var(--er-sage);
-        border: none;
-        padding: 0.9rem 1.7rem;
         color: white;
-        font-weight: 600;
-        border-radius: 0.75rem;
-        cursor: pointer;
-        width: 100%;
+        box-shadow: 0 5px 14px rgba(154,181,157,0.4);
+    }
+
+    .btn-search:hover {
+        background: #7ca184;
+        box-shadow: 0 7px 18px rgba(154,181,157,0.55);
+        transform: translateY(-1px);
+    }
+
+    .btn-clear {
+        background: var(--er-blush);
+        color: var(--er-charcoal);
+        text-decoration: none;
+        text-align: center;
+    }
+
+    .btn-clear:hover {
+        background: var(--er-pink);
+        color: white;
     }
 
     /* TABLE STYLE */
+    .table-wrapper {
+        margin-top: 1.5rem;
+        border-radius: 1rem;
+        overflow-x: auto;
+        border: 1px solid #f0e2d9;
+        background: #fff;
+    }
+
     table {
         width: 100%;
         border-collapse: collapse;
-        margin-top: 1.5rem;
+        min-width: 900px;
     }
 
     thead {
-        background: var(--er-charcoal);
+        background: linear-gradient(90deg, var(--er-charcoal), #555b57);
         color: white;
     }
 
     th, td {
-        padding: 1rem;
+        padding: 0.9rem 1rem;
         border-bottom: 1px solid var(--er-blush);
+        font-size: 0.9rem;
+        white-space: nowrap;
     }
 
-    tr:nth-child(even) {
+    th {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-weight: 600;
+    }
+
+    tbody tr:nth-child(even) {
         background: var(--er-cream);
     }
 
-    .delete-btn {
-        background: var(--er-rose);
-        color: white;
+    tbody tr:hover {
+        background: #f4f7fb;
+    }
+
+    .actions-cell {
+        display: flex;
+        gap: 0.4rem;
+    }
+
+    .delete-btn,
+    .edit-btn {
         border: none;
-        padding: 0.5rem 1rem;
-        border-radius: 0.75rem;
+        padding: 0.5rem 1.1rem;
+        border-radius: 999px;
         cursor: pointer;
         font-size: 0.8rem;
         font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
     }
 
     .edit-btn {
         background: var(--er-blue);
         color: white;
-        border: none;
-        padding: 0.5rem 1.1rem;
-        border-radius: 0.75rem;
-        cursor: pointer;
-        font-size: 0.8rem;
-        font-weight: 600;
-        text-decoration: none;
     }
 
+    .edit-btn:hover {
+        background: #7f9caf;
+    }
+
+    .delete-btn {
+        background: var(--er-rose);
+        color: white;
+    }
+
+    .delete-btn:hover {
+        background: #a82646;
+    }
+
+    .no-results {
+        text-align: center;
+        padding: 1.25rem;
+        font-size: 0.95rem;
+        color: #555;
+    }
+
+    /* Pagination styles (sliding window) */
+    .pagination {
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+        font-size: 0.9rem;
+    }
+
+    .page-link,
+    .page-link-disabled {
+        padding: 6px 11px;
+        border-radius: 999px;
+        border: 1px solid #ddd;
+        text-decoration: none;
+        color: var(--er-charcoal);
+        background: #fff;
+        transition: background-color 0.15s ease,
+                    border-color 0.15s ease,
+                    color 0.15s ease;
+    }
+
+    .page-link:hover {
+        border-color: var(--er-lavender);
+        color: var(--er-lavender);
+        background: #faf7ff;
+    }
+
+    .page-current {
+        background: var(--er-lavender);
+        color: #fff;
+        border-color: var(--er-lavender);
+        font-weight: 600;
+    }
+
+    .page-link-disabled {
+        opacity: 0.4;
+        pointer-events: none;
+        cursor: default;
+    }
 </style>
 
 </head>
@@ -136,7 +269,6 @@
 <div class="container">
 
     <form method="GET" action="/events/manage/all">
-
         <div class="search-row">
 
             <div class="search-group">
@@ -153,10 +285,10 @@
                 <label>Event Type</label>
                 <select name="search_type">
                     <option value="">All</option>
-                    <option value="Service" <%= search_type === "Service" ? "selected" : "" %>>Service</option>
-                    <option value="Workshop" <%= search_type === "Workshop" ? "selected" : "" %>>Workshop</option>
-                    <option value="Activity" <%= search_type === "Activity" ? "selected" : "" %>>Activity</option>
-                    <option value="Other" <%= search_type === "Other" ? "selected" : "" %>>Other</option>
+                    <option value="Annual Conference"  <%= search_type === "Annual Conference"  ? "selected" : "" %>>Annual Conference</option>
+                    <option value="STEM" <%= search_type === "STEM" ? "selected" : "" %>>STEM</option>
+                    <option value="Arts" <%= search_type === "Arts" ? "selected" : "" %>>Arts</option>
+                    <option value="Leadership"    <%= search_type === "Leadership"    ? "selected" : "" %>>Leadership</option>
                 </select>
             </div>
 
@@ -172,47 +304,165 @@
 
             <div class="search-group search-actions">
                 <button class="btn-search" type="submit">Search</button>
+
+                <%
+                  const isSearching =
+                    (search_name && search_name.trim() !== "") ||
+                    (search_location && search_location.trim() !== "") ||
+                    (search_type && search_type.trim() !== "") ||
+                    (search_start && search_start !== "") ||
+                    (search_end && search_end !== "");
+                %>
+
+                <% if (isSearching) { %>
+                    <a href="/events/manage/all" class="btn-clear">Clear Filters</a>
+                <% } %>
             </div>
 
         </div>
     </form>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Event Name</th>
-                <th>Type</th>
-                <th>Location</th>
-                <th>Start</th>
-                <th>End</th>
-                <th>Edit</th>
-                <th>Delete</th>
-            </tr>
-        </thead>
-
-
-        <tbody>
-            <% events.forEach(ev => { %>
+    <div class="table-wrapper">
+        <table>
+            <thead>
                 <tr>
-                    <td><%= ev.eventname %></td>
-                    <td><%= ev.eventtype %></td>
-                    <td><%= ev.eventlocation %></td>
-                    <td><%= ev.startFormatted %></td>
-                    <td><%= ev.endFormatted %></td>
-                    <td>
-                        <a href="/events/edit/<%= ev.eventid %>" class="edit-btn">Edit</a>
-                    </td>
-                    <td>
-                        <form action="/events/delete/<%= ev.eventid %>" method="post">
-                            <button class="delete-btn">Delete</button>
-                        </form>
-                    </td>
+                    <th>Event Name</th>
+                    <th>Type</th>
+                    <th>Location</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th colspan="2">Actions</th>
                 </tr>
-            <% }) %>
-        </tbody>
-    </table>
+            </thead>
+            
+            <tbody>
+                <% if (!events || events.length === 0) { %>
+                    <tr>
+                        <td colspan="7" class="no-results">
+                            No events found <%= isSearching ? 'matching your criteria.' : 'in the system.' %>
+                        </td>
+                    </tr>
+                <% } else { %>
+                    <% events.forEach(ev => { %>
+                        <tr>
+                            <td><%= ev.eventname %></td>
+                            <td><%= ev.eventtype %></td>
+                            <td><%= ev.eventlocation %></td>
+                            <td><%= ev.startFormatted %></td>
+                            <td><%= ev.endFormatted %></td>
+                            <td class="actions-cell">
+                                <a href="/events/edit/<%= ev.eventid %>" class="edit-btn">Edit</a>
+                            </td>
+                            <td class="actions-cell">
+                                <form action="/events/delete/<%= ev.eventid %>" method="post">
+                                    <button class="delete-btn" type="submit">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    <% }) %>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+
+    <% if (pagination && pagination.totalPages > 1) { %>
+      <div class="pagination">
+        <%
+          const hasPrev = pagination.currentPage > 1;
+          const hasNext = pagination.currentPage < pagination.totalPages;
+
+          function pageUrl(page) {
+            let url = "/events/manage/all?page=" + page;
+
+            if (search_name && search_name.trim() !== "") {
+              url += "&search_name=" + encodeURIComponent(search_name.trim());
+            }
+            if (search_location && search_location.trim() !== "") {
+              url += "&search_location=" + encodeURIComponent(search_location.trim());
+            }
+            if (search_type && search_type.trim() !== "") {
+              url += "&search_type=" + encodeURIComponent(search_type.trim());
+            }
+            if (search_start && search_start !== "") {
+              url += "&search_start=" + encodeURIComponent(search_start);
+            }
+            if (search_end && search_end !== "") {
+              url += "&search_end=" + encodeURIComponent(search_end);
+            }
+
+            return url;
+          }
+        %>
+
+        <!-- Prev -->
+        <% if (hasPrev) { %>
+          <a class="page-link" href="<%= pageUrl(pagination.currentPage - 1) %>">
+            Prev
+          </a>
+        <% } else { %>
+          <span class="page-link-disabled">Prev</span>
+        <% } %>
+
+        <!-- First page + leading ellipsis -->
+        <% if (pagination.windowStart > 1) { %>
+          <a
+            class="page-link <%= pagination.currentPage === 1 ? 'page-current' : '' %>"
+            href="<%= pageUrl(1) %>"
+          >
+            1
+          </a>
+
+          <% if (pagination.windowStart > 2) { %>
+            <a
+              class="page-link"
+              href="<%= pageUrl(Math.max(1, pagination.windowStart - pagination.windowSize)) %>"
+            >
+              ...
+            </a>
+          <% } %>
+        <% } %>
+
+        <!-- Window pages -->
+        <% for (let p = pagination.windowStart; p <= pagination.windowEnd; p++) { %>
+          <a
+            class="page-link <%= p === pagination.currentPage ? 'page-current' : '' %>"
+            href="<%= pageUrl(p) %>"
+          >
+            <%= p %>
+          </a>
+        <% } %>
+
+        <!-- Trailing ellipsis + last page -->
+        <% if (pagination.windowEnd < pagination.totalPages) { %>
+          <% if (pagination.windowEnd < pagination.totalPages - 1) { %>
+            <a
+              class="page-link"
+              href="<%= pageUrl(Math.min(pagination.totalPages, pagination.windowEnd + pagination.windowSize)) %>"
+            >
+              ...
+            </a>
+          <% } %>
+
+          <a
+            class="page-link <%= pagination.currentPage === pagination.totalPages ? 'page-current' : '' %>"
+            href="<%= pageUrl(pagination.totalPages) %>"
+          >
+            <%= pagination.totalPages %>
+          </a>
+        <% } %>
+
+        <!-- Next -->
+        <% if (hasNext) { %>
+          <a class="page-link" href="<%= pageUrl(pagination.currentPage + 1) %>">
+            Next
+          </a>
+        <% } else { %>
+          <span class="page-link-disabled">Next</span>
+        <% } %>
+      </div>
+    <% } %>
+
 </div>
 
 </body>
 </html>
-

@@ -52,15 +52,15 @@
     }
 
     .header-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
 
-.header-actions .btn-primary {
-  font-size: 0.9rem;
-  padding: 9px 18px;
-}
+    .header-actions .btn-primary {
+      font-size: 0.9rem;
+      padding: 9px 18px;
+    }
 
     h1 {
       font-family: 'DM Serif Display', serif;
@@ -295,7 +295,8 @@
       font-size: 0.9rem;
     }
 
-    .page-link {
+    .page-link,
+    .page-link-disabled {
       padding: 6px 11px;
       border-radius: 999px;
       border: 1px solid #ddd;
@@ -313,16 +314,17 @@
       background: #faf7ff;
     }
 
-    .page-link.active {
+    .page-current {
       background: var(--er-lavender);
       color: #fff;
       border-color: var(--er-lavender);
       font-weight: 600;
     }
 
-    .page-link.disabled {
+    .page-link-disabled {
       opacity: 0.4;
       pointer-events: none;
+      cursor: default;
     }
 
     @media (max-width: 768px) {
@@ -355,21 +357,21 @@
 
   <div class="page-wrapper">
     <header>
-  <div>
-    <h1>Donations</h1>
-    <p class="subtitle">Admin view of all recorded donations for Ella Rises.</p>
-  </div>
+      <div>
+        <h1>Donations</h1>
+        <p class="subtitle">Admin view of all recorded donations for Ella Rises.</p>
+      </div>
 
-  <div class="header-actions">
-    <a href="/donations/new" class="btn btn-primary">
-      + Add donation
-    </a>
-  </div>
-</header>
+      <div class="header-actions">
+        <a href="/donations/new" class="btn btn-primary">
+          + Add donation
+        </a>
+      </div>
+    </header>
 
     <div class="card">
       <!-- Filters -->
-      <form class="filters" method="GET" action="/donations">
+      <form class="filters" method="GET" action="/donations/view">
         <div class="filter-group">
           <label for="participantSearch">Participant name or email</label>
           <input
@@ -381,10 +383,19 @@
           />
         </div>
 
-       
+        <div class="filter-group">
+          <label for="eventSearch">Event name</label>
+          <input
+            type="text"
+            id="eventSearch"
+            name="eventSearch"
+            placeholder="Search event"
+            value="<%= typeof eventSearch !== 'undefined' ? eventSearch : '' %>"
+          />
+        </div>
 
         <div class="filter-group">
-          <label for="minAmount">Min amount</label>
+          <label for="minAmount">Min amount $</label>
           <input
             type="number"
             step="0.01"
@@ -396,7 +407,7 @@
         </div>
 
         <div class="filter-group">
-          <label for="maxAmount">Max amount</label>
+          <label for="maxAmount">Max amount $</label>
           <input
             type="number"
             step="0.01"
@@ -409,7 +420,7 @@
 
         <div class="filter-actions">
           <button type="submit" class="btn btn-primary">Apply filters</button>
-          <a href="/donations" class="btn btn-secondary">Clear</a>
+          <a href="/donations/view" class="btn btn-secondary">Clear</a>
         </div>
       </form>
 
@@ -438,7 +449,8 @@
                   <td class="text-right">
                     $<%= Number(donation.donationamount).toFixed(2) %>
                   </td>
-<td><%= new Date(donation.donationdate).toDateString() %></td>                  <td>
+                  <td><%= new Date(donation.donationdate).toDateString() %></td>
+                  <td>
                     <% if (donation.isanonymous) { %>
                       <span class="tag tag-anon">Anonymous</span>
                     <% } else { %>
@@ -468,7 +480,7 @@
               <% }); %>
             <% } else { %>
               <tr>
-                <td colspan="8">No donations found with the current filters.</td>
+                <td colspan="7">No donations found with the current filters.</td>
               </tr>
             <% } %>
           </tbody>
@@ -476,39 +488,100 @@
       </div>
 
       <!-- Pagination -->
-      <% if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
+      <% if (pagination && pagination.totalPages > 1) { %>
         <div class="pagination">
-          <% const current = Number(currentPage || 1); %>
+          <%
+            const hasPrev = pagination.currentPage > 1;
+            const hasNext = pagination.currentPage < pagination.totalPages;
 
-          <!-- Previous -->
-          <a
-            class="page-link <%= current === 1 ? 'disabled' : '' %>"
-            href="?page=<%= current - 1 %><%= participantSearch ? '&participantSearch=' + encodeURIComponent(participantSearch) : '' %><%= eventSearch ? '&eventSearch=' + encodeURIComponent(eventSearch) : '' %><%= minAmount ? '&minAmount=' + minAmount : '' %><%= maxAmount ? '&maxAmount=' + maxAmount : '' %>"
-          >
-            Prev
-          </a>
+            function pageUrl(page) {
+              let url = "/donations/view?page=" + page;
 
-          <!-- Page numbers -->
-          <% for (let p = 1; p <= totalPages; p++) { %>
+              if (participantSearch && participantSearch.trim() !== "") {
+                url += "&participantSearch=" + encodeURIComponent(participantSearch.trim());
+              }
+              if (eventSearch && eventSearch.trim() !== "") {
+                url += "&eventSearch=" + encodeURIComponent(eventSearch.trim());
+              }
+              if (minAmount && String(minAmount).trim() !== "") {
+                url += "&minAmount=" + encodeURIComponent(minAmount);
+              }
+              if (maxAmount && String(maxAmount).trim() !== "") {
+                url += "&maxAmount=" + encodeURIComponent(maxAmount);
+              }
+
+              return url;
+            }
+          %>
+
+          <!-- Prev button -->
+          <% if (hasPrev) { %>
+            <a class="page-link" href="<%= pageUrl(pagination.currentPage - 1) %>">
+              Prev
+            </a>
+          <% } else { %>
+            <span class="page-link-disabled">Prev</span>
+          <% } %>
+
+          <!-- First page plus leading ellipsis -->
+          <% if (pagination.windowStart > 1) { %>
             <a
-              class="page-link <%= p === current ? 'active' : '' %>"
-              href="?page=<%= p %><%= participantSearch ? '&participantSearch=' + encodeURIComponent(participantSearch) : '' %><%= eventSearch ? '&eventSearch=' + encodeURIComponent(eventSearch) : '' %><%= minAmount ? '&minAmount=' + minAmount : '' %><%= maxAmount ? '&maxAmount=' + maxAmount : '' %>"
+              class="page-link <%= pagination.currentPage === 1 ? 'page-current' : '' %>"
+              href="<%= pageUrl(1) %>"
+            >
+              1
+            </a>
+
+            <% if (pagination.windowStart > 2) { %>
+              <a
+                class="page-link"
+                href="<%= pageUrl(Math.max(1, pagination.windowStart - pagination.windowSize)) %>"
+              >
+                ...
+              </a>
+            <% } %>
+          <% } %>
+
+          <!-- Window of pages -->
+          <% for (let p = pagination.windowStart; p <= pagination.windowEnd; p++) { %>
+            <a
+              class="page-link <%= p === pagination.currentPage ? 'page-current' : '' %>"
+              href="<%= pageUrl(p) %>"
             >
               <%= p %>
             </a>
           <% } %>
 
-          <!-- Next -->
-          <a
-            class="page-link <%= current === totalPages ? 'disabled' : '' %>"
-            href="?page=<%= current + 1 %><%= participantSearch ? '&participantSearch=' + encodeURIComponent(participantSearch) : '' %><%= eventSearch ? '&eventSearch=' + encodeURIComponent(eventSearch) : '' %><%= minAmount ? '&minAmount=' + minAmount : '' %><%= maxAmount ? '&maxAmount=' + maxAmount : '' %>"
-          >
-            Next
-          </a>
+          <!-- Trailing ellipsis plus last page -->
+          <% if (pagination.windowEnd < pagination.totalPages) { %>
+            <% if (pagination.windowEnd < pagination.totalPages - 1) { %>
+              <a
+                class="page-link"
+                href="<%= pageUrl(Math.min(pagination.totalPages, pagination.windowEnd + pagination.windowSize)) %>"
+              >
+                ...
+              </a>
+            <% } %>
+
+            <a
+              class="page-link <%= pagination.currentPage === pagination.totalPages ? 'page-current' : '' %>"
+              href="<%= pageUrl(pagination.totalPages) %>"
+            >
+              <%= pagination.totalPages %>
+            </a>
+          <% } %>
+
+          <!-- Next button -->
+          <% if (hasNext) { %>
+            <a class="page-link" href="<%= pageUrl(pagination.currentPage + 1) %>">
+              Next
+            </a>
+          <% } else { %>
+            <span class="page-link-disabled">Next</span>
+          <% } %>
         </div>
       <% } %>
     </div>
   </div>
 </body>
 </html>
-

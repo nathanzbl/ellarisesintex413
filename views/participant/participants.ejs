@@ -69,43 +69,39 @@
             color: rgba(58, 63, 59, 0.7);
             margin-bottom: 2rem;
         }
-        
-        /* --- NEW CONTROL BAR STYLING --- */
+
         .controls-bar {
             display: flex;
             flex-wrap: wrap;
-            align-items: flex-end; 
-            justify-content: space-between; 
+            align-items: flex-end;
+            justify-content: space-between;
             margin-bottom: 1.5rem;
             padding-bottom: 1.5rem;
             border-bottom: 1px solid var(--er-blush);
         }
-        
+
         .search-form {
             display: flex;
-            flex-grow: 1; 
-            flex-wrap: wrap; 
+            flex-grow: 1;
+            flex-wrap: wrap;
             gap: 1rem;
             align-items: flex-end;
-            max-width: 100%; 
+            max-width: 100%;
         }
 
         .add-button-wrapper {
             text-align: center;
-            flex-shrink: 0; 
-            padding-bottom: 0.7rem; /* Vertically align with Search button */
+            flex-shrink: 0;
+            padding-bottom: 0.7rem;
         }
-        /* --- END NEW CONTROL BAR STYLING --- */
 
-
-        /* --- SEARCH AND FILTER STYLES --- */
         .search-group {
             display: flex;
             flex-direction: column;
             flex-grow: 1;
-            min-width: 120px; 
+            min-width: 120px;
         }
-        
+
         .search-label {
             font-size: 0.75rem;
             font-weight: 500;
@@ -113,7 +109,7 @@
             color: var(--er-charcoal);
             text-transform: uppercase;
         }
-        
+
         .search-input {
             padding: 0.7rem 1rem;
             border: 2px solid var(--er-blush);
@@ -123,12 +119,13 @@
             outline: none;
             transition: border-color 0.2s ease;
         }
-        
+
         .search-input:focus {
             border-color: var(--er-pink);
         }
 
-        .btn-search, .btn-clear {
+        .btn-search,
+        .btn-clear {
             padding: 0.7rem 1rem;
             border-radius: 999px;
             border: none;
@@ -137,7 +134,7 @@
             text-transform: uppercase;
             cursor: pointer;
             transition: all 0.18s ease;
-            width: 100%; 
+            width: 100%;
         }
 
         .btn-search {
@@ -145,18 +142,19 @@
             color: white;
             box-shadow: 0 5px 12px rgba(154, 181, 157, 0.4);
         }
+
         .btn-search:hover {
             background: rgba(154, 181, 157, 0.8);
         }
-        
+
         .btn-clear {
             background: var(--er-blush);
             color: var(--er-charcoal);
             text-decoration: none;
             display: inline-block;
             text-align: center;
-            margin-top: 0; 
         }
+
         .btn-clear:hover {
             background: var(--er-pink);
             color: white;
@@ -166,25 +164,23 @@
             display: flex;
             gap: 0.5rem;
             justify-content: space-between;
-            width: 100%; 
+            width: 100%;
         }
+
         .search-actions-wrapper .btn-search,
         .search-actions-wrapper .btn-clear {
-             width: auto; 
+            width: auto;
         }
-        /* --- END SEARCH STYLES --- */
 
-
-        /* --- TABLE STYLES --- */
         .table-responsive {
-            overflow-x: auto; 
+            overflow-x: auto;
             width: 100%;
             margin-top: 1.5rem;
         }
 
         .table-custom {
             width: 100%;
-            min-width: 800px; 
+            min-width: 800px;
             border-collapse: collapse;
         }
 
@@ -195,20 +191,18 @@
             letter-spacing: 0.08em;
             text-transform: uppercase;
         }
-        
+
         .table-custom th,
         .table-custom td {
             padding: 1rem 1.25rem;
             text-align: left;
             border-bottom: 1px solid var(--er-blush);
-            white-space: nowrap; 
+            white-space: nowrap;
         }
 
         .table-custom tbody tr:nth-child(even) {
             background-color: var(--er-cream);
         }
-        /* --- END TABLE STYLES --- */
-
 
         .btn-action {
             padding: 0.7rem 1rem;
@@ -222,15 +216,14 @@
             box-shadow: 0 10px 24px rgba(206, 50, 91, 0.25);
             transition: all 0.18s ease;
             text-decoration: none;
-            display: inline-block; 
-
+            display: inline-block;
         }
 
         .btn-add-milestone {
             background: var(--er-pink);
             color: #fff;
         }
-        
+
         .btn-add-milestone:hover {
             background: var(--er-rose);
             transform: translateY(-1px);
@@ -252,23 +245,24 @@
             text-align: center;
         }
 
-        .btn-delete-milestone {
+        .btn-view-edit {
             background: var(--er-sage);
             color: #fff;
         }
-        
-        .btn-delete-milestone:hover {
+
+        .btn-view-edit:hover {
             background: var(--er-blue);
             transform: translateY(-1px);
         }
 
-        .btn-logout {
-            background: var(--er-charcoal);
+        .btn-delete {
+            background: var(--er-rose);
             color: #fff;
+            box-shadow: 0 5px 12px rgba(206, 50, 91, 0.25);
         }
-        
-        .btn-logout:hover {
-            background: rgba(58, 63, 59, 0.8);
+
+        .btn-delete:hover {
+            background: #a82848;
             transform: translateY(-1px);
         }
 
@@ -286,118 +280,110 @@
             background: var(--er-blush);
             border: 1px solid var(--er-pink);
         }
-        
-        .text-center-wrapper {
-             text-align: center;
-             margin-top: 2rem;
-        }
 
-        .pagination-container {
+        .pagination {
+            margin-top: 24px;
             display: flex;
             justify-content: center;
-            margin-top: 2rem;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            font-size: 0.9rem;
         }
 
-        .custom-pagination {
-            display: flex;
-            list-style: none;
-            padding: 0;
-            border-radius: 0.75rem;
-            overflow: hidden; 
-        }
-        
-        .page-link {
+        .page-link,
+        .page-link-disabled {
+            padding: 6px 11px;
+            border-radius: 999px;
+            border: 1px solid #ddd;
             text-decoration: none;
             color: var(--er-charcoal);
-            padding: 0.75rem 1rem;
-            border: 1px solid var(--er-blush);
-            transition: background-color 0.2s ease;
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-
-        .page-item:not(:first-child) .page-link {
-            border-left: none;
-        }
-
-        .page-item.active .page-link {
-            background-color: var(--er-pink);
-            border-color: var(--er-pink);
-            color: white;
-            box-shadow: 0 4px 10px rgba(249, 175, 177, 0.4);
-            z-index: 1; 
+            background: #fff;
+            transition: background-color 0.15s ease,
+                        border-color 0.15s ease,
+                        color 0.15s ease;
         }
 
         .page-link:hover {
-            background-color: var(--er-blush);
+            border-color: var(--er-lavender);
+            color: var(--er-lavender);
+            background: #faf7ff;
         }
-        
-        .page-item.disabled .page-link {
-            color: rgba(58, 63, 59, 0.5);
-            background-color: var(--er-cream);
-            cursor: default;
+
+        .page-current {
+            background: var(--er-lavender);
+            color: #fff;
+            border-color: var(--er-lavender);
+            font-weight: 600;
+        }
+
+        .page-link-disabled {
+            opacity: 0.4;
             pointer-events: none;
+            cursor: default;
         }
     </style>
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-
 </head>
 <body>
 <%- include('../common/navbar.ejs') %>
 
 <div class="main-content">
     <div class="data-card">
-        
+
         <div class="image-header-container" style="text-align: center; margin-bottom: 2rem;">
-            <img src="/images/ellarisesYouth.avif" 
-                alt="Ella Rises Youth Program Participants" 
-                style="width: 100%; max-width: 800px; height: auto; border-radius: 1rem; object-fit: cover; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);">
+            <img src="/images/ellarisesYouth.avif"
+                 alt="Ella Rises Youth Program Participants"
+                 style="width: 100%; max-width: 800px; height: auto; border-radius: 1rem; object-fit: cover; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);">
             <p style="font-style: italic; color: var(--er-lavender); margin-top: 0.5rem; font-size: 1.1rem; font-weight: 500;">
                 Empowering the next generation to rise above and achieve their greatest potential.
             </p>
         </div>
-        
+
         <h1 class="milestone-title">All Participants</h1>
-        <p class="milestone-subtitle">A view of all participants registered in the system. (Displaying <%= participants.length %> records per page)</p>
+        <p class="milestone-subtitle">
+            A view of all participants registered in the system.
+            (Showing up to <%= pagination ? pagination.limit : 100 %> records per page)
+        </p>
+
         <div class="add-button-wrapper">
-                <a href="/addParticipant" class="btn-action btn-add-milestone">Add Participant</a>
-            </div>
+            <a href="/addParticipant" class="btn-action btn-add-milestone">Add Participant</a>
+        </div>
+
         <div class="controls-bar">
-            
             <form method="GET" action="/participants" class="search-form">
-                
                 <div class="search-group" style="flex-basis: 20%;">
                     <label for="search_name" class="search-label">Name</label>
-                    <input 
-                        type="text" 
-                        name="search_name" 
-                        id="search_name" 
-                        class="search-input" 
-                        placeholder="First or Last Name"
+                    <input
+                        type="text"
+                        name="search_name"
+                        id="search_name"
+                        class="search-input"
+                        placeholder="First or last name"
                         value="<%= typeof search_name !== 'undefined' ? search_name : '' %>"
                     >
                 </div>
 
                 <div class="search-group" style="flex-basis: 10%;">
                     <label for="search_id" class="search-label">ID</label>
-                    <input 
-                        type="text" 
-                        name="search_id" 
-                        id="search_id" 
-                        class="search-input" 
+                    <input
+                        type="text"
+                        name="search_id"
+                        id="search_id"
+                        class="search-input"
                         placeholder="ID"
                         value="<%= typeof search_id !== 'undefined' ? search_id : '' %>"
                     >
                 </div>
-                
+
                 <div class="search-group" style="flex-basis: 25%;">
                     <label for="search_email" class="search-label">Email</label>
-                    <input 
-                        type="text" 
-                        name="search_email" 
-                        id="search_email" 
-                        class="search-input" 
+                    <input
+                        type="text"
+                        name="search_email"
+                        id="search_email"
+                        class="search-input"
                         placeholder="email@example.org"
                         value="<%= typeof search_email !== 'undefined' ? search_email : '' %>"
                     >
@@ -405,145 +391,218 @@
 
                 <div class="search-group" style="flex-basis: 15%;">
                     <label for="search_phone" class="search-label">Phone</label>
-                    <input 
-                        type="text" 
-                        name="search_phone" 
-                        id="search_phone" 
-                        class="search-input" 
-                        placeholder="Contact Number"
+                    <input
+                        type="text"
+                        name="search_phone"
+                        id="search_phone"
+                        class="search-input"
+                        placeholder="Contact number"
                         value="<%= typeof search_phone !== 'undefined' ? search_phone : '' %>"
                     >
                 </div>
 
-
                 <div class="search-group" style="flex-basis: 15%; flex-grow: 0;">
-                    
-                    <div class="search-actions-wrapper"> 
+                    <div class="search-actions-wrapper">
                         <button type="submit" class="btn-search">Search</button>
-                        
-                        <% 
-                            // Define isSearching based on the new parameters
-                            const isSearching = (typeof search_name !== 'undefined' && search_name) || 
-                                                (typeof search_id !== 'undefined' && search_id) ||
-                                                (typeof search_email !== 'undefined' && search_email) ||
-                                                (typeof search_phone !== 'undefined' && search_phone);
+
+                        <%
+                          const isSearching =
+                            (typeof search_name !== 'undefined' && search_name) ||
+                            (typeof search_id !== 'undefined' && search_id) ||
+                            (typeof search_email !== 'undefined' && search_email) ||
+                            (typeof search_phone !== 'undefined' && search_phone);
                         %>
 
                         <% if (isSearching) { %>
-                            <a href="/participants" class="btn-clear">Clear</a>
+                          <a href="/participants" class="btn-clear">Clear</a>
                         <% } %>
                     </div>
                 </div>
             </form>
-            
         </div>
+
         <% 
-        // Display Pagination at the Top (if multiple pages exist)
-        if (typeof totalPages !== 'undefined' && totalPages > 1) { 
+          const displayError =
+            (message && message.type === 'error' && message.text) ||
+            (typeof error_message !== 'undefined' && error_message);
+          if (displayError) { 
         %>
-            <div class="pagination-container">
-                <ul class="custom-pagination">
-                    
-                    <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
-                        <a class="page-link" href="/participants?page=<%= currentPage - 1 %><%= isSearching ? '&search_name=' + (search_name || '') + '&search_id=' + (search_id || '') + '&search_email=' + (search_email || '') + '&search_phone=' + (search_phone || '') : '' %>">Previous</a>
-                    </li>
-
-                    <% for(let i = 1; i <= totalPages; i++) { %>
-                        <li class="page-item <%= currentPage === i ? 'active' : '' %>">
-                            <a class="page-link" href="/participants?page=<%= i %><%= isSearching ? '&search_name=' + (search_name || '') + '&search_id=' + (search_id || '') + '&search_email=' + (search_email || '') + '&search_phone=' + (search_phone || '') : '' %>"><%= i %></a>
-                        </li>
-                    <% } %>
-
-                    <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
-                        <a class="page-link" href="/participants?page=<%= currentPage + 1 %><%= isSearching ? '&search_name=' + (search_name || '') + '&search_id=' + (search_id || '') + '&search_email=' + (search_email || '') + '&search_phone=' + (search_phone || '') : '' %>">Next</a>
-                    </li>
-                </ul>
-            </div>
+          <div class="message-alert">
+              <%= message ? message.text : error_message %>
+          </div>
         <% } %>
-        
-        <% 
-        // Display error messages passed from the route or session
-        const displayError = (message && message.type === 'error' && message.text) || (typeof error_message !== 'undefined' && error_message); 
-        if (displayError) { %>
-            <div class="message-alert">
-                <%= message ? message.text : error_message %>
-            </div>
-        <% } %>
-        
-        <% // Check if the participants array exists and is not empty
-        if (typeof participants === 'undefined' || participants.length === 0) { %>
-            <div class="message-alert message-warning">
-                No participants found <%= isSearching ? 'matching your criteria.' : 'in the database.' %>
-                <% if (displayError) { %>
-                    <p style="font-size: 0.9em; margin-top: 10px;">If an error is displayed above, please check server logs for database connection/query issues.</p>
-                <% } %>
-            </div>
+
+        <% if (!participants || participants.length === 0) { %>
+          <div class="message-alert message-warning">
+              No participants found <%= isSearching ? 'matching your criteria.' : 'in the database.' %>
+              <% if (displayError) { %>
+                  <p style="font-size: 0.9em; margin-top: 10px;">
+                      If an error is displayed above, check server logs for details.
+                  </p>
+              <% } %>
+          </div>
         <% } else { %>
-            <div class="table-responsive">
-                <table class="table-custom">
-                    <thead>
-                        <tr>
-                            <th>Participant ID</th>
-                            <th>Participant Name</th>
-                            <th>Email</th>
-                            <th>Phone</th>
-                            <th>View/Edit</th>
-                            <th>Delete</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% for (let iCount = 0; iCount < participants.length; iCount++) { %>
-                            <tr>
-                                <td><%= participants[iCount].participantid %></td>
-                                
-                                <td><%= participants[iCount].participantfirstname %> <%= participants[iCount].participantlastname %></td>
-                                
-                                <td><%= participants[iCount].participantemail %></td>
-                                <td><%= participants[iCount].participantphone || 'N/A' %></td>
-                                
-                                <td>
-                                    <a href="/editParticipant/<%= participants[iCount].participantid %>" class="btn-small btn-delete-milestone">View/Edit</a>
-                                </td>
-                                <td>
-                                    <form 
-                                        action="/deleteParticipant/<%= participants[iCount].participantid %>" 
-                                        method="post"
-                                        onsubmit="return confirmDeletion(event);" 
-                                    >
-                                        <input type="submit" name="Delete" value="Delete" class="btn-small btn-delete-milestone"/>
-                                    </form>
-                                </td>
-                            </tr>
-                        <% } %>
-                    </tbody>
-                </table>
-            </div>
+          <div class="table-responsive">
+              <table class="table-custom">
+                  <thead>
+                      <tr>
+                          <th>Participant ID</th>
+                          <th>Participant Name</th>
+                          <th>Email</th>
+                          <th>Phone</th>
+                          <th>View/Edit</th>
+                          <th>Delete</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                      <% for (let i = 0; i < participants.length; i++) { %>
+                          <tr>
+                              <td><%= participants[i].participantid %></td>
+                              <td>
+                                  <%= participants[i].participantfirstname %>
+                                  <%= participants[i].participantlastname %>
+                              </td>
+                              <td><%= participants[i].participantemail %></td>
+                              <td><%= participants[i].participantphone || 'N/A' %></td>
+                              <td>
+                                  <a href="/editParticipant/<%= participants[i].participantid %>" class="btn-small btn-view-edit">
+                                      View/Edit
+                                  </a>
+                              </td>
+                              <td>
+                                  <form
+                                      action="/deleteParticipant/<%= participants[i].participantid %>"
+                                      method="post"
+                                      onsubmit="return confirmDeletion(event);"
+                                  >
+                                      <input
+                                          type="submit"
+                                          name="Delete"
+                                          value="Delete"
+                                          class="btn-small btn-delete"
+                                      />
+                                  </form>
+                              </td>
+                          </tr>
+                      <% } %>
+                  </tbody>
+              </table>
+          </div>
         <% } %>
-        
+
+        <% if (pagination && pagination.totalPages > 1) { %>
+          <div class="pagination">
+            <%
+              const hasPrev = pagination.currentPage > 1;
+              const hasNext = pagination.currentPage < pagination.totalPages;
+
+              function pageUrl(page) {
+                let url = "/participants?page=" + page;
+
+                if (search_name && search_name.trim() !== "") {
+                  url += "&search_name=" + encodeURIComponent(search_name.trim());
+                }
+                if (search_id && String(search_id).trim() !== "") {
+                  url += "&search_id=" + encodeURIComponent(search_id);
+                }
+                if (search_email && search_email.trim() !== "") {
+                  url += "&search_email=" + encodeURIComponent(search_email.trim());
+                }
+                if (search_phone && String(search_phone).trim() !== "") {
+                  url += "&search_phone=" + encodeURIComponent(search_phone);
+                }
+
+                return url;
+              }
+            %>
+
+            <% if (hasPrev) { %>
+              <a class="page-link" href="<%= pageUrl(pagination.currentPage - 1) %>">
+                Prev
+              </a>
+            <% } else { %>
+              <span class="page-link-disabled">Prev</span>
+            <% } %>
+
+            <% if (pagination.windowStart > 1) { %>
+              <a
+                class="page-link <%= pagination.currentPage === 1 ? 'page-current' : '' %>"
+                href="<%= pageUrl(1) %>"
+              >
+                1
+              </a>
+
+              <% if (pagination.windowStart > 2) { %>
+                <a
+                  class="page-link"
+                  href="<%= pageUrl(Math.max(1, pagination.windowStart - pagination.windowSize)) %>"
+                >
+                  ...
+                </a>
+              <% } %>
+            <% } %>
+
+            <% for (let p = pagination.windowStart; p <= pagination.windowEnd; p++) { %>
+              <a
+                class="page-link <%= p === pagination.currentPage ? 'page-current' : '' %>"
+                href="<%= pageUrl(p) %>"
+              >
+                <%= p %>
+              </a>
+            <% } %>
+
+            <% if (pagination.windowEnd < pagination.totalPages) { %>
+              <% if (pagination.windowEnd < pagination.totalPages - 1) { %>
+                <a
+                  class="page-link"
+                  href="<%= pageUrl(Math.min(pagination.totalPages, pagination.windowEnd + pagination.windowSize)) %>"
+                >
+                  ...
+                </a>
+              <% } %>
+
+              <a
+                class="page-link <%= pagination.currentPage === pagination.totalPages ? 'page-current' : '' %>"
+                href="<%= pageUrl(pagination.totalPages) %>"
+              >
+                <%= pagination.totalPages %>
+              </a>
+            <% } %>
+
+            <% if (hasNext) { %>
+              <a class="page-link" href="<%= pageUrl(pagination.currentPage + 1) %>">
+                Next
+              </a>
+            <% } else { %>
+              <span class="page-link-disabled">Next</span>
+            <% } %>
+          </div>
+        <% } %>
+
     </div>
 </div>
 
-
-</body>
 <script>
-// SweetAlert2 Confirmation Dialog for Deletion
 function confirmDeletion(event) {
     event.preventDefault();
     const form = event.currentTarget;
 
     Swal.fire({
         title: "Are you sure?",
-        text: "You won't be able to revert this!",
+        text: "You will not be able to revert this.",
         icon: "warning",
         showCancelButton: true,
-        confirmButtonColor: "#CE325B", 
+        confirmButtonColor: "#CE325B",
         cancelButtonColor: "#9AB59D",
-        confirmButtonText: "Yes, delete it!"
+        confirmButtonText: "Yes, delete it."
     }).then((result) => {
         if (result.isConfirmed) {
             form.submit();
         }
     });
+
+    return false;
 }
 </script>
+</body>
 </html>
