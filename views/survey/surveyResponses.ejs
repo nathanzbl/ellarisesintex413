@@ -17,6 +17,9 @@
       --er-charcoal: #3A3F3B;
       --er-rose:     #CE325B;
       --er-light:    #F7F7FA;
+      --er-blush:    #FFD8D1;
+      --er-pink:     #F9AFB1;
+      --er-sage:     #9AB59D;
     }
 
     * { box-sizing: border-box; }
@@ -27,12 +30,28 @@
       font-family: "Montserrat", system-ui, sans-serif;
       background: var(--er-cream);
       color: var(--er-charcoal);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
-    .page {
-      max-width: 1100px;
-      margin: 0 auto;
+    .main-content {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       padding: 2rem 1rem 3rem;
+      width: 100%;
+    }
+
+    .data-card {
+      max-width: 1200px;
+      width: 100%;
+      padding: 2.5rem 2.25rem;
+      border-radius: 1.5rem;
+      background-color: #ffffff;
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.08);
+      border-top: 6px solid var(--er-pink);
     }
 
     .page-header {
@@ -46,22 +65,26 @@
       font-family: "DM Serif Display", serif;
       font-size: 2rem;
       letter-spacing: 0.05em;
+      margin: 0;
     }
 
     .page-subtitle {
       font-size: 0.9rem;
       color: rgba(0,0,0,0.65);
+      margin: 0;
     }
+
+    /* FILTER BAR */
 
     .filter-bar {
       display: flex;
       flex-wrap: wrap;
       gap: 0.75rem;
       align-items: center;
-      margin-bottom: 1.25rem;
+      margin-bottom: 1.5rem;
       padding: 0.75rem 0.9rem;
-      border-radius: 0.75rem;
-      background: rgba(255,255,255,0.7);
+      border-radius: 0.9rem;
+      background: rgba(255,255,255,0.9);
       border: 1px solid rgba(0,0,0,0.05);
     }
 
@@ -75,7 +98,7 @@
     .filter-select {
       min-width: 220px;
       padding: 0.5rem 0.75rem;
-      border-radius: 0.5rem;
+      border-radius: 0.75rem;
       border: 1px solid rgba(0,0,0,0.15);
       font-size: 0.9rem;
       font-family: inherit;
@@ -84,7 +107,7 @@
     }
 
     .filter-submit {
-      padding: 0.5rem 1rem;
+      padding: 0.6rem 1.3rem;
       border-radius: 999px;
       border: none;
       font-size: 0.85rem;
@@ -94,6 +117,11 @@
       cursor: pointer;
       background: var(--er-rose);
       color: #fff;
+      box-shadow: 0 6px 16px rgba(206, 50, 91, 0.35);
+    }
+
+    .filter-submit:hover {
+      background: #a82848;
     }
 
     .filter-reset {
@@ -105,66 +133,77 @@
       text-decoration: underline;
     }
 
-    
-.table-wrapper {
-  margin-top: 0.5rem;
-  border-radius: 0.9rem;
-  background: #fff;
-  box-shadow: 0 10px 28px rgba(0,0,0,0.08);
-  overflow-x: auto; /* allow horizontal scroll if needed */
-}
+    .filter-reset:hover {
+      color: var(--er-rose);
+    }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.8rem;
-  table-layout: auto; /* let the browser size columns based on content */
-}
+    /* TABLE */
 
-/* Base cell styles */
-th, td {
-  padding: 0.6rem 0.5rem;
-  text-align: left;
-  border-bottom: 1px solid rgba(0,0,0,0.04);
-  vertical-align: top;
-  white-space: normal;
-  word-break: normal;
-}
+    .table-responsive {
+      margin-top: 0.5rem;
+      border-radius: 1rem;
+      background: #fff;
+      box-shadow: 0 10px 28px rgba(0,0,0,0.08);
+      width: 100%;
+      overflow-x: auto;     /* allow horizontal scroll so columns never vanish */
+    }
 
+    .table-custom {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      min-width: 1000px;    /* enough room for all 11 columns */
+    }
 
-/* Optional: narrow some columns explicitly */
-th:nth-child(1),
-td:nth-child(1) {  /* ID */
-  width: 55px;
-}
+    .table-custom thead tr {
+      background-color: var(--er-charcoal);
+      color: var(--er-cream);
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
 
-th:nth-child(3),
-td:nth-child(3) {  /* Email */
-  width: 140px;
-}
+    .table-custom th,
+    .table-custom td {
+      padding: 0.8rem 0.9rem;
+      text-align: left;
+      border-bottom: 1px solid var(--er-blush);
+      vertical-align: top;
+      white-space: normal;
+      word-break: normal;
+    }
 
-th:nth-child(4),
-th:nth-child(5),
-th:nth-child(6),
-th:nth-child(7),
-th:nth-child(8),
-td:nth-child(4),
-td:nth-child(5),
-td:nth-child(6),
-td:nth-child(7),
-td:nth-child(8) {  /* score columns */
-  width: 55px;
-  text-align: center;
-}
+    .table-custom tbody tr:nth-child(even) {
+      background-color: var(--er-cream);
+    }
 
-.comment-cell {
-  max-width: 180px;            /* tighten comments */
-  white-space: normal;
-}
+    .table-custom tbody tr:hover {
+      background-color: #f4f7fb;
+    }
 
-    
+    .table-custom th:nth-child(1),
+    .table-custom td:nth-child(1) {
+      width: 60px;
+      white-space: nowrap;
+    }
 
-    
+    /* Submitted column – keep together but do not clip */
+    .table-custom th:nth-child(10),
+    .table-custom td:nth-child(10) {
+      white-space: nowrap;
+    }
+
+    .score-col {
+      text-align: center;
+    }
+
+    .comment-cell {
+      max-width: 260px;
+      white-space: normal;
+    }
+
+    /* pills and comment controls */
+
     .score-pill {
       display: inline-block;
       padding: 0.15rem 0.55rem;
@@ -179,9 +218,74 @@ td:nth-child(8) {  /* score columns */
       color: #B3264A;
     }
 
-    .comment-cell {
-      max-width: 260px;
-      white-space: pre-wrap;
+    .comment-preview {
+      font-size: 0.82rem;
+    }
+
+    .comment-toggle {
+      margin-left: 0.3rem;
+      padding: 0;
+      border: none;
+      background: none;
+      font-size: 0.78rem;
+      color: #3366bb;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .comment-toggle:hover {
+      text-decoration: none;
+    }
+
+    .comment-empty {
+      font-size: 0.8rem;
+      color: rgba(0,0,0,0.4);
+    }
+
+    /* action buttons */
+
+    .edit-button {
+      display: inline-block;
+      margin-right: 0.25rem;
+      padding: 0.45rem 0.9rem;
+      border-radius: 999px;
+      border: none;
+      background: var(--er-sage);
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      text-decoration: none;
+      box-shadow: 0 5px 12px rgba(32, 131, 47, 0.25);
+      transition: all 0.18s ease;
+      white-space: nowrap;
+    }
+
+    .edit-button:hover {
+      background: var(--er-blue);
+      transform: translateY(-1px);
+    }
+
+    .delete-button {
+      padding: 0.45rem 0.9rem;
+      border-radius: 999px;
+      border: none;
+      background: var(--er-rose);
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      box-shadow: 0 5px 12px rgba(206, 50, 91, 0.25);
+      transition: all 0.18s ease;
+      white-space: nowrap;
+    }
+
+    .delete-button:hover {
+      background: #a82848;
+      transform: translateY(-1px);
     }
 
     .empty-state {
@@ -190,428 +294,322 @@ td:nth-child(8) {  /* score columns */
       color: rgba(0,0,0,0.6);
     }
 
+    /* PAGINATION */
+
+    .pagination {
+      margin-top: 24px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      font-size: 0.9rem;
+    }
+
+    .page-link,
+    .page-link-disabled {
+      padding: 6px 11px;
+      border-radius: 999px;
+      border: 1px solid #ddd;
+      text-decoration: none;
+      color: var(--er-charcoal);
+      background: #fff;
+      transition: background-color 0.15s ease,
+                  border-color 0.15s ease,
+                  color 0.15s ease;
+    }
+
+    .page-link:hover {
+      border-color: var(--er-lavender);
+      color: var(--er-lavender);
+      background: #faf7ff;
+    }
+
+    .page-current {
+      background: var(--er-lavender);
+      color: #fff;
+      border-color: var(--er-lavender);
+      font-weight: 600;
+    }
+
+    .page-link-disabled {
+      opacity: 0.4;
+      pointer-events: none;
+      cursor: default;
+    }
+
     @media (max-width: 700px) {
+      .data-card {
+        padding: 2rem 1.25rem;
+      }
+
       .page-title {
-        font-size: 1.6rem;
+        font-size: 1.7rem;
       }
     }
-    .comment-cell {
-  max-width: 260px;
-  white-space: normal;
-}
-
-.comment-preview {
-  font-size: 0.82rem;
-}
-
-.comment-toggle {
-  margin-left: 0.3rem;
-  padding: 0;
-  border: none;
-  background: none;
-  font-size: 0.78rem;
-  color: #3366bb;
-  cursor: pointer;
-  text-decoration: underline;
-}
-
-.comment-toggle:hover {
-  text-decoration: none;
-}
-
-.comment-empty {
-  font-size: 0.8rem;
-  color: rgba(0,0,0,0.4);
-}
-.delete-button {
-  padding: 0.3rem 0.7rem;
-  border-radius: 999px;
-  border: 1px solid rgba(180, 40, 40, 0.3);
-  background: rgba(220, 60, 60, 0.08);
-  color: #b01919;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  cursor: pointer;
-}
-
-.delete-button:hover {
-  background: rgba(220, 60, 60, 0.18);
-}
-.score-col {
-  text-align: center;
-  white-space: nowrap; /* header and score will not wrap */
-}
-.edit-button {
-  display: inline-block;
-  margin-right: 0.25rem;
-  padding: 0.3rem 0.7rem;
-  border-radius: 999px;
-  border: 1px solid rgba(0, 120, 180, 0.35);
-  background: rgba(0, 120, 180, 0.08);
-  color: #005a99;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  text-decoration: none;
-}
-
-.edit-button:hover {
-  background: rgba(0, 120, 180, 0.16);
-}
-.pagination {
-  margin-top: 0.9rem;
-  padding: 0.7rem 0.9rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.8rem;
-  background: rgba(255,255,255,0.7);
-  border: 1px solid rgba(0,0,0,0.05);
-  border-radius: 0.75rem;
-  white-space: nowrap;  /* keep everything on one line */
-  overflow-x: auto;     /* if it ever overflows on tiny screens, scroll instead of wrapping */
-}
-
-
-/* On wider screens: info on the left, controls get the rest */
-@media (min-width: 720px) {
-  .pagination {
-    grid-template-columns: auto 1fr;
-    column-gap: 0.75rem;
-    align-items: center;
-  }
-}
-
-.pagination-info {
-  color: rgba(0,0,0,0.6);
-}
-
-.pagination-controls {
-  display: flex;
-  justify-content: center;   /* center the whole strip */
-  align-items: center;
-  flex-wrap: wrap;           /* only wraps if screen is actually too narrow */
-  gap: 0.4rem;
-}
-
-
-.page-link,
-.page-link-disabled {
-  padding: 0.35rem 0.75rem;
-  border-radius: 999px;
-  border: 1px solid rgba(0,0,0,0.1);
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.page-link {
-  background: #fff;
-  color: var(--er-charcoal);
-}
-
-.page-link:hover {
-  background: var(--er-blue);
-  color: #fff;
-}
-
-.page-link-disabled {
-  background: rgba(0,0,0,0.03);
-  color: rgba(0,0,0,0.35);
-  cursor: default;
-}
-
-.page-current {
-  padding: 0.35rem 0.8rem;
-  border-radius: 999px;
-  background: var(--er-rose);
-  color: #fff;
-  font-size: 0.78rem;
-  font-weight: 600;
-}
-
-
   </style>
 </head>
 <body>
   <%- include("../common/navbar.ejs") %>
 
-  <main class="page">
-    <header class="page-header">
-      <h1 class="page-title">Survey Responses</h1>
-      <p class="page-subtitle">
-  View individual survey submissions, scores, and comments. Use the filters to narrow by event or participant name.
-</p>
+  <div class="main-content">
+    <div class="data-card">
 
-    </header>
+      <header class="page-header">
+        <h1 class="page-title">Survey Responses</h1>
+        <p class="page-subtitle">
+          View individual survey submissions, scores, and comments. Use the filters to narrow by event or participant name.
+        </p>
+      </header>
 
-    <form class="filter-bar" method="GET" action="/survey/responses">
-  <!-- Event filter -->
-  <div>
-    <label for="eventFilter">Filter by event</label>
-    <select id="eventFilter" name="eventDefId" class="filter-select">
-      <option value="">All events</option>
-      <% if (Array.isArray(events)) { %>
-        <% events.forEach(function(evt) { %>
-          <option
-            value="<%= evt.eventdefid %>"
-            <%= String(selectedEventDefId || "") === String(evt.eventdefid) ? "selected" : "" %>
-          >
-            <%= evt.eventdefid %> - <%= evt.eventname %>
-          </option>
-        <% }); %>
-      <% } %>
-    </select>
-  </div>
-
-  <!-- Participant name search -->
-  <div>
-    <label for="participantName">Participant name</label>
-    <input
-      id="participantName"
-      name="participantName"
-      type="text"
-      class="filter-select"
-      placeholder="e.g. Jane Doe"
-      value="<%= participantName || '' %>"
-    />
-  </div>
-
-  <button type="submit" class="filter-submit">Apply</button>
-
-  <% if (selectedEventDefId || (participantName && participantName.trim() !== "")) { %>
-    <button
-      type="button"
-      class="filter-reset"
-      onclick="window.location.href='/survey/responses'"
-    >
-      Clear filter
-    </button>
-  <% } %>
-</form>
-
-
-
-    <% if (surveys && surveys.length > 0) { %>
-      <div class="table-wrapper">
-        <table>
-          <thead>
-  <tr>
-    <th>ID</th>
-    <th>Event</th>
-<th>Participant</th>
-    <th class="score-col">Satisfaction</th>
-<th class="score-col">Useful</th>
-<th class="score-col">Instructor</th>
-<th class="score-col">Recommend</th>
-<th class="score-col">Overall</th>
-
-    <th>Comments</th>
-    <th>Submitted</th>
-    <th>Actions</th>
-  </tr>
-</thead>
-
-          <tbody>
-            <% surveys.forEach(function(s) { %>
-              <tr>
-                <td>#<%= s.surveyid %></td>
-                <td>
-                  <strong><%= s.eventname || ("Event " + s.eventid) %></strong><br />
-                  <small>ID: <%= s.eventid %></small>
-                </td>
-<td>
-  <strong><%= s.participantname || "Unknown" %></strong><br />
-  <small><%= s.participantemail %></small>
-</td>
-                <td class="score-col"><span class="score-pill"><%= s.surveysatisfactionscore %></span></td>
-<td class="score-col"><span class="score-pill"><%= s.surveyusefulnessscore %></span></td>
-<td class="score-col"><span class="score-pill"><%= s.surveyinstructorscore %></span></td>
-<td class="score-col"><span class="score-pill"><%= s.surveyrecommendationscore %></span></td>
-<td class="score-col"><span class="score-pill overall-pill"><%= s.surveyoverallscore %></span></td>
-
-                <td class="comment-cell">
-  <% if (s.surveycomments) { %>
-    <span
-      class="comment-preview"
-      data-full="<%= s.surveycomments %>"
-    ></span>
-    <button type="button" class="comment-toggle">More</button>
-  <% } else { %>
-    <span class="comment-empty">—</span>
-  <% } %>
-</td>
-
-                <td>
-                  <%= new Date(s.surveysubmissiondate).toLocaleString("en-US", {
-                    month: "short",
-                    day: "2-digit",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit"
-                  }) %>
-                </td>
-                <td>
-  <a
-    href="/survey/<%= s.surveyid %>/edit?<%=
-      selectedEventDefId ? 'eventDefId=' + encodeURIComponent(selectedEventDefId) : ''
-    %>"
-    class="edit-button"
-  >
-    Edit
-  </a>
-
-  <form
-    action="/survey/<%= s.surveyid %>/delete?<%=
-      selectedEventDefId ? 'eventDefId=' + encodeURIComponent(selectedEventDefId) : ''
-    %>"
-    method="POST"
-    style="display:inline"
-    onsubmit="return confirm('Delete this survey response?');"
-  >
-    <button type="submit" class="delete-button">Delete</button>
-  </form>
-</td>
-
-
-              </tr>
-            <% }); %>
-          </tbody>
-        </table>
-      </div>
-
-            <div class="pagination">
-       
-
-        <div class="pagination-controls">
-          <%
-  const hasPrev = pagination.currentPage > 1;
-  const hasNext = pagination.currentPage < pagination.totalPages;
-
-  function pageUrl(page) {
-    let url = "/survey/responses?page=" + page;
-
-    if (selectedEventDefId) {
-      url += "&eventDefId=" + encodeURIComponent(selectedEventDefId);
-    }
-    if (participantName && participantName.trim() !== "") {
-      url += "&participantName=" + encodeURIComponent(participantName.trim());
-    }
-
-    return url;
-  }
-%>
-
-
-          <!-- Prev button -->
-          <% if (hasPrev) { %>
-            <a class="page-link" href="<%= pageUrl(pagination.currentPage - 1) %>">
-              Prev
-            </a>
-          <% } else { %>
-            <span class="page-link-disabled">Prev</span>
-          <% } %>
-
-          <!-- First page + leading ellipsis (jump back a window) -->
-          <% if (pagination.windowStart > 1) { %>
-            <a
-              class="page-link <%= pagination.currentPage === 1 ? 'page-current' : '' %>"
-              href="<%= pageUrl(1) %>"
-            >
-              1
-            </a>
-
-            <% if (pagination.windowStart > 2) { %>
-              <a
-                class="page-link"
-                href="<%= pageUrl(Math.max(1, pagination.windowStart - pagination.windowSize)) %>"
-              >
-                ...
-              </a>
+      <form class="filter-bar" method="GET" action="/survey/responses">
+        <div>
+          <label for="eventFilter">Filter by event</label>
+          <select id="eventFilter" name="eventDefId" class="filter-select">
+            <option value="">All events</option>
+            <% if (Array.isArray(events)) { %>
+              <% events.forEach(function(evt) { %>
+                <option
+                  value="<%= evt.eventdefid %>"
+                  <%= String(selectedEventDefId || "") === String(evt.eventdefid) ? "selected" : "" %>
+                >
+                  <%= evt.eventdefid %> - <%= evt.eventname %>
+                </option>
+              <% }); %>
             <% } %>
-          <% } %>
-
-          <!-- Window of pages (e.g., 1–10, 11–20, etc.) -->
-          <% for (let p = pagination.windowStart; p <= pagination.windowEnd; p++) { %>
-            <a
-              class="page-link <%= p === pagination.currentPage ? 'page-current' : '' %>"
-              href="<%= pageUrl(p) %>"
-            >
-              <%= p %>
-            </a>
-          <% } %>
-
-          <!-- Trailing ellipsis + last page (jump forward a window) -->
-          <% if (pagination.windowEnd < pagination.totalPages) { %>
-            <% if (pagination.windowEnd < pagination.totalPages - 1) { %>
-              <a
-                class="page-link"
-                href="<%= pageUrl(Math.min(pagination.totalPages, pagination.windowEnd + pagination.windowSize)) %>"
-              >
-                ...
-              </a>
-            <% } %>
-
-            <a
-              class="page-link <%= pagination.currentPage === pagination.totalPages ? 'page-current' : '' %>"
-              href="<%= pageUrl(pagination.totalPages) %>"
-            >
-              <%= pagination.totalPages %>
-            </a>
-          <% } %>
-
-          <!-- Next button -->
-          <% if (hasNext) { %>
-            <a class="page-link" href="<%= pageUrl(pagination.currentPage + 1) %>">
-              Next
-            </a>
-          <% } else { %>
-            <span class="page-link-disabled">Next</span>
-          <% } %>
+          </select>
         </div>
-      </div>
 
-    <% } else { %>
-      <p class="empty-state">
-        No survey responses found for the current filter.
-      </p>
-    <% } %>
-  </main>
+        <div>
+          <label for="participantName">Participant name</label>
+          <input
+            id="participantName"
+            name="participantName"
+            type="text"
+            class="filter-select"
+            placeholder="e.g. Jane Doe"
+            value="<%= participantName || '' %>"
+          />
+        </div>
+
+        <button type="submit" class="filter-submit">Apply</button>
+
+        <% if (selectedEventDefId || (participantName && participantName.trim() !== "")) { %>
+          <button
+            type="button"
+            class="filter-reset"
+            onclick="window.location.href='/survey/responses'"
+          >
+            Clear filter
+          </button>
+        <% } %>
+      </form>
+
+      <% if (surveys && surveys.length > 0) { %>
+        <div class="table-responsive">
+          <table class="table-custom">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Event</th>
+                <th>Participant</th>
+                <th class="score-col">Satisfaction</th>
+                <th class="score-col">Useful</th>
+                <th class="score-col">Instructor</th>
+                <th class="score-col">Recommend</th>
+                <th class="score-col">Overall</th>
+                <th>Comments</th>
+                <th>Submitted</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <% surveys.forEach(function(s) { %>
+                <tr>
+                  <td>#<%= s.surveyid %></td>
+                  <td>
+                    <strong><%= s.eventname || ("Event " + s.eventid) %></strong><br />
+                    <small>ID: <%= s.eventid %></small>
+                  </td>
+                  <td>
+                    <strong><%= s.participantname || "Unknown" %></strong><br />
+                    <small><%= s.participantemail %></small>
+                  </td>
+                  <td class="score-col"><span class="score-pill"><%= s.surveysatisfactionscore %></span></td>
+                  <td class="score-col"><span class="score-pill"><%= s.surveyusefulnessscore %></span></td>
+                  <td class="score-col"><span class="score-pill"><%= s.surveyinstructorscore %></span></td>
+                  <td class="score-col"><span class="score-pill"><%= s.surveyrecommendationscore %></span></td>
+                  <td class="score-col"><span class="score-pill overall-pill"><%= s.surveyoverallscore %></span></td>
+
+                  <td class="comment-cell">
+                    <% if (s.surveycomments) { %>
+                      <span
+                        class="comment-preview"
+                        data-full="<%= s.surveycomments %>"
+                      ></span>
+                      <button type="button" class="comment-toggle">More</button>
+                    <% } else { %>
+                      <span class="comment-empty">—</span>
+                    <% } %>
+                  </td>
+
+                  <td>
+                    <%= new Date(s.surveysubmissiondate).toLocaleString("en-US", {
+                      month: "short",
+                      day: "2-digit",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit"
+                    }) %>
+                  </td>
+                  <td>
+                    <a
+                      href="/survey/<%= s.surveyid %>/edit?<%=
+                        selectedEventDefId ? 'eventDefId=' + encodeURIComponent(selectedEventDefId) : ''
+                      %>"
+                      class="edit-button"
+                    >
+                      Edit
+                    </a>
+
+                    <form
+                      action="/survey/<%= s.surveyid %>/delete?<%=
+                        selectedEventDefId ? 'eventDefId=' + encodeURIComponent(selectedEventDefId) : ''
+                      %>"
+                      method="POST"
+                      style="display:inline"
+                      onsubmit="return confirm('Delete this survey response?');"
+                    >
+                      <button type="submit" class="delete-button">Delete</button>
+                    </form>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+
+        <% if (pagination && pagination.totalPages > 1) { %>
+          <div class="pagination">
+            <%
+              const hasPrev = pagination.currentPage > 1;
+              const hasNext = pagination.currentPage < pagination.totalPages;
+
+              function pageUrl(page) {
+                let url = "/survey/responses?page=" + page;
+
+                if (selectedEventDefId) {
+                  url += "&eventDefId=" + encodeURIComponent(selectedEventDefId);
+                }
+                if (participantName && participantName.trim() !== "") {
+                  url += "&participantName=" + encodeURIComponent(participantName.trim());
+                }
+
+                return url;
+              }
+            %>
+
+            <% if (hasPrev) { %>
+              <a class="page-link" href="<%= pageUrl(pagination.currentPage - 1) %>">
+                Prev
+              </a>
+            <% } else { %>
+              <span class="page-link-disabled">Prev</span>
+            <% } %>
+
+            <% if (pagination.windowStart > 1) { %>
+              <a
+                class="page-link <%= pagination.currentPage === 1 ? 'page-current' : '' %>"
+                href="<%= pageUrl(1) %>"
+              >
+                1
+              </a>
+
+              <% if (pagination.windowStart > 2) { %>
+                <a
+                  class="page-link"
+                  href="<%= pageUrl(Math.max(1, pagination.windowStart - pagination.windowSize)) %>"
+                >
+                  ...
+                </a>
+              <% } %>
+            <% } %>
+
+            <% for (let p = pagination.windowStart; p <= pagination.windowEnd; p++) { %>
+              <a
+                class="page-link <%= p === pagination.currentPage ? 'page-current' : '' %>"
+                href="<%= pageUrl(p) %>"
+              >
+                <%= p %>
+              </a>
+            <% } %>
+
+            <% if (pagination.windowEnd < pagination.totalPages) { %>
+              <% if (pagination.windowEnd < pagination.totalPages - 1) { %>
+                <a
+                  class="page-link"
+                  href="<%= pageUrl(Math.min(pagination.totalPages, pagination.windowEnd + pagination.windowSize)) %>"
+                >
+                  ...
+                </a>
+              <% } %>
+
+              <a
+                class="page-link <%= pagination.currentPage === pagination.totalPages ? 'page-current' : '' %>"
+                href="<%= pageUrl(pagination.totalPages) %>"
+              >
+                <%= pagination.totalPages %>
+              </a>
+            <% } %>
+
+            <% if (hasNext) { %>
+              <a class="page-link" href="<%= pageUrl(pagination.currentPage + 1) %>">
+                Next
+              </a>
+            <% } else { %>
+              <span class="page-link-disabled">Next</span>
+            <% } %>
+          </div>
+        <% } %>
+
+      <% } else { %>
+        <p class="empty-state">
+          No survey responses found for the current filter.
+        </p>
+      <% } %>
+
+    </div>
+  </div>
+
   <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const maxLen = 60; // chars before truncation
+    document.addEventListener("DOMContentLoaded", function () {
+      const maxLen = 60;
 
-    document.querySelectorAll(".comment-cell").forEach(function (cell) {
-      const previewEl = cell.querySelector(".comment-preview");
-      const toggleBtn = cell.querySelector(".comment-toggle");
-      if (!previewEl || !toggleBtn) return;
+      document.querySelectorAll(".comment-cell").forEach(function (cell) {
+        const previewEl = cell.querySelector(".comment-preview");
+        const toggleBtn = cell.querySelector(".comment-toggle");
+        if (!previewEl || !toggleBtn) return;
 
-      const full = previewEl.dataset.full || "";
-      if (full.length <= maxLen) {
-        previewEl.textContent = full;
-        toggleBtn.style.display = "none";
-        return;
-      }
+        const full = previewEl.dataset.full || "";
+        if (full.length <= maxLen) {
+          previewEl.textContent = full;
+          toggleBtn.style.display = "none";
+          return;
+        }
 
-      const short = full.slice(0, maxLen).trim() + "…";
-      previewEl.textContent = short;
+        const short = full.slice(0, maxLen).trim() + "…";
+        previewEl.textContent = short;
 
-      let expanded = false;
-      toggleBtn.addEventListener("click", function () {
-        expanded = !expanded;
-        previewEl.textContent = expanded ? full : short;
-        toggleBtn.textContent = expanded ? "Less" : "More";
+        let expanded = false;
+        toggleBtn.addEventListener("click", function () {
+          expanded = !expanded;
+          previewEl.textContent = expanded ? full : short;
+          toggleBtn.textContent = expanded ? "Less" : "More";
+        });
       });
     });
-  });
-</script>
+  </script>
 
   <%- include("../common/footer.ejs") %>
 </body>
