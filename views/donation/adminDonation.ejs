@@ -9,97 +9,82 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:wght@400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-  <style>
-    :root {
-      --er-blue:     #99B7C6;
-      --er-lavender: #978EC4;
-      --er-cream:    #F9F5EA;
-      --er-blush:    #FFD8D1;
-      --er-pink:     #F9AFB1;
-      --er-sage:     #9AB59D;
-      --er-charcoal: #3A3F3B;
-      --er-peach:    #F4B89D;
-    }
+<style>
+  :root {
+    --er-blue:     #99B7C6;
+    --er-lavender: #978EC4;
+    --er-cream:    #F9F5EA;
+    --er-blush:    #FFD8D1;
+    --er-pink:     #F9AFB1;
+    --er-sage:     #9AB59D;
+    --er-charcoal: #3A3F3B;
+    --er-peach:    #F4B89D;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Montserrat', sans-serif;
+    background: var(--er-cream);
+    color: var(--er-charcoal);
+  }
+  /* MAIN LAYOUT */
+  .page-wrapper {
+    max-width: 980px;
+    margin: 72px auto 48px;
+    padding: 0 24px 40px;
+  }
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+  h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2.4rem;
+    margin: 0 0 4px;
+    color: var(--er-lavender);
+  }
+  .subtitle {
+    margin: 0;
+    font-size: 0.95rem;
+    color: #555;
+    max-width: 520px;
+  }
+  /* Card info */
+  .card {
+    background: linear-gradient(135deg, #ffffff, #fffaf5);
+    border-radius: 20px;
+    border: 1px solid #f0e2d9;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.05);
+    padding: 24px 26px 26px;
+  }
+  /* Form design */
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px 20px;
+  }
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
 
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      font-family: 'Montserrat', sans-serif;
-      background: var(--er-cream);
-      color: var(--er-charcoal);
-    }
-
-    /* MAIN LAYOUT */
-
-    .page-wrapper {
-      max-width: 980px;
-      margin: 72px auto 48px;
-      padding: 0 24px 40px;
-    }
-
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 18px;
-      flex-wrap: wrap;
-    }
-
-    h1 {
-      font-family: 'DM Serif Display', serif;
-      font-size: 2.4rem;
-      margin: 0 0 4px;
-      color: var(--er-lavender);
-    }
-
-    .subtitle {
-      margin: 0;
-      font-size: 0.95rem;
-      color: #555;
-      max-width: 520px;
-    }
-
-    /* CARD */
-
-    .card {
-      background: linear-gradient(135deg, #ffffff, #fffaf5);
-      border-radius: 20px;
-      border: 1px solid #f0e2d9;
-      box-shadow: 0 12px 30px rgba(0,0,0,0.05);
-      padding: 24px 26px 26px;
-    }
-
-    /* FORM LAYOUT */
-
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    .form-row {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 16px 20px;
-    }
-
-    .field {
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-    }
-
-    label {
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: #666;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    /* make inputs and selects match cleanly */
 input,
 select {
   padding: 9px 11px;
@@ -113,21 +98,18 @@ select {
               background-color 0.15s ease;
 }
 
-/* remove default browser arrow */
 select {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
-  padding-right: 40px; /* room for our custom arrow */
+  padding-right: 40px; 
   background-color: #fffdfb;
 }
 
-/* wrapper for custom arrow */
 .field-select {
   position: relative;
 }
 
-/* custom arrow */
 .field-select::after {
   content: "▾";
   position: absolute;
@@ -139,7 +121,7 @@ select {
   pointer-events: none;
 }
 
-/* keep focus state consistent */
+/* this keeps the focus state consistent throughout the page */
 input:focus,
 select:focus {
   border-color: var(--er-lavender);
@@ -147,8 +129,7 @@ select:focus {
   background-color: #fffefe;
 }
 
-
-    /* CHECKBOX */
+    /* Checkbox design */
 
     .checkbox-row {
       display: flex;
@@ -170,7 +151,7 @@ select:focus {
       color: #444;
     }
 
-    /* ACTIONS */
+    /* Action design */
 
     .form-actions {
       margin-top: 8px;
@@ -222,7 +203,7 @@ select:focus {
       background: #faf7ff;
     }
 
-    /* MESSAGES */
+    /* Message */
 
     .error-message {
       margin: 0 0 14px;
@@ -231,7 +212,7 @@ select:focus {
       color: #b3261e;
     }
 
-    /* SMALL SCREENS */
+    /* Small Screen Adjustments */
 
     @media (max-width: 640px) {
       .page-wrapper {
@@ -305,7 +286,6 @@ select:focus {
     <% } %>
   </select>
 </div>
-
         </div>
 
         <div class="form-row">
