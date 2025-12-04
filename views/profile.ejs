@@ -272,8 +272,10 @@
             <!-- Contact & Identity Section with Inline Edit Button -->
             <div class="section-header-row">
                 <h2>Contact & Identity</h2>
-                <!-- Edit Button on the same line -->
-                <a href="/editProfile/<%= users.id %>" class="btn-edit">Edit Profile</a>
+                <!-- Edit Button on the same line - only for managers -->
+                <% if (typeof userRole !== 'undefined' && userRole === 'manager') { %>
+                    <a href="/editParticipant/<%= users.id %>" class="btn-edit">Edit Profile</a>
+                <% } %>
             </div>
             
             <!-- Improved Readable Grid -->

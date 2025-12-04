@@ -207,53 +207,6 @@ app.use((req, res, next) => {
     return next();
 });
 
-app.get('/profile_dashboard', async (req, res) => {
-    try {
-        // Check if the user is logged in using the global variable set by setViewGlobals
-        if (!res.locals.isLoggedIn) {
-            // Instead of flashing an error, just redirect or render the 403 page
-            // We'll redirect to login, as that's the standard action.
-            return res.redirect('/login'); 
-            // OR if you prefer to show an error page:
-            // return res.status(403).render("403"); 
-        }
-
-        // 1. Get the current user's ID from the session
-        const currentUserId = req.session.user.id;
-
-        // 2. Fetch the user's detailed data from the database
-        const user = await knex("users")
-            .where("participantid", currentUserId)
-            .first();
-
-        if (!user) {
-            // If user is not found, redirect to login without flashing a message
-            return res.redirect('/login');
-        }
-
-        // 3. Fetch the participant data
-        // Check if a specific participantID was requested via query parameter (for testing)
-        const requestedParticipantId = req.query.participantId || user.participantid;
-
-        const participant = await knex("participant")
-            .where("participantid", requestedParticipantId)
-            .first();
-
-        // 4. Render the profile_dashboard.ejs file and pass both user and participant data
-        res.render('profile_dashboard', {
-            currentUser: user, // Pass the user account data
-            participant: participant || null, // Pass the participant profile data
-            requestedParticipantId: requestedParticipantId, // Pass the requested ID for the form
-            pageTitle: 'My Profile Dashboard'
-        });
-
-    } catch (e) {
-        console.error('Error fetching profile dashboard:', e);
-        // On error, redirect to the home page without flashing a message
-        res.redirect('/');
-    }
-});
-
 // Main page route - notice it checks if they have logged in
 app.get("/login", (req, res) => {
     // Check if user is logged in
@@ -1582,90 +1535,70 @@ app.get("/donations", async (req, res, next) => {
 });
 
 app.get('/profile', async (req, res) => {
-    
-    // 1. Check if the user object exists in the session (Guard Clause)
-    const currentUser = req.session.user;
-
-    if (!currentUser || !currentUser.id) {
-
-        return res.redirect('/login'); 
-    }
-    
-    const userId = currentUser.id;
-
-    // --- QUERY 1: Fetch Profile Data (User + Participant Info) ---
-    const profileQuery = `
-        SELECT 
-            u.username, 
-            u.role, 
-            u.id, 
-            p.*
-        FROM 
-            users u
-        JOIN 
-            participant p ON p.participantid = u.id
-        WHERE 
-            u.id = ?; 
-    `;
-
-    // --- QUERY 2: Fetch Donation History ---
-    const donationHistoryQuery = `
-        SELECT 
-            donationnumber,
-            donationdate, 
-            donationamount
-            FROM 
-            donation 
-        WHERE 
-            participantid = ?
-        ORDER BY 
-            donationdate DESC; -- Ordering by date descending (newest first)
-    `;
-
-    // --- QUERY 3: Fetch Milestones History ---
-    const milestoneQuery = `
-        SELECT 
-            milestonetitle, 
-            milestonedate
-        FROM 
-            milestone 
-        WHERE 
-            participantid = ?
-        ORDER BY 
-            milestonedate DESC; -- Ordering by date descending (newest first)
-    `;
-
     try {
-        // EXECUTE QUERY 1: Get Profile Data
-        const profileResult = await knex.raw(profileQuery, [userId]); 
-        const profileData = profileResult.rows[0]; 
-
-
-        if (!profileData) {
-            return res.status(404).send('Profile data not found. Check if user is in participant table.');
+        // Check if the user is logged in
+        if (!res.locals.isLoggedIn) {
+            return res.redirect('/login');
         }
 
-        // EXECUTE QUERY 2: Get Donation History
-        const donationResult = await knex.raw(donationHistoryQuery, [userId]); 
-        const donationHistory = donationResult.rows; 
+        // 1. Get the current user's ID from the session
+        const currentUserId = req.session.user.id;
 
-        // EXECUTE QUERY 3: Get Milestones History
-        const milestoneResult = await knex.raw(milestoneQuery, [userId]); 
-        const milestonesHistory = milestoneResult.rows; 
+        // 2. Fetch the user's detailed data from the database
+        const user = await knex("users")
+            .where("participantid", currentUserId)
+            .first();
 
-        // 4. Render the page, passing ALL three sets of data
+        if (!user) {
+            return res.redirect('/login');
+        }
+
+        // 3. Fetch the participant data
+        const participant = await knex("participant")
+            .where("participantid", user.participantid)
+            .first();
+
+        if (!participant) {
+            return res.redirect('/login');
+        }
+
+        // 4. Fetch milestones for this participant
+        const milestones = await knex("milestone")
+            .where("participantid", user.participantid)
+            .orderBy("milestonedate", "desc");
+
+        // 5. Fetch donations for this participant
+        const donations = await knex("donation")
+            .where("participantid", user.participantid)
+            .orderBy("donationdate", "desc");
+
+        // 6. Merge user and participant data for the profile view
+        const users = {
+            id: user.participantid,
+            username: user.username,
+            participantrole: user.role,
+            participantfirstname: participant.participantfirstname,
+            participantlastname: participant.participantlastname,
+            participantemail: participant.participantemail,
+            participantphone: participant.participantphone || 'Not provided',
+            participantdob: participant.participantdob,
+            participantcity: participant.participantcity || 'Not provided',
+            participantstate: participant.participantstate || '',
+            participantzip: participant.participantzip || '',
+            participantschooloremployer: participant.participantschooloremployer || 'Not provided',
+            participantfieldofinterest: participant.participantfieldofinterest || 'Not specified',
+            totaldonations: participant.totaldonations || 0
+        };
+
+        // 7. Render the profile.ejs file
         res.render('profile', {
-            users: { 
-                ...profileData,
-            },
-            donations: donationHistory,
-            milestones: milestonesHistory // <-- NEW DATA SET
+            users: users,
+            milestones: milestones,
+            donations: donations
         });
 
-    } catch (error) {
-        console.error('Error fetching data:', error);
-        // The previous console output was very helpful! Keep an eye on the terminal 
-        // for specific errors if this fails.
+    } catch (e) {
+        console.error('Error fetching profile:', e);
         res.status(500).send('Server Error retrieving data.');
     }
 });
@@ -3021,7 +2954,7 @@ app.post("/events/delete/:id", requireManager, async (req, res) => {
 });
 
 // Users list + search (Pagination and Filtering)
-app.get("/users", async (req, res) => {
+app.get("/users", requireManager, async (req, res) => {
   const pageSize = 100;
   let { page, search_name } = req.query;
 
@@ -3225,7 +3158,7 @@ app.post("/deleteUser/:id", async (req, res) => {
 
 
 
-app.get("/admin/users/add", async (req, res) => {
+app.get("/admin/users/add", requireManager, async (req, res) => {
   try {
     res.render("users/adduser", {
       error_message: null,
@@ -3237,9 +3170,7 @@ app.get("/admin/users/add", async (req, res) => {
   }
 });
 
-
-
-app.post("/admin/users/add", async (req, res) => {
+app.post("/admin/users/add", requireManager, async (req, res) => {
   const {
     // participant fields from the form
     participantemail,

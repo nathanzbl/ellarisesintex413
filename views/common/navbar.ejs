@@ -194,6 +194,7 @@ nav {
     background: var(--er-cream);
     border-radius: 0.75rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-right: 3rem;
 }
 
 .lang-button {
@@ -246,7 +247,7 @@ nav {
     .lang-toggle {
         position: absolute;
         top: 0.75rem;
-        right: 1rem; 
+        right: 3rem;
     }
 }
 </style>
@@ -291,7 +292,19 @@ nav {
                 <% // Show Milestones and Participants only for viewers and managers %>
                 <% if (userRole === 'viewer' || userRole === 'manager') { %>
                     <a href="/milestones" data-i18n-key="nav_milestones">Milestones</a>
-                    <a href="/participants" data-i18n-key="nav_participants">Participants</a>
+
+                    <% // Participants - Dropdown for managers, single link for viewers %>
+                    <% if (userRole === 'manager') { %>
+                        <div class="nav-dropdown">
+                            <a href="#" data-i18n-key="nav_participants">Participants ▾</a>
+                            <div class="nav-dropdown-menu">
+                                <a href="/participants">View Participants</a>
+                                <a href="/users">View Users</a>
+                            </div>
+                        </div>
+                    <% } else { %>
+                        <a href="/participants" data-i18n-key="nav_participants">Participants</a>
+                    <% } %>
                 <% } %>
 
                 <% // Surveys - Dropdown for managers, single link for others %>
@@ -326,7 +339,7 @@ nav {
                          onerror="this.onerror=null; this.src='https://placehold.co/40x40/9AB59D/F9F5EA?text=P';">
 
                     <div class="dropdown-menu">
-                        <a href="/profile_dashboard" data-i18n-key="profile_view">View Profile</a>
+                        <a href="/profile" data-i18n-key="profile_view">View Profile</a>
                         <!-- Logout option moved to the dropdown -->
                         <a href="/logout" style="color: var(--er-rose);" data-i18n-key="nav_logout">Logout</a>
                     </div>
