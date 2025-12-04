@@ -450,8 +450,7 @@
                           <th>Participant Name</th>
                           <th>Email</th>
                           <th>Phone</th>
-                          <th>View/Edit</th>
-                          <th>Delete</th>
+                          <th>Actions</th>
                       </tr>
                   </thead>
                   <tbody>
@@ -468,8 +467,6 @@
                                   <a href="/editParticipant/<%= participants[i].participantid %>" class="btn-small btn-view-edit">
                                       View/Edit
                                   </a>
-                              </td>
-                              <td>
                                   <form
                                       action="/deleteParticipant/<%= participants[i].participantid %>"
                                       method="post"
@@ -483,6 +480,9 @@
                                       />
                                   </form>
                               </td>
+
+                                  
+
                           </tr>
                       <% } %>
                   </tbody>

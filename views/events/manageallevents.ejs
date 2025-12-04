@@ -18,110 +18,133 @@
         --er-rose:#CE325B;
     }
 
+    * { box-sizing: border-box; }
+
     body {
         margin: 0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 0;
+        font-family: "Montserrat", system-ui, sans-serif;
         background: var(--er-cream);
-        font-family: "Montserrat", sans-serif;
-    }
-
-    .page-title {
-        text-align: center;
-        font-family: "DM Serif Display", serif;
-        font-size: 2.4rem;
-        margin-top: 2rem;
         color: var(--er-charcoal);
     }
 
-    .container {
-        width: 90%;
-        max-width: 1200px;
-        margin: 2rem auto 3rem;
-        background: white;
-        padding: 2rem;
-        border-radius: 1.5rem;
-        border-top: 8px solid var(--er-pink);
-        box-shadow: 0 10px 32px rgba(0,0,0,0.08);
+    .main-content {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+        width: 100%;
     }
 
-    /* --- SEARCH INPUT LAYOUT --- */
-    .search-row {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-        gap: 1.8rem 2.2rem;
+    .data-card {
+        max-width: 1200px;
+        width: 100%;
+        padding: 2.5rem 2.25rem;
+        border-radius: 1.5rem;
+        background-color: #ffffff;
+        box-shadow: 0 14px 40px rgba(0, 0, 0, 0.08);
+        border-top: 6px solid var(--er-pink);
+    }
+
+    .milestone-title {
+        font-family: "DM Serif Display", serif;
+        font-size: 2rem;
+        text-align: center;
+        letter-spacing: 0.06em;
+        margin: 0 0 0.25rem;
+    }
+
+    .milestone-subtitle {
+        font-size: 0.95rem;
+        text-align: center;
+        color: rgba(58, 63, 59, 0.7);
         margin-bottom: 2rem;
+    }
+
+    .controls-bar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        justify-content: space-between;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1.5rem;
         border-bottom: 1px solid var(--er-blush);
-        padding-bottom: 2rem;
-        padding-top: 0.5rem;
+    }
+
+    .search-form {
+        display: flex;
+        flex-grow: 1;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: flex-end;
+        max-width: 100%;
     }
 
     .search-group {
         display: flex;
         flex-direction: column;
+        flex-grow: 1;
+        min-width: 160px;
     }
 
-    .search-group label {
-        font-size: 0.85rem;
-        font-weight: 600;
+    .search-label {
+        font-size: 0.75rem;
+        font-weight: 500;
         margin-bottom: 0.5rem;
-        display: block;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
         color: var(--er-charcoal);
+        text-transform: uppercase;
     }
 
-    .search-group input,
-    .search-group select {
-        width: 100%;
-        padding: 0.85rem 1rem;
+    .search-input,
+    .search-select {
+        padding: 0.7rem 1rem;
+        border: 2px solid var(--er-blush);
         border-radius: 0.75rem;
-        border: 1.5px solid var(--er-blush);
-        font-size: 0.9rem;
         font-family: inherit;
+        font-size: 0.9rem;
         outline: none;
-        transition: border-color 0.15s ease, box-shadow 0.15s ease;
-        box-sizing: border-box;
+        transition: border-color 0.2s ease;
+        background-color: #fff;
     }
-    .search-actions {
-        display: flex;
-        flex-direction: column;
-        gap: 0.6rem;
-        justify-content: flex-end;
-        margin-top: auto;
+
+    .search-input:focus,
+    .search-select:focus {
+        border-color: var(--er-pink);
     }
 
     .btn-search,
-            .btn-clear {
-                border: none;
-                padding: 0.9rem 1.7rem;
-                font-weight: 600;
-                border-radius: 999px;
-                cursor: pointer;
-                width: 100%;
-                font-size: 0.85rem;
-                text-transform: uppercase;
-                letter-spacing: 0.04em;
-                transition: all 0.15s ease;
-                box-sizing: border-box;
-                display: block;
-                line-height: 1;
-            }
+    .btn-clear {
+        padding: 0.7rem 1rem;
+        border-radius: 999px;
+        border: none;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.18s ease;
+        width: 100%;
+    }
 
     .btn-search {
         background: var(--er-sage);
         color: white;
-        box-shadow: 0 5px 14px rgba(154,181,157,0.4);
+        box-shadow: 0 5px 12px rgba(154, 181, 157, 0.4);
     }
 
     .btn-search:hover {
-        background: #7ca184;
-        box-shadow: 0 7px 18px rgba(154,181,157,0.55);
-        transform: translateY(-1px);
+        background: rgba(154, 181, 157, 0.8);
     }
 
     .btn-clear {
         background: var(--er-blush);
         color: var(--er-charcoal);
         text-decoration: none;
+        display: inline-block;
         text-align: center;
     }
 
@@ -130,82 +153,98 @@
         color: white;
     }
 
-    /* TABLE STYLE */
-    .table-wrapper {
-        margin-top: 1.5rem;
-        border-radius: 1rem;
-        overflow-x: auto;
-        border: 1px solid #f0e2d9;
-        background: #fff;
+    .search-actions {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: space-between;
+        width: 100%;
     }
 
-    table {
+    .search-actions .btn-search,
+    .search-actions .btn-clear {
+        width: auto;
+    }
+
+    .table-responsive {
+        /* keep this for safety, but table should now fit */
+        overflow-x: hidden;
+        width: 100%;
+        margin-top: 1.5rem;
+    }
+
+    .table-custom {
         width: 100%;
         border-collapse: collapse;
-        min-width: 900px;
+        /* removed min-width so it cannot force horizontal scroll */
     }
 
-    thead {
-        background: linear-gradient(90deg, var(--er-charcoal), #555b57);
-        color: white;
-    }
-
-    th, td {
-        padding: 0.9rem 1rem;
-        border-bottom: 1px solid var(--er-blush);
-        font-size: 0.9rem;
-        white-space: nowrap;
-    }
-
-    th {
+    .table-custom thead tr {
+        background-color: var(--er-charcoal);
+        color: var(--er-cream);
         font-size: 0.8rem;
+        letter-spacing: 0.08em;
         text-transform: uppercase;
-        letter-spacing: 0.06em;
-        font-weight: 600;
     }
 
-    tbody tr:nth-child(even) {
-        background: var(--er-cream);
+    .table-custom th,
+    .table-custom td {
+        padding: 1rem 1.25rem;
+        text-align: left;
+        border-bottom: 1px solid var(--er-blush);
+        /* let content wrap so it fits */
+        white-space: normal;
     }
 
-    tbody tr:hover {
+    .table-custom tbody tr:nth-child(even) {
+        background-color: var(--er-cream);
+    }
+
+    .table-custom tbody tr:hover {
         background: #f4f7fb;
     }
 
     .actions-cell {
         display: flex;
         gap: 0.4rem;
+        flex-wrap: nowrap;
     }
 
-    .delete-btn,
-    .edit-btn {
-        border: none;
-        padding: 0.5rem 1.1rem;
+    .btn-small {
+        padding: 0.75rem 1rem;
         border-radius: 999px;
-        cursor: pointer;
-        font-size: 0.8rem;
+        border: none;
         font-weight: 600;
+        font-size: 0.65rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+        box-shadow: 0 5px 12px rgba(32, 131, 47, 0.25);
+        transition: all 0.18s ease;
         text-decoration: none;
         display: inline-block;
         text-align: center;
+        white-space: nowrap;
     }
 
-    .edit-btn {
+    .btn-edit {
+        background: var(--er-sage);
+        color: #fff;
+    }
+
+    .btn-edit:hover {
         background: var(--er-blue);
-        color: white;
+        transform: translateY(-1px);
     }
 
-    .edit-btn:hover {
-        background: #7f9caf;
-    }
-
-    .delete-btn {
+    .btn-delete {
         background: var(--er-rose);
-        color: white;
+        color: #fff;
+        box-shadow: 0 5px 12px rgba(206, 50, 91, 0.25);
     }
 
-    .delete-btn:hover {
+    .btn-delete:hover {
         background: #a82646;
+        transform: translateY(-1px);
     }
 
     .no-results {
@@ -215,9 +254,8 @@
         color: #555;
     }
 
-    /* Pagination styles (sliding window) */
     .pagination {
-        margin-top: 20px;
+        margin-top: 24px;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -257,6 +295,16 @@
         pointer-events: none;
         cursor: default;
     }
+
+    @media (max-width: 768px) {
+        .data-card {
+            padding: 2rem 1.25rem;
+        }
+
+        .milestone-title {
+            font-size: 1.7rem;
+        }
+    }
 </style>
 
 </head>
@@ -264,105 +312,131 @@
 
 <%- include('../common/navbar.ejs') %>
 
-<h1 class="page-title">Manage All Events</h1>
+<div class="main-content">
+  <div class="data-card">
 
-<div class="container">
+    <h1 class="milestone-title">Manage All Events</h1>
+    <p class="milestone-subtitle">
+      Admin view of all scheduled events in the system.
+    </p>
 
-    <form method="GET" action="/events/manage/all">
-        <div class="search-row">
+    <div class="controls-bar">
+      <form method="GET" action="/events/manage/all" class="search-form">
 
-            <div class="search-group">
-                <label>Event Name</label>
-                <input type="text" name="search_name" value="<%= search_name || '' %>">
-            </div>
-
-            <div class="search-group">
-                <label>Location</label>
-                <input type="text" name="search_location" value="<%= search_location || '' %>">
-            </div>
-
-            <div class="search-group">
-                <label>Event Type</label>
-                <select name="search_type">
-                    <option value="">All</option>
-                    <option value="Annual Conference"  <%= search_type === "Annual Conference"  ? "selected" : "" %>>Annual Conference</option>
-                    <option value="STEM" <%= search_type === "STEM" ? "selected" : "" %>>STEM</option>
-                    <option value="Arts" <%= search_type === "Arts" ? "selected" : "" %>>Arts</option>
-                    <option value="Leadership"    <%= search_type === "Leadership"    ? "selected" : "" %>>Leadership</option>
-                </select>
-            </div>
-
-            <div class="search-group">
-                <label>Start Date (min)</label>
-                <input type="date" name="search_start" value="<%= search_start || '' %>">
-            </div>
-
-            <div class="search-group">
-                <label>Start Date (max)</label>
-                <input type="date" name="search_end" value="<%= search_end || '' %>">
-            </div>
-
-            <div class="search-group search-actions">
-                <button class="btn-search" type="submit">Search</button>
-
-                <%
-                  const isSearching =
-                    (search_name && search_name.trim() !== "") ||
-                    (search_location && search_location.trim() !== "") ||
-                    (search_type && search_type.trim() !== "") ||
-                    (search_start && search_start !== "") ||
-                    (search_end && search_end !== "");
-                %>
-
-                <% if (isSearching) { %>
-                    <a href="/events/manage/all" class="btn-clear">Clear Filters</a>
-                <% } %>
-            </div>
-
+        <div class="search-group" style="flex-basis: 25%;">
+          <label class="search-label">Event Name</label>
+          <input
+            type="text"
+            name="search_name"
+            class="search-input"
+            value="<%= search_name || '' %>"
+          >
         </div>
-    </form>
 
-    <div class="table-wrapper">
-        <table>
-            <thead>
-                <tr>
-                    <th>Event Name</th>
-                    <th>Type</th>
-                    <th>Location</th>
-                    <th>Start</th>
-                    <th>End</th>
-                    <th colspan="2">Actions</th>
-                </tr>
-            </thead>
-            
-            <tbody>
-                <% if (!events || events.length === 0) { %>
-                    <tr>
-                        <td colspan="7" class="no-results">
-                            No events found <%= isSearching ? 'matching your criteria.' : 'in the system.' %>
-                        </td>
-                    </tr>
-                <% } else { %>
-                    <% events.forEach(ev => { %>
-                        <tr>
-                            <td><%= ev.eventname %></td>
-                            <td><%= ev.eventtype %></td>
-                            <td><%= ev.eventlocation %></td>
-                            <td><%= ev.startFormatted %></td>
-                            <td><%= ev.endFormatted %></td>
-                            <td class="actions-cell">
-                                <a href="/events/edit/<%= ev.eventid %>" class="edit-btn">Edit</a>
-                            </td>
-                            <td class="actions-cell">
-                                <form action="/events/delete/<%= ev.eventid %>" method="post">
-                                    <button class="delete-btn" type="submit">Delete</button>
-                                </form>
-                            </td>
-                        </tr>
-                    <% }) %>
-                <% } %>
-            </tbody>
-        </table>
+        <div class="search-group" style="flex-basis: 20%;">
+          <label class="search-label">Location</label>
+          <input
+            type="text"
+            name="search_location"
+            class="search-input"
+            value="<%= search_location || '' %>"
+          >
+        </div>
+
+        <div class="search-group" style="flex-basis: 20%;">
+          <label class="search-label">Event Type</label>
+          <select name="search_type" class="search-select">
+            <option value="">All</option>
+            <option value="Annual Conference"  <%= search_type === "Annual Conference"  ? "selected" : "" %>>Annual Conference</option>
+            <option value="STEM" <%= search_type === "STEM" ? "selected" : "" %>>STEM</option>
+            <option value="Arts" <%= search_type === "Arts" ? "selected" : "" %>>Arts</option>
+            <option value="Leadership"    <%= search_type === "Leadership"    ? "selected" : "" %>>Leadership</option>
+          </select>
+        </div>
+
+        <div class="search-group" style="flex-basis: 15%;">
+          <label class="search-label">Start Date (min)</label>
+          <input
+            type="date"
+            name="search_start"
+            class="search-input"
+            value="<%= search_start || '' %>"
+          >
+        </div>
+
+        <div class="search-group" style="flex-basis: 15%;">
+          <label class="search-label">Start Date (max)</label>
+          <input
+            type="date"
+            name="search_end"
+            class="search-input"
+            value="<%= search_end || '' %>"
+          >
+        </div>
+
+        <div class="search-group" style="flex-basis: 15%; flex-grow: 0;">
+          <%
+            const isSearching =
+              (search_name && search_name.trim() !== "") ||
+              (search_location && search_location.trim() !== "") ||
+              (search_type && search_type.trim() !== "") ||
+              (search_start && search_start !== "") ||
+              (search_end && search_end !== "");
+          %>
+
+          <div class="search-actions">
+            <button class="btn-search" type="submit">Search</button>
+
+            <% if (isSearching) { %>
+              <a href="/events/manage/all" class="btn-clear">Clear Filters</a>
+            <% } %>
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table-custom">
+        <thead>
+          <tr>
+            <th>Event Name</th>
+            <th>Type</th>
+            <th>Location</th>
+            <th>Start</th>
+            <th>End</th>
+            <th colspan="2">Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <% if (!events || events.length === 0) { %>
+            <tr>
+              <td colspan="7" class="no-results">
+                No events found <%= isSearching ? 'matching your criteria.' : 'in the system.' %>
+              </td>
+            </tr>
+          <% } else { %>
+            <% events.forEach(ev => { %>
+              <tr>
+                <td><%= ev.eventname %></td>
+                <td><%= ev.eventtype %></td>
+                <td><%= ev.eventlocation %></td>
+                <td><%= ev.startFormatted %></td>
+                <td><%= ev.endFormatted %></td>
+                <td class="actions-cell">
+                  <a href="/events/edit/<%= ev.eventid %>" class="btn-small btn-edit">Edit</a>
+                </td>
+                <td class="actions-cell">
+                  <form action="/events/delete/<%= ev.eventid %>" method="post">
+                    <button class="btn-small btn-delete" type="submit">Delete</button>
+                  </form>
+                </td>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
     </div>
 
     <% if (pagination && pagination.totalPages > 1) { %>
@@ -394,7 +468,6 @@
           }
         %>
 
-        <!-- Prev -->
         <% if (hasPrev) { %>
           <a class="page-link" href="<%= pageUrl(pagination.currentPage - 1) %>">
             Prev
@@ -403,7 +476,6 @@
           <span class="page-link-disabled">Prev</span>
         <% } %>
 
-        <!-- First page + leading ellipsis -->
         <% if (pagination.windowStart > 1) { %>
           <a
             class="page-link <%= pagination.currentPage === 1 ? 'page-current' : '' %>"
@@ -422,7 +494,6 @@
           <% } %>
         <% } %>
 
-        <!-- Window pages -->
         <% for (let p = pagination.windowStart; p <= pagination.windowEnd; p++) { %>
           <a
             class="page-link <%= p === pagination.currentPage ? 'page-current' : '' %>"
@@ -432,7 +503,6 @@
           </a>
         <% } %>
 
-        <!-- Trailing ellipsis + last page -->
         <% if (pagination.windowEnd < pagination.totalPages) { %>
           <% if (pagination.windowEnd < pagination.totalPages - 1) { %>
             <a
@@ -451,7 +521,6 @@
           </a>
         <% } %>
 
-        <!-- Next -->
         <% if (hasNext) { %>
           <a class="page-link" href="<%= pageUrl(pagination.currentPage + 1) %>">
             Next
@@ -462,6 +531,7 @@
       </div>
     <% } %>
 
+  </div>
 </div>
 
 </body>

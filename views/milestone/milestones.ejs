@@ -416,8 +416,8 @@
                                 <th>Participant Email</th>
                                 <th>Milestone Title</th>
                                 <th>Date Achieved</th>
-                                <th>Edit</th>
-                                <th>Delete</th>
+                                <th>Actions</th>
+
                             </tr>
                         </thead>
                         <tbody>
@@ -441,8 +441,6 @@
                                         <form action="/editMilestone/<%= milestone[i].milestoneid %>" method="get">
                                             <input type="submit" name="Edit" value="Edit" class="btn-small btn-edit-milestone" />
                                         </form>
-                                    </td>
-                                    <td>
                                         <form
                                             action="/deleteMilestone/<%= milestone[i].milestoneid %>"
                                             method="post"
@@ -451,6 +449,9 @@
                                             <input type="submit" name="Delete" value="Delete" class="btn-small btn-delete-milestone" />
                                         </form>
                                     </td>
+
+                                        
+
                                 </tr>
                             <% } %>
                         </tbody>

@@ -761,7 +761,83 @@ app.post("/survey/:surveyid/edit", async (req, res) => {
   }
 });
 
-app.post("/donations/add", async (req, res, next) => {
+// Helper to send a donation receipt
+async function sendDonationReceipt({ toEmail, amount, isAnonymous, donationDate }) {
+  if (!toEmail) return;
+
+  const formattedDate = donationDate.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+  const subject = "Your Ella Rises donation receipt";
+
+  const text = `
+Thank you for your generous donation to Ella Rises.
+
+Amount: $${amount.toFixed(2)}
+Date: ${formattedDate}
+Donation type: ${isAnonymous ? "Anonymous" : "Named"}
+
+This email serves as your receipt for tax purposes. 
+No goods or services were provided in exchange for this contribution.
+
+With gratitude,
+Ella Rises
+  `.trim();
+
+  const html = `
+  <div style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color:#333; line-height:1.5;">
+    <div style="max-width:600px; margin:0 auto; padding:24px;">
+      <h2 style="margin-top:0; color:#CE325B; font-weight:700;">
+        Thank you for supporting Ella Rises
+      </h2>
+
+      <p>
+        We are grateful for your recent ${isAnonymous ? "anonymous " : ""}donation to Ella Rises.
+        Your gift helps young Latinas in Utah see themselves in college, in STEAM fields,
+        and as leaders in their communities.
+      </p>
+
+      <div style="margin:20px 0; padding:16px 18px; border-radius:12px; background:#F9F5EA; border:1px solid #FFD8D1;">
+        <h3 style="margin:0 0 10px 0; font-size:16px;">Donation Summary</h3>
+        <p style="margin:4px 0;"><strong>Amount:</strong> $${amount.toFixed(2)}</p>
+        <p style="margin:4px 0;"><strong>Date:</strong> ${formattedDate}</p>
+        <p style="margin:4px 0;"><strong>Donation type:</strong> ${isAnonymous ? "Anonymous" : "Named"}</p>
+      </div>
+
+      <p style="font-size:14px; margin-top:18px;">
+        This email serves as your donation receipt. No goods or services were provided
+        in exchange for this contribution. Please keep this for your records.
+      </p>
+
+      <p style="margin-top:18px;">
+        With gratitude,<br/>
+        <strong>Ella Rises</strong>
+      </p>
+
+      <hr style="margin:24px 0; border:none; border-top:1px solid #eee;"/>
+
+      <p style="font-size:12px; color:#666; margin:0;">
+        If you have questions about this donation, reply to this email.
+      </p>
+    </div>
+  </div>
+  `;
+
+  await mailtrapClient.sendMail({
+    from: mailSender,
+    to: [{ address: toEmail }],
+    subject,
+    text,
+    html,
+    category: "donation_receipt",
+  });
+}
+
+
+app.post("/donations/add", async (req, res) => {
   try {
     const {
       first_name,
@@ -770,23 +846,32 @@ app.post("/donations/add", async (req, res, next) => {
       phone,
       amount_choice,
       other_amount,
-      frequency,
-      designation,
-      note,
       anonymous,
-      updates,
+      // frequency,
+      // designation,
+      // note,
+      // updates,
     } = req.body;
 
-    // Basic required field checks
-    if (!first_name || !last_name || !email || !phone) {
+    const ANONYMOUS_PARTICIPANT_ID = 1182;
+    const isAnonymous =
+      anonymous === "1" ||
+      anonymous === "on" ||
+      anonymous === true;
+
+    const donationDate = new Date();
+
+    // Validation:
+    // - Email always required
+    // - Name and phone required only if NOT anonymous
+    if (!email || (!isAnonymous && (!first_name || !last_name || !phone))) {
       return res.status(400).render("donations", {
-        error_message: "First name, last name, email, and phone are required.",
+        error_message: "First name, last name, email, and phone are required unless you choose to donate anonymously.",
       });
     }
 
     // 1. Figure out the actual donation amount
     let donationAmount = 0;
-
     const other = Number(other_amount);
     const preset = Number(amount_choice);
 
@@ -796,32 +881,16 @@ app.post("/donations/add", async (req, res, next) => {
       donationAmount = preset;
     }
 
-    const isAnonymous = !!anonymous;
-     const ANONYMOUS_PARTICIPANT_ID = 1182;
-
-
-
-     
     if (!donationAmount || donationAmount <= 0) {
       return res.status(400).render("donations", {
         error_message: "Please choose or enter a valid donation amount.",
       });
     }
 
-    // 2. Look up participant by email
-    let participant = await knex("participant")
-      .where({ participantemail: email })
-      .first();
-
-    let participantId;
-    let newTotalDonations;
+    let participantIdForDonation;
 
     if (isAnonymous) {
-      // Anonymous - donations tied to the anonymous participant row
-      participantIdForDonation = ANONYMOUS_PARTICIPANT_ID;
-      participantIdForTotals = ANONYMOUS_PARTICIPANT_ID;
-
-      // Update totaldonations on the anonymous row
+      // 2a. Anonymous donations get tied to the single anonymous participant row
       const anon = await knex("participant")
         .where({ participantid: ANONYMOUS_PARTICIPANT_ID })
         .first();
@@ -838,57 +907,82 @@ app.post("/donations/add", async (req, res, next) => {
           totaldonations: newTotalAnon,
         });
 
-      // Notice: we are not creating/updating a personal participant row
-      // for the donor when they choose to be anonymous.
-    }
+      participantIdForDonation = ANONYMOUS_PARTICIPANT_ID;
 
-    if (!participant) {
-      // New participant, phone required here
-      const [inserted] = await knex("participant")
-        .insert({
-          participantfirstname: cap(first_name),
-          participantlastname: cap(last_name),
-          participantemail: email,
-          participantphone: phone,               // now required
-          participantrole: "participant",
-          totaldonations: donationAmount,
-        })
-        .returning(["participantid", "totaldonations"]);
-
-      participantId = inserted.participantid;
-      newTotalDonations = inserted.totaldonations;
+      // Notice: no personal participant row is created or updated for this email.
+      // You can still email them a receipt using `email` from req.body directly.
     } else {
-      participantId = participant.participantid;
-      const currentTotal = Number(participant.totaldonations) || 0;
-      newTotalDonations = currentTotal + donationAmount;
+      // 2b. Normal path, tie donation to real participant
+      let participant = await knex("participant")
+        .where({ participantemail: email })
+        .first();
 
-      await knex("participant")
-        .where({ participantid: participantId })
-        .update({
-          totaldonations: newTotalDonations,
-          // Optionally refresh phone if they changed it:
-          participantphone: phone,
-        });
+      if (!participant) {
+        // New participant
+        const [inserted] = await knex("participant")
+          .insert({
+            participantfirstname: cap(first_name),
+            participantlastname: cap(last_name),
+            participantemail: email,
+            participantphone: phone,
+            participantrole: "participant",
+            totaldonations: donationAmount,
+          })
+          .returning(["participantid", "totaldonations"]);
+
+        participant = inserted;
+      } else {
+        // Existing participant, bump totals and optionally refresh info
+        const currentTotal = Number(participant.totaldonations) || 0;
+        const newTotal = currentTotal + donationAmount;
+
+        await knex("participant")
+          .where({ participantid: participant.participantid })
+          .update({
+            totaldonations: newTotal,
+            participantfirstname: cap(first_name),
+            participantlastname: cap(last_name),
+            participantphone: phone,
+          });
+
+        participant.totaldonations = newTotal;
+      }
+
+      participantIdForDonation = participant.participantid;
     }
 
-    // 4. Calculate donationnumber
+    // 3. Calculate donationnumber based on the participant that this donation belongs to
     const countRow = await knex("donation")
-      .where({ participantid: participantId })
+      .where({ participantid: participantIdForDonation })
       .count("* as count")
       .first();
 
     const previousCount = Number(countRow.count) || 0;
     const donationNumber = previousCount + 1;
 
-    // 5. Insert into donations
+    // 4. Insert into donations
     await knex("donation").insert({
-      participantid: participantId,
+      participantid: participantIdForDonation,
       donationnumber: donationNumber,
       donationamount: donationAmount,
       donationdate: new Date(),
-      isanonymous: isAnonymous
-
+      isanonymous: isAnonymous,
     });
+
+    // 5. Send receipt email here using `email` from req.body
+    // await mailer.sendReceipt(email, donationAmount, ...);
+
+    try {
+      await sendDonationReceipt({
+        toEmail: email,
+        amount: donationAmount,
+        isAnonymous,
+        donationDate,
+      });
+    } catch (emailErr) {
+      console.error("Failed to send receipt email:", emailErr);
+      // do not block redirect if email fails
+    }
 
     res.redirect("/donations/thank-you");
   } catch (err) {
@@ -896,6 +990,7 @@ app.post("/donations/add", async (req, res, next) => {
     next(err);
   }
 });
+
 
 app.get("/donations/thank-you", (req, res) => { 
     res.render("donation/donationThankYou");
@@ -2016,7 +2111,7 @@ app.get('/editParticipant/:id', requireManager, async (req, res) => {
 
         // Fetch Milestones
         const milestones = await knex('milestone')
-            .select('milestonetitle', knex.raw('TO_CHAR(milestonedate, \'YYYY-MM-DD\') as milestonedate'))
+            .select('milestonetitle', knex.raw('TO_CHAR(milestonedate, \'YYYY-MM-DD\') as milestonedate, milestoneid'))
             .where({ participantid: participantId })
             .orderBy('milestonedate', 'desc');
 
