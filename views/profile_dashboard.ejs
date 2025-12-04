@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>My Profile | Ella Rises</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:wght@400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+    /* Replicating the provided CSS styles for consistency */
+    :root {
+        --er-blue:     #99B7C6;
+        --er-lavender: #978EC4;
+        --er-cream:    #F9F5EA;
+        --er-blush:    #FFD8D1;
+        --er-pink:     #F9AFB1;
+        --er-sage:     #9AB59D;
+        --er-charcoal: #3A3F3B;
+        --er-peach:    #F4B092;
+        --er-rose:     #CE325B;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 0;
+        font-family: "Montserrat", system-ui, sans-serif;
+        background: var(--er-cream);
+        color: var(--er-charcoal);
+    }
+
+    .main-content {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+        width: 100%;
+    }
+
+    .data-card {
+        max-width: 700px; /* Wider card for more fields */
+        width: 100%;
+        padding: 2.5rem 2.25rem;
+        border-radius: 1.5rem;
+        background-color: #ffffff;
+        box-shadow: 0 14px 40px rgba(0, 0, 0, 0.08);
+        border-top: 6px solid var(--er-blue);
+    }
+
+    .milestone-title {
+        font-family: "DM Serif Display", serif;
+        font-size: 2rem;
+        text-align: center;
+        letter-spacing: 0.06em;
+        margin: 0 0 0.25rem;
+    }
+
+    .milestone-subtitle {
+        font-size: 0.95rem;
+        text-align: center;
+        color: rgba(58, 63, 59, 0.7);
+        margin-bottom: 2rem;
+    }
+    
+    .mb-3 {
+        margin-bottom: 2rem;
+    }
+
+    .field-label {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 0.75rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .text-input {
+        width: 100%;
+        padding: 1rem;
+        border: 2px solid var(--er-blush);
+        border-radius: 0.75rem;
+        font-family: inherit;
+        font-size: 0.9rem;
+        outline: none;
+        transition: border-color 0.2s ease;
+        background: #fff;
+    }
+
+    .text-input:focus {
+        border-color: var(--er-blue);
+    }
+
+    .btn-action {
+        padding: 0.85rem 1rem;
+        border-radius: 999px;
+        border: none;
+        font-weight: 600;
+        font-size: 0.95rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+        box-shadow: 0 10px 24px rgba(153, 183, 198, 0.25); /* Shadow color based on blue */
+        transition: all 0.18s ease;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+
+    .btn-lookup {
+        background: var(--er-blue);
+        color: #fff;
+    }
+    
+    .btn-lookup:hover {
+        background: var(--er-lavender);
+        transform: translateY(-1px);
+    }
+
+    .message-alert {
+        text-align: center;
+        color: var(--er-rose);
+        background: rgba(206, 50, 91, 0.07);
+        padding: 0.8rem 1.2rem;
+        border-radius: 0.75rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid var(--er-rose);
+    }
+    
+    .text-center-wrapper {
+         text-align: center;
+         margin-top: 2rem;
+    }
+
+    .section-title {
+        font-family: "DM Serif Display", serif;
+        font-size: 1.5rem;
+        color: var(--er-blue);
+        margin: 2rem 0 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--er-blush);
+    }
+
+    .address-group {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr;
+        gap: 1rem;
+    }
+
+    .date-input {
+        width: 100%;
+        padding: 1rem;
+        border: 2px solid var(--er-blush);
+        border-radius: 0.75rem;
+        font-family: inherit;
+        font-size: 0.9rem;
+        outline: none;
+        background: var(--er-cream);
+        opacity: 0.8;
+    }
+
+    @media (max-width: 768px) {
+        .address-group {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+
+</head>
+<body>
+<%- include('common/navbar.ejs') %>
+
+<div class="main-content">
+    <div class="data-card">
+        
+        <h1 class="milestone-title">My Profile</h1>
+        <p class="milestone-subtitle">
+            View your account and participant information
+        </p>
+
+        <!-- Testing: Change Participant ID -->
+        <div style="background: var(--er-blush); padding: 1.5rem; border-radius: 0.75rem; margin-bottom: 2rem;">
+            <form action="/profile_dashboard" method="get" style="display: flex; gap: 1rem; align-items: flex-end;">
+                <div style="flex: 1;">
+                    <label for="participantId" class="field-label" style="margin-bottom: 0.5rem;">View Different Participant (Testing)</label>
+                    <input type="number"
+                           class="text-input"
+                           id="participantId"
+                           name="participantId"
+                           value="<%= requestedParticipantId %>"
+                           placeholder="Enter Participant ID"
+                           style="background: white;"
+                           required>
+                </div>
+                <div>
+                    <button type="submit" class="btn-action btn-lookup" style="margin: 0;">Load Profile</button>
+                </div>
+            </form>
+        </div>
+
+        <% if (typeof error_message !== 'undefined' && error_message) { %>
+            <div class="message-alert">
+                <%= error_message %>
+            </div>
+        <% } %>
+
+        <!-- Account Information Section -->
+        <h2 class="section-title">Account Information</h2>
+
+        <div class="mb-3">
+            <label class="field-label">Username</label>
+            <div class="text-input" style="background-color: var(--er-cream); cursor: default;">
+                <%= currentUser.username %>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="field-label">Role</label>
+            <div class="text-input" style="background-color: var(--er-cream); cursor: default;">
+                <%= currentUser.role %>
+            </div>
+        </div>
+
+        <!-- Participant Information Section -->
+        <% if (participant) { %>
+        <h2 class="section-title">Participant Information</h2>
+
+        <div class="mb-3">
+            <label class="field-label">Participant ID</label>
+            <div class="text-input" style="background-color: var(--er-cream); cursor: default;">
+                <%= participant.participantid %>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="field-label">First Name</label>
+            <div class="text-input" style="background-color: var(--er-cream); cursor: default;">
+                <%= participant.participantfirstname || 'N/A' %>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="field-label">Last Name</label>
+            <div class="text-input" style="background-color: var(--er-cream); cursor: default;">
+                <%= participant.participantlastname || 'N/A' %>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="field-label">Email</label>
+            <div class="text-input" style="background-color: var(--er-cream); cursor: default;">
+                <%= participant.participantemail || 'N/A' %>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="field-label">Phone Number</label>
+            <div class="text-input" style="background-color: var(--er-cream); cursor: default;">
+                <%= participant.participantphone || 'N/A' %>
+            </div>
+        </div>
+
+        <div class="address-group mb-3">
+            <div>
+                <label class="field-label">City</label>
+                <div class="text-input" style="background-color: var(--er-cream); cursor: default;">
+                    <%= participant.participantcity || 'N/A' %>
+                </div>
+            </div>
+
+            <div>
+                <label class="field-label">State</label>
+                <div class="text-input" style="background-color: var(--er-cream); cursor: default;">
+                    <%= participant.participantstate || 'N/A' %>
+                </div>
+            </div>
+
+            <div>
+                <label class="field-label">Zip Code</label>
+                <div class="text-input" style="background-color: var(--er-cream); cursor: default;">
+                    <%= participant.participantzip || 'N/A' %>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="field-label">Date of Birth</label>
+            <div class="date-input">
+                <%= participant.participantdob ? new Date(participant.participantdob).toISOString().split('T')[0] : 'N/A' %>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="field-label">School or Employer</label>
+            <div class="text-input" style="background-color: var(--er-cream); cursor: default;">
+                <%= participant.participantschooloremployer || 'N/A' %>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="field-label">Field of Interest</label>
+            <div class="text-input" style="background-color: var(--er-cream); cursor: default;">
+                <%= participant.participantfieldofinterest || 'N/A' %>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="field-label">Total Donations</label>
+            <div class="text-input" style="background-color: var(--er-cream); cursor: default;">
+                $<%= participant.totaldonations || '0.00' %>
+            </div>
+        </div>
+
+        <% } else { %>
+            <div class="message-alert" style="color: var(--er-charcoal); background: var(--er-blush); border: 1px solid var(--er-pink); margin-top: 2rem;">
+                No participant information found for this account.
+            </div>
+        <% } %>
+        
+    </div>
+</div>
+<%- include('common/footer.ejs') %>
+
+
+</body>
+</html>

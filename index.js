@@ -170,6 +170,9 @@ app.use((req, res, next) => {
         req.path === '/login' ||
         req.path === '/logout' ||
         req.path === '/donations' ||
+        req.path === '/donations/new' ||
+        req.path === '/donations/add' ||
+        req.path === '/donations/thank-you' ||
         req.path === '/register' ||
         req.path === '/teapot' ||
         req.path.startsWith('/eventspublic') ||
@@ -190,6 +193,52 @@ app.use((req, res, next) => {
     return res.render("login", { error_message: "Please log in to access this page" });
 });
 
+app.get('/profile_dashboard', async (req, res) => {
+    try {
+        // Check if the user is logged in using the global variable set by setViewGlobals
+        if (!res.locals.isLoggedIn) {
+            // Instead of flashing an error, just redirect or render the 403 page
+            // We'll redirect to login, as that's the standard action.
+            return res.redirect('/login'); 
+            // OR if you prefer to show an error page:
+            // return res.status(403).render("403"); 
+        }
+
+        // 1. Get the current user's ID from the session
+        const currentUserId = req.session.user.id;
+
+        // 2. Fetch the user's detailed data from the database
+        const user = await knex("users")
+            .where("participantid", currentUserId)
+            .first();
+
+        if (!user) {
+            // If user is not found, redirect to login without flashing a message
+            return res.redirect('/login');
+        }
+
+        // 3. Fetch the participant data
+        // Check if a specific participantID was requested via query parameter (for testing)
+        const requestedParticipantId = req.query.participantId || user.participantid;
+
+        const participant = await knex("participant")
+            .where("participantid", requestedParticipantId)
+            .first();
+
+        // 4. Render the profile_dashboard.ejs file and pass both user and participant data
+        res.render('profile_dashboard', {
+            currentUser: user, // Pass the user account data
+            participant: participant || null, // Pass the participant profile data
+            requestedParticipantId: requestedParticipantId, // Pass the requested ID for the form
+            pageTitle: 'My Profile Dashboard'
+        });
+
+    } catch (e) {
+        console.error('Error fetching profile dashboard:', e);
+        // On error, redirect to the home page without flashing a message
+        res.redirect('/');
+    }
+});
 
 // Main page route - notice it checks if they have logged in
 app.get("/login", (req, res) => {
