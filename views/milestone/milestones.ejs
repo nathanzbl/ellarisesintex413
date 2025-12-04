@@ -336,9 +336,11 @@
             <h1 class="milestone-title">Participant Milestones</h1>
             <p class="milestone-subtitle">A view of all milestones recorded in the system.</p>
 
+            <% if (typeof userRole !== 'undefined' && userRole === 'manager') { %>
             <div class="add-button-wrapper">
                 <a href="/addmilestone" class="btn-action btn-add-milestone">Add Milestone</a>
             </div>
+            <% } %>
 
             <div class="controls-bar">
                 <form method="GET" action="/milestones" class="search-form">
@@ -416,7 +418,9 @@
                                 <th>Participant Email</th>
                                 <th>Milestone Title</th>
                                 <th>Date Achieved</th>
+                                <% if (typeof userRole !== 'undefined' && userRole === 'manager') { %>
                                 <th>Actions</th>
+                                <% } %>
 
                             </tr>
                         </thead>
@@ -437,6 +441,7 @@
                                         %>
                                         <%= dateValue.toLocaleDateString('en-US', dateOptions) %>
                                     </td>
+                                    <% if (typeof userRole !== 'undefined' && userRole === 'manager') { %>
                                     <td>
                                         <form action="/editMilestone/<%= milestone[i].milestoneid %>" method="get">
                                             <input type="submit" name="Edit" value="Edit" class="btn-small btn-edit-milestone" />
@@ -449,6 +454,7 @@
                                             <input type="submit" name="Delete" value="Delete" class="btn-small btn-delete-milestone" />
                                         </form>
                                     </td>
+                                    <% } %>
 
                                         
 

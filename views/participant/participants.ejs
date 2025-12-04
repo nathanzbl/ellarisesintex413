@@ -347,9 +347,11 @@
             (Showing up to <%= pagination ? pagination.limit : 100 %> records per page)
         </p>
 
+        <% if (typeof userRole !== 'undefined' && userRole === 'manager') { %>
         <div class="add-button-wrapper">
             <a href="/addParticipant" class="btn-action btn-add-milestone">Add Participant</a>
         </div>
+        <% } %>
 
         <div class="controls-bar">
             <form method="GET" action="/participants" class="search-form">
@@ -450,7 +452,9 @@
                           <th>Participant Name</th>
                           <th>Email</th>
                           <th>Phone</th>
+                          <% if (typeof userRole !== 'undefined' && userRole === 'manager') { %>
                           <th>Actions</th>
+                          <% } %>
                       </tr>
                   </thead>
                   <tbody>
@@ -463,6 +467,7 @@
                               </td>
                               <td><%= participants[i].participantemail %></td>
                               <td><%= participants[i].participantphone || 'N/A' %></td>
+                              <% if (typeof userRole !== 'undefined' && userRole === 'manager') { %>
                               <td>
                                   <a href="/editParticipant/<%= participants[i].participantid %>" class="btn-small btn-view-edit">
                                       View/Edit
@@ -480,6 +485,7 @@
                                       />
                                   </form>
                               </td>
+                              <% } %>
 
                                   
 

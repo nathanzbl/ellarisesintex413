@@ -219,10 +219,26 @@ nav {
                 <a href="/eventspublic" class="nav-link" data-i18n-key="nav_events">Events</a>
             <% } %>
 
+            <%
+            // Get the user's role
+            const userRole = (typeof user !== 'undefined' && user) ? user.role : null;
+            %>
+
             <% if (typeof isLoggedIn !== 'undefined' && isLoggedIn) { %>
-                <a href="/milestones" data-i18n-key="nav_milestones">Milestones</a>
-                <a href="/participants" data-i18n-key="nav_participants">Participants</a>
+                <% // Show Milestones and Participants only for viewers and managers %>
+                <% if (userRole === 'viewer' || userRole === 'manager') { %>
+                    <a href="/milestones" data-i18n-key="nav_milestones">Milestones</a>
+                    <a href="/participants" data-i18n-key="nav_participants">Participants</a>
+                <% } %>
+
+                <% // Show Surveys for all logged-in users %>
                 <a href="/surveys" data-i18n-key="nav_surveys">Surveys</a>
+            <% } else { %>
+                <% // Show Surveys for non-logged-in users (will redirect to login) %>
+                <a href="/surveys" data-i18n-key="nav_surveys">Surveys</a>
+            <% } %>
+
+            <% if (typeof isLoggedIn !== 'undefined' && isLoggedIn) { %>
                 
                 <!-- Profile Dropdown Menu replacing Logout link -->
                 <div class="profile-container">
