@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Add User | Ella Rises</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:wght@400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --er-blue:     #99B7C6;
+      --er-lavender: #978EC4;
+      --er-cream:    #F9F5EA;
+      --er-blush:    #FFD8D1;
+      --er-pink:     #F9AFB1;
+      --er-sage:     #9AB59D;
+      --er-charcoal: #3A3F3B;
+      --er-peach:    #F4B39A;
+      --er-rose:     #CE325B;
+      --er-light:    #FFFFFF;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Montserrat", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top left, var(--er-blush), var(--er-cream));
+      color: var(--er-charcoal);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .page-wrapper {
+      max-width: 1100px;
+      margin: 40px auto;
+      padding: 0 16px 48px;
+    }
+
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      gap: 16px;
+    }
+
+    .page-title {
+      font-family: "DM Serif Display", "Times New Roman", serif;
+      font-size: 2rem;
+      letter-spacing: 0.03em;
+      color: var(--er-charcoal);
+      margin: 0;
+    }
+
+    .page-subtitle {
+      font-size: 0.95rem;
+      color: rgba(58, 63, 59, 0.8);
+      margin-top: 4px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.15s ease, color 0.15s ease;
+      white-space: nowrap;
+      gap: 8px;
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+      box-shadow: none;
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--er-charcoal);
+      border: 1px solid rgba(58, 63, 59, 0.2);
+    }
+
+    .btn-outline:hover {
+      background: rgba(255, 255, 255, 0.8);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--er-rose), var(--er-lavender));
+      color: #fff;
+      box-shadow: 0 8px 18px rgba(206, 50, 91, 0.25);
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 10px 24px rgba(151, 142, 196, 0.35);
+    }
+
+    .btn-icon {
+      font-size: 1rem;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.96);
+      border-radius: 24px;
+      box-shadow:
+        0 20px 45px rgba(0, 0, 0, 0.04),
+        0 0 0 1px rgba(153, 183, 198, 0.18);
+      padding: 24px 24px 28px;
+    }
+
+    @media (min-width: 768px) {
+      .card {
+        padding: 28px 32px 36px;
+      }
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin: 0;
+      color: var(--er-charcoal);
+    }
+
+    .card-meta {
+      font-size: 0.85rem;
+      color: rgba(58, 63, 59, 0.7);
+    }
+
+    .message-alert {
+      border-radius: 16px;
+      padding: 10px 14px;
+      font-size: 0.9rem;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .message-error {
+      background: rgba(206, 50, 91, 0.08);
+      color: #7b1631;
+      border: 1px solid rgba(206, 50, 91, 0.3);
+    }
+
+    .message-icon {
+      font-size: 1.1rem;
+      line-height: 1;
+      margin-top: 1px;
+    }
+
+    .message-text {
+      flex: 1;
+    }
+
+    form.add-user-form {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 18px;
+    }
+
+    @media (min-width: 768px) {
+      form.add-user-form {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    .form-section {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px 20px;
+      padding: 16px 18px 18px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, rgba(249, 175, 177, 0.12), rgba(151, 142, 196, 0.08));
+    }
+
+    .form-section-title {
+      grid-column: 1 / -1;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-weight: 600;
+      color: rgba(58, 63, 59, 0.75);
+      margin-bottom: 4px;
+    }
+
+    .form-section-helper {
+      grid-column: 1 / -1;
+      font-size: 0.8rem;
+      color: rgba(58, 63, 59, 0.7);
+      margin-bottom: 4px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: rgba(58, 63, 59, 0.9);
+    }
+
+    .required-indicator {
+      color: var(--er-rose);
+      margin-left: 2px;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="date"],
+    select {
+      border-radius: 999px;
+      border: 1px solid rgba(153, 183, 198, 0.7);
+      padding: 9px 14px;
+      font-size: 0.9rem;
+      font-family: inherit;
+      outline: none;
+      background-color: rgba(255, 255, 255, 0.98);
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    input[type="password"]:focus,
+    input[type="date"]:focus,
+    select:focus {
+      border-color: var(--er-lavender);
+      box-shadow: 0 0 0 1px rgba(151, 142, 196, 0.35);
+      background-color: #fff;
+    }
+
+    input::placeholder {
+      color: rgba(58, 63, 59, 0.45);
+      font-size: 0.86rem;
+    }
+
+    select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg fill='none' stroke='%23666' stroke-width='1.5' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='m6 9 6 6 6-6'%3E%3C/path%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-size: 16px 16px;
+      padding-right: 32px;
+    }
+
+    .field-hint {
+      font-size: 0.78rem;
+      color: rgba(58, 63, 59, 0.7);
+    }
+
+    .form-footer {
+      grid-column: 1 / -1;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding-top: 8px;
+      border-top: 1px dashed rgba(153, 183, 198, 0.45);
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+<%
+  // Safely normalize formData from the server into a local "fd" variable
+  var fd = (typeof formData !== "undefined" && formData) ? formData : {};
+%>
+  <div class="page-wrapper">
+    <header class="page-header">
+      <div>
+        <h1 class="page-title">Add User</h1>
+        <p class="page-subtitle">
+          Create a user and attach it to a participant. Email, first name, and last name are required.
+        </p>
+      </div>
+      <div class="header-actions">
+        <a href="/admin/users" class="btn btn-outline">
+          <span class="btn-icon">&#8592;</span>
+          Back to users
+        </a>
+      </div>
+    </header>
+
+    <main>
+      <section class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">New Ella Rises user</h2>
+            <p class="card-meta">
+              If a participant with this email exists, their record is reused. Otherwise a new participant is created.
+            </p>
+          </div>
+        </div>
+
+        <% if (typeof error_message !== "undefined" && error_message) { %>
+          <div class="message-alert message-error">
+            <div class="message-icon">!</div>
+            <div class="message-text"><%= error_message %></div>
+          </div>
+        <% } %>
+
+        <form class="add-user-form" method="POST" action="/admin/users/add">
+          <!-- Participant info section -->
+          <div class="form-section">
+            <div class="form-section-title">Participant details</div>
+            <div class="form-section-helper">
+              Email, first name, and last name are required. The rest help reporting and follow up.
+            </div>
+
+            <div class="form-group">
+              <label for="participantemail">
+                Email
+                <span class="required-indicator">*</span>
+              </label>
+              <input
+                type="email"
+                id="participantemail"
+                name="participantemail"
+                required
+                placeholder="name@example.com"
+                value="<%= formData.participantemail || '' %>"
+              />
+              <div class="field-hint">Must match the email used in registrations and surveys.</div>
+            </div>
+
+            <div class="form-group">
+              <label for="participantfirstname">
+                First name
+                <span class="required-indicator">*</span>
+              </label>
+              <input
+                type="text"
+                id="participantfirstname"
+                name="participantfirstname"
+                required
+                placeholder="Ella"
+                value="<%= formData.participantfirstname || '' %>"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="participantlastname">
+                Last name
+                <span class="required-indicator">*</span>
+              </label>
+              <input
+                type="text"
+                id="participantlastname"
+                name="participantlastname"
+                required
+                placeholder="Rivera"
+                value="<%= formData.participantlastname || '' %>"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="participantdob">Date of birth</label>
+              <input
+                type="date"
+                id="participantdob"
+                name="participantdob"
+                value="<%= formData.participantdob || '' %>"
+              />
+            </div>
+
+           
+            <div class="form-group">
+              <label for="participantphone">Phone</label>
+              <input
+                type="text"
+                id="participantphone"
+                name="participantphone"
+                placeholder="(555) 555 5555"
+                value="<%= formData.participantphone || '' %>"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="participantcity">City</label>
+              <input
+                type="text"
+                id="participantcity"
+                name="participantcity"
+                placeholder="Provo"
+                value="<%= formData.participantcity || '' %>"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="participantstate">State</label>
+              <input
+                type="text"
+                id="participantstate"
+                name="participantstate"
+                placeholder="UT"
+                value="<%= formData.participantstate || '' %>"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="participantzip">ZIP code</label>
+              <input
+                type="text"
+                id="participantzip"
+                name="participantzip"
+                placeholder="84602"
+                value="<%= formData.participantzip || '' %>"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="participantschooloremployer">School or employer</label>
+              <input
+                type="text"
+                id="participantschooloremployer"
+                name="participantschooloremployer"
+                placeholder="BYU, UVU, local high school"
+                value="<%= formData.participantschooloremployer || '' %>"
+              />
+            </div>
+<div class="form-group">
+  <label for="participantfieldofinterest">Field of interest</label>
+  <select id="participantfieldofinterest" name="participantfieldofinterest">
+    <option value="">Select field of interest</option>
+    <option value="stem"  <%= fd.participantfieldofinterest === "stem"  ? "selected" : "" %>>STEM</option>
+    <option value="arts"  <%= fd.participantfieldofinterest === "arts"  ? "selected" : "" %>>Arts</option>
+    <option value="both"  <%= fd.participantfieldofinterest === "both"  ? "selected" : "" %>>Both</option>
+  </select>
+  <div class="field-hint">
+    Used for reporting on STEAM focus.
+  </div>
+</div>
+          </div>
+
+          <!-- User account section -->
+          <div class="form-section">
+            <div class="form-section-title">User account</div>
+            <div class="form-section-helper">
+              These fields control how the user signs in and what they can access.
+            </div>
+
+            <div class="form-group">
+              <label for="username">Username</label>
+              <input
+                type="text"
+                id="username"
+                name="username"
+                placeholder="er-admin"
+                value="<%= formData.username || '' %>"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="role">Role</label>
+              <select id="role" name="role">
+                <option value="">Select role</option>
+                <option value="admin" <%= formData.role === "admin" ? "selected" : "" %>>Admin</option>
+                <option value="Viewer" <%= formData.role === "Viewer" ? "selected" : "" %>>Viewer</option>
+                <option value="User" <%= formData.role === "User" ? "selected" : "" %>>User</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="password">Password</label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                placeholder="Set a secure password"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="passwordConfirm">Confirm password</label>
+              <input
+                type="password"
+                id="passwordConfirm"
+                name="passwordConfirm"
+                placeholder="Re enter password"
+              />
+            </div>
+          </div>
+
+          <div class="form-footer">
+            <a href="/admin/users" class="btn btn-outline" type="button">Cancel</a>
+            <button type="submit" class="btn btn-primary">
+              <span class="btn-icon">+</span>
+              Create user
+            </button>
+          </div>
+        </form>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

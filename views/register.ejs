@@ -1,169 +1,142 @@
-<!-- TEAM NOTE: Owner Registration Page matching login.ejs styling -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ella Rises - Owner Registration</title>
+    <title>Ella Rises - User Registration</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:wght@400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
     <style>
+        /* --- STYLES COPIED FROM LOGIN TEMPLATE --- */
         :root {
-            --er-blue: #99B7C6;
+            --er-blue:     #99B7C6;
             --er-lavender: #978EC4;
-            --er-cream: #F9F5EA;
-            --er-blush: #FFD8D1;
-            --er-pink: #F9AFB1;
-            --er-sage: #9AB59D;
+            --er-cream:    #F9F5EA;
+            --er-blush:    #FFD8D1;
+            --er-pink:     #F9AFB1;
+            --er-sage:     #9AB59D;
             --er-charcoal: #3A3F3B;
-            --er-peach: #F4B092;
-            --er-rose: #CE325B;
+            --er-peach:    #F4B092;
+            --er-rose:     #CE325B;
         }
 
         * {
-            margin: 0;
-            padding: 0;
             box-sizing: border-box;
         }
 
-        html, body {
-            font-family: 'Montserrat', sans-serif;
-            background-color: var(--er-cream);
-            color: var(--er-charcoal);
-            min-height: 100vh;
-        }
-
         body {
+            margin: 0;
+            min-height: 100vh;
             display: flex;
-            justify-content: center;
             align-items: center;
-            padding: 1rem;
-            padding-top: 4rem;
-        }
-
-        h1, h2, h3, .heading {
-            font-family: 'DM Serif Display', serif;
+            justify-content: center;
+            font-family: "Montserrat", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: var(--er-cream);
             color: var(--er-charcoal);
-            font-weight: 400;
         }
 
-        a {
-            color: var(--er-rose);
-            text-decoration: none;
-            transition: all 0.2s ease;
-        }
-
-        a:hover {
-            text-decoration: underline;
-        }
-
-        .card {
-            background-color: white;
-            border-radius: 1rem;
-            box-shadow: 0 4px 20px rgba(58, 63, 59, 0.08);
-            border: 1px solid var(--er-blush);
+        .login-card { /* Using this for the registration container */
+            max-width: 420px;
             width: 100%;
-            max-width: 28rem;
-            padding: 2.5rem;
+            padding: 2.5rem 2.25rem;
+            border-radius: 1.5rem;
+            background-color: #ffffff;
+            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.08);
+            border-top: 6px solid var(--er-pink);
         }
 
-        .header {
+        .logo {
+            display: block;
+            width: 120px;
+            height: auto;
+            margin: 0 auto 1rem;
+        }
+
+        .login-title {
+            font-family: "DM Serif Display", serif;
+            font-size: 2rem;
             text-align: center;
+            letter-spacing: 0.06em;
+            margin: 0;
+            margin-bottom: 0.25rem;
+        }
+
+        .login-subtitle {
+            font-size: 0.95rem;
+            text-align: center;
+            color: rgba(58, 63, 59, 0.7);
             margin-bottom: 2rem;
         }
 
-        .header-logo {
-            width: 80px;
-            height: auto;
-            margin: 0 auto 1rem;
-            display: block;
-        }
-
-        .header h2 {
-            margin-top: 1rem;
-            font-size: 1.875rem;
-        }
-
-        .header p {
-            margin-top: 0.5rem;
-            font-size: 0.875rem;
-            color: var(--er-charcoal);
-            opacity: 0.7;
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
+        .mb-3 {
+            margin-bottom: 1.25rem;
         }
 
         label {
             display: block;
-            font-family: 'Montserrat', sans-serif;
-            color: var(--er-charcoal);
-            font-size: 0.875rem;
+            font-size: 0.8rem;
             font-weight: 500;
-            margin-bottom: 0.25rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 0.35rem;
+            color: rgba(58, 63, 59, 0.8);
         }
 
-        input {
-            font-family: 'Montserrat', sans-serif;
-            border: 1px solid var(--er-sage);
-            border-radius: 0.5rem;
-            background-color: white;
-            color: var(--er-charcoal);
+        .form-control {
             width: 100%;
-            padding: 0.5rem 0.75rem;
-            font-size: 0.875rem;
+            padding: 0.75rem 0.85rem;
+            border-radius: 0.75rem;
+            border: 1px solid rgba(58, 63, 59, 0.18);
+            background-color: #ffffff;
+            font-size: 0.95rem;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
         }
 
-        input:focus {
+        .form-control:focus {
             outline: none;
-            border-color: var(--er-rose);
-            box-shadow: 0 0 0 3px rgba(206, 50, 91, 0.1);
+            border-color: var(--er-sage);
+            box-shadow: 0 0 0 3px rgba(154, 181, 157, 0.3);
+            background-color: #ffffff;
         }
 
-        input::placeholder {
-            color: var(--er-blue);
-        }
-
-        .hint-text {
-            margin-top: 0.25rem;
-            font-size: 0.75rem;
-            color: var(--er-charcoal);
-            opacity: 0.7;
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border-radius: 999px;
+            border: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background-color 0.18s ease, box-shadow 0.18s ease, transform 0.05s ease;
         }
 
         .btn-primary {
             background-color: var(--er-pink);
-            color: white;
-            border: none;
-            width: 100%;
-            padding: 0.5rem 1rem;
-            border-radius: 0.375rem;
-            font-size: 0.875rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
+            color: #ffffff;
+            box-shadow: 0 10px 24px rgba(206, 50, 91, 0.25);
         }
 
         .btn-primary:hover {
             background-color: var(--er-rose);
+            box-shadow: 0 12px 30px rgba(206, 50, 91, 0.32);
+            transform: translateY(-1px);
         }
 
-        .btn-primary:focus {
-            outline: none;
-            box-shadow: 0 0 0 2px var(--er-cream), 0 0 0 4px var(--er-rose);
+        .btn-primary:active {
+            transform: translateY(0);
+            box-shadow: 0 6px 18px rgba(206, 50, 91, 0.25);
         }
 
-        .login-link {
-            margin-top: 1.5rem;
-            text-align: center;
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
+        /* --- Custom styles for dynamic messages --- */
 
-        .message-box {
+        .message-box-custom { /* Replaces .message-box */
             position: fixed;
             top: 50%;
             left: 50%;
@@ -176,117 +149,235 @@
             min-width: 300px;
             text-align: center;
         }
-
-        .message-box.hidden {
+        .message-box-custom.hidden {
             display: none;
         }
-
         .success-box { 
             background-color: var(--er-cream); 
             border: 2px solid var(--er-sage); 
             color: var(--er-charcoal); 
         }
-
         .error-box { 
             background-color: var(--er-blush); 
             border: 2px solid var(--er-rose); 
             color: var(--er-rose); 
         }
-
-        .message-text {
-            font-size: 0.875rem;
+        .message-text-custom {
+            font-size: 0.9rem;
             font-weight: 500;
+            margin-bottom: 0.75rem;
         }
-
-        .message-close {
-            margin-top: 0.5rem;
-            font-size: 0.75rem;
+        .message-close-custom {
+            font-size: 0.8rem;
             font-weight: 600;
-            padding: 0.25rem 0.75rem;
-            border-radius: 0.25rem;
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
             background-color: var(--er-pink);
             color: white;
             border: none;
             cursor: pointer;
+            transition: background-color 0.2s ease;
         }
-
-        .message-close:hover {
+        .message-close-custom:hover {
             background-color: var(--er-rose);
         }
 
-        @media (min-width: 768px) {
-            .card {
-                padding: 2.5rem;
-            }
+        .highlight-message { /* Used for success/redirect messages within the card */
+            padding: 0.85rem 1rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-align: center;
+        }
+        .highlight-message.found {
+            background-color: var(--er-blush);
+            border: 1px solid var(--er-pink);
+            color: var(--er-charcoal);
+        }
+        .highlight-message.not-found {
+            background-color: var(--er-sage);
+            color: white;
+            font-weight: 600;
+        }
+
+        .helper-text {
+            margin-top: 1.25rem;
+            font-size: 0.8rem;
+            text-align: center;
+            color: rgba(58, 63, 59, 0.7);
+        }
+        .helper-text a {
+            color: var(--er-rose);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .helper-text a:hover {
+            text-decoration: underline;
+        }
+
+        /* Ensuring forms are hidden initially and only one shown on load */
+        .form-section {
+            display: none;
+        }
+        .form-section.active {
+            display: block;
         }
     </style>
 </head>
 <body>
 
-    <!-- Owner Registration Card -->
-    <div class="card">
+    <!-- Registration Card -->
+    <div class="login-card">
 
         <!-- Header -->
-        <div class="header">
-            <img src="/images/ellariseslogo.png.avif" alt="Ella Rises Logo" class="header-logo">
-            <h2 class="heading">Owner Registration</h2>
-            <p>Create your Ella Rises owner account</p>
-        </div>
+        <header class="header">
+            <img src="/images/EllaRisesLogo.png.avif" alt="Ella Rises Logo" class="logo">
+            <h1 class="login-title">Register Account</h1>
+            <p class="login-subtitle">Link your participant profile or start a new one.</p>
+        </header>
 
-        <!-- Registration Form -->
-        <form id="ownerRegForm" onsubmit="handleRegistration(event)">
-            
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input id="username" name="username" type="text" required placeholder="Choose a username">
+        <!-- 1. Email Check Form (Active on load) -->
+        <form id="emailCheckForm" onsubmit="handleEmailCheck(event)" class="form-section active">
+            <div class="mb-3">
+                <label for="email">Participant Email Address</label>
+                <input id="email" name="email" type="email" class="form-control" required placeholder="Enter your email address">
             </div>
-
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input id="password" name="password" type="password" required minlength="6" placeholder="At least 6 characters">
-                <p class="hint-text">Must be at least 6 characters long</p>
-            </div>
-
-            <div class="form-group">
-                <label for="confirmPassword">Confirm Password</label>
-                <input id="confirmPassword" name="confirmPassword" type="password" required minlength="6" placeholder="Re-enter your password">
-            </div>
-
-            <div class="form-group">
-                <button type="submit" class="btn-primary">Register as Owner</button>
-            </div>
+            <button type="submit" class="btn btn-primary">Continue</button>
         </form>
 
-        <!-- Back to Login Link -->
-        <div class="login-link">
-            <a href="/login">Already have an account? Sign in</a>
+        <!-- 2. Participant Found Form (Hidden by default) -->
+        <form id="userCreationForm" onsubmit="handleUserCreation(event)" class="form-section">
+            <input type="hidden" id="participantId" name="participantId">
+            <input type="hidden" id="email_hidden" name="email">
+
+            <div class="highlight-message found">
+                Welcome, <span id="participantName"></span>! Please create your user credentials.
+            </div>
+
+            <div class="mb-3">
+                <label for="username">Username</label>
+                <input id="username" name="username" type="text" class="form-control" required placeholder="Choose a username">
+            </div>
+
+            <div class="mb-3">
+                <label for="password">Password</label>
+                <input id="password" name="password" type="password" class="form-control" required minlength="6" placeholder="At least 6 characters">
+            </div>
+
+            <div class="mb-3">
+                <label for="confirmPassword">Confirm Password</label>
+                <input id="confirmPassword" name="confirmPassword" type="password" class="form-control" required minlength="6" placeholder="Re-enter your password">
+            </div>
+
+            <button type="submit" class="btn btn-primary">Register User Account</button>
+        </form>
+
+        <!-- 3. Participant NOT Found Message (Hidden by default) -->
+        <div id="newParticipantRedirect" class="form-section">
+            <div class="highlight-message not-found">
+                Welcome to Ella Rises! We couldn't find your email.
+            </div>
+            <a href="/create-participant" class="btn btn-primary" style="display: flex;">
+                Create New Participant Profile
+            </a>
+            <p class="helper-text">
+                This step ensures your participant ID is created first.
+            </p>
         </div>
+
+
+        <!-- Back to Login Link -->
+        <p class="helper-text">
+            <a href="/login">Already have an account? Sign in</a>
+        </p>
 
     </div>
 
     <!-- Message Box -->
-    <div id="messageBox" class="message-box hidden" role="alert">
-        <p id="messageText" class="message-text"></p>
-        <button onclick="hideMessage()" class="message-close">Close</button>
+    <div id="messageBox" class="message-box-custom hidden" role="alert">
+        <p id="messageText" class="message-text-custom"></p>
+        <button onclick="hideMessage()" class="message-close-custom">Close</button>
     </div>
 
     <script>
+        // Global utility functions for messages
         function showMessage(message, isError = false) {
             const box = document.getElementById('messageBox');
             const text = document.getElementById('messageText');
+            
             text.textContent = message;
             
-            box.className = 'message-box ' + (isError ? 'error-box' : 'success-box');
+            box.className = 'message-box-custom ' + (isError ? 'error-box' : 'success-box');
+            box.classList.remove('hidden');
         }
 
         function hideMessage() {
             document.getElementById('messageBox').classList.add('hidden');
         }
 
-        async function handleRegistration(event) {
-            event.preventDefault();
+        // Utility to show a specific form section
+        function showFormSection(id) {
+            document.querySelectorAll('.form-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(id).classList.add('active');
+        }
 
-            const form = document.getElementById('ownerRegForm');
+        // email check
+        async function handleEmailCheck(event) {
+            event.preventDefault();
+            hideMessage();
+
+            const emailInput = document.getElementById('email');
+            const email = emailInput.value;
+            
+            // NOTE: Add a visual loading state here if desired
+
+            try {
+                const response = await fetch('/check-email', {
+                    method: 'POST',
+                    body: new URLSearchParams({ email: email }),
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    if (result.found) {
+                        // Participant found, show user creation form
+                        document.getElementById('participantName').textContent = 
+                            `${result.participantfirstname} ${result.participantlastname}`;
+                        document.getElementById('participantId').value = result.participantid;
+                        document.getElementById('email_hidden').value = email;
+
+                        showFormSection('userCreationForm');
+                    } else {
+                        // Participant not found, show redirect
+                        showFormSection('newParticipantRedirect');
+                    }
+                } else {
+                    // Server error during check (e.g., username taken, server down)
+                    if (response.status === 409) {
+                         showMessage(result.message, true);
+                    } else {
+                        showMessage(`Error checking email: ${result.message || 'Server error'}`, true);
+                    }
+                }
+            } catch (error) {
+                console.error('Email check error:', error);
+                showMessage('An unexpected error occurred. Please try again.', true);
+            }
+        }
+
+        // --- STAGE 2: USER CREATION ---
+        async function handleUserCreation(event) {
+            event.preventDefault();
+            hideMessage();
+
+            const form = document.getElementById('userCreationForm');
             const formData = new FormData(form);
 
             // Client-side password match check
@@ -298,10 +389,18 @@
                 return;
             }
 
+            // Client-side ID check
+            const participantId = formData.get('participantId');
+            if (!participantId) {
+                showMessage('Participant ID missing. Please restart the registration process.', true);
+                return;
+            }
+
             try {
-                const response = await fetch('/register', {
+                // Post to the final registration endpoint
+                const response = await fetch('/register-user', {
                     method: 'POST',
-                    body: new URLSearchParams(formData),
+                    body: new URLSearchParams(formData), 
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded'
                     }
@@ -312,16 +411,22 @@
                 if (response.ok) {
                     showMessage('Registration successful! Redirecting to login...', false);
                     setTimeout(() => {
-                        window.location.href = result.redirectTo;
+                        window.location.href = result.redirectTo || '/login';
                     }, 1500);
                 } else {
                     showMessage(`Registration failed: ${result.message}`, true);
                 }
             } catch (error) {
-                console.error('Registration error:', error);
+                console.error('User creation error:', error);
                 showMessage('An unexpected error occurred during registration.', true);
             }
         }
+        
+        // Ensure only the active form is displayed on load using CSS
+        document.addEventListener('DOMContentLoaded', () => {
+            // No need to call showFormSection here, the CSS handles the initial active state
+            // and showFormSection handles subsequent state changes.
+        });
     </script>
 
 </body>

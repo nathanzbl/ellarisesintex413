@@ -46,7 +46,7 @@
         }
 
         .data-card {
-            max-width: 1200px; /* Wider for table content */
+            max-width: 1200px;
             width: 100%;
             padding: 2.5rem 2.25rem;
             border-radius: 1.5rem;
@@ -55,7 +55,7 @@
             border-top: 6px solid var(--er-pink);
         }
 
-        .user-title { /* Renamed from .milestone-title */
+        .user-title {
             font-family: "DM Serif Display", serif;
             font-size: 2rem;
             text-align: center;
@@ -63,18 +63,17 @@
             margin: 0 0 0.25rem;
         }
 
-        .user-subtitle { /* Renamed from .milestone-subtitle */
+        .user-subtitle {
             font-size: 0.95rem;
             text-align: center;
             color: rgba(58, 63, 59, 0.7);
             margin-bottom: 2rem;
         }
         
-        /* --- NEW CONTROL BAR STYLING --- */
         .controls-bar {
             display: flex;
             flex-wrap: wrap;
-            align-items: flex-end; /* Aligns items to the bottom */
+            align-items: flex-end;
             justify-content: space-between;
             margin-bottom: 1.5rem;
             padding-bottom: 1.5rem;
@@ -84,24 +83,23 @@
         .search-form {
             display: flex;
             flex-grow: 1;
-            flex-wrap: wrap; /* Allows wrapping on mobile */
+            flex-wrap: wrap;
             gap: 1rem;
             align-items: flex-end;
-            max-width: 100%; /* Fill container from the left */
+            max-width: 100%;
         }
 
         .add-button-wrapper {
             text-align: center;
             flex-shrink: 0; 
-            padding-bottom: 0.7rem; /* Vertically align with Search button */
+            padding-bottom: 0.7rem;
         }
 
-        /* --- SEARCH AND FILTER STYLES --- */
         .search-group {
             display: flex;
             flex-direction: column;
             flex-grow: 1;
-            min-width: 150px; /* Ensures fields are usable on small screens */
+            min-width: 150px;
         }
         
         .search-label {
@@ -160,7 +158,6 @@
             color: white;
         }
 
-        /* Group for Search + Clear (column) and Add (right) */
         .controls-actions-group {
             display: flex;
             gap: 0.75rem;
@@ -195,12 +192,9 @@
         }
 
         .table-responsive-wrapper {
-            /* Enables horizontal scrolling when content overflows */
-            overflow-x: auto; 
-            /* Ensures the wrapper uses all available width */
-            width: 100%; 
-            /* Optional: Makes the scrollbar look better on WebKit browsers (Chrome, Safari) */
-            -webkit-overflow-scrolling: touch; 
+            overflow-x: auto;
+            width: 100%;
+            -webkit-overflow-scrolling: touch;
         }
 
         .table-custom tbody tr:nth-child(even) {
@@ -219,16 +213,15 @@
             box-shadow: 0 10px 24px rgba(206, 50, 91, 0.25);
             transition: all 0.18s ease;
             text-decoration: none;
-            display: inline-block; 
-
+            display: inline-block;
         }
 
-        .btn-add-user { /* Renamed from .btn-add-milestone */
+        .btn-add-user {
             background: var(--er-pink);
             color: #fff;
         }
         
-        .btn-add-user:hover { /* Renamed from .btn-add-milestone:hover */
+        .btn-add-user:hover {
             background: var(--er-rose);
             transform: translateY(-1px);
         }
@@ -249,36 +242,25 @@
             text-align: center;
         }
 
-        .btn-edit-user { /* Renamed from .btn-edit-milestone */
+        .btn-edit-user {
             background: var(--er-sage);
             color: #fff;
-            box-shadow: none; /* Removed shadow on small buttons */
+            box-shadow: none;
         }
         
-        .btn-edit-user:hover { /* Renamed from .btn-edit-milestone:hover */
+        .btn-edit-user:hover {
             background: var(--er-blue);
             transform: translateY(-1px);
         }
         
-        .btn-delete-user { /* Renamed from .btn-delete-milestone */
+        .btn-delete-user {
             background: var(--er-rose);
             color: #fff;
-            box-shadow: none; /* Removed shadow on small buttons */
+            box-shadow: none;
         }
         
-        .btn-delete-user:hover { /* Renamed from .btn-delete-milestone:hover */
+        .btn-delete-user:hover {
             background: var(--er-charcoal);
-            transform: translateY(-1px);
-        }
-
-
-        .btn-logout {
-            background: var(--er-charcoal);
-            color: #fff;
-        }
-        
-        .btn-logout:hover {
-            background: rgba(58, 63, 59, 0.8);
             transform: translateY(-1px);
         }
 
@@ -295,11 +277,6 @@
             color: var(--er-charcoal);
             background: var(--er-blush);
             border: 1px solid var(--er-pink);
-        }
-        
-        .text-center-wrapper {
-             text-align: center;
-             margin-top: 2rem;
         }
 
         .pagination-container {
@@ -352,7 +329,6 @@
             pointer-events: none;
         }
         
-        /* New Media Query for responsive search form */
         @media (max-width: 768px) {
             .controls-bar {
                 flex-direction: column;
@@ -384,26 +360,23 @@
 
     <div class="main-content">
         <div class="data-card">
-            
-            
             <h1 class="user-title">System Users</h1>
             <p class="user-subtitle">A view of all user accounts and their roles.</p>
+
             <div class="add-button-wrapper">
                 <a href="/adduser" class="btn-action btn-add-user">Add User</a>
             </div>
 
             <div class="controls-bar">
-                
                 <form method="GET" action="/users" class="search-form">
-                    
                     <div class="search-group" style="flex-basis: 50%;">
-                        <label for="search_name" class="search-label">Username or Name</label>
+                        <label for="search_name" class="search-label">Username</label>
                         <input 
                             type="text" 
                             name="search_name" 
                             id="search_name" 
                             class="search-input" 
-                            placeholder="e.g., JaneDoe or Jane Doe"
+                            placeholder="e.g., janedoe"
                             value="<%= typeof search_name !== 'undefined' ? search_name : '' %>"
                         >
                     </div>
@@ -411,17 +384,11 @@
                     <div class="search-group controls-actions-group" style="flex-basis: 20%; flex-grow: 0;">
                         <div class="search-controls">
                             <button type="submit" class="btn-search">Search</button>
-                            
-                            <% 
-                                // Check the one unique variable: search_name
-                                const isSearching = (typeof search_name !== 'undefined' && search_name);
-                            %>
 
-                            <% if (isSearching) { %>
+                            <% if (typeof isSearching !== 'undefined' && isSearching) { %>
                                 <a href="/users" class="btn-clear">Clear Filters</a>
                             <% } %>
                         </div>
-
                     </div>
                 </form>
             </div>
@@ -429,7 +396,6 @@
             <% if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
                 <div class="pagination-container">
                     <ul class="custom-pagination">
-                        
                         <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
                             <a class="page-link" href="/users?page=<%= currentPage - 1 %><%= isSearching ? '&search_name=' + (search_name || '') : '' %>">Previous</a>
                         </li>
@@ -441,11 +407,9 @@
                             let startPage = Math.max(1, currentPage - sidePages);
                             let endPage = Math.min(totalPages, currentPage + sidePages);
 
-                            // Adjust range if we're near the beginning
                             if (endPage - startPage + 1 < maxPagesToShow) {
                                 startPage = Math.max(1, endPage - maxPagesToShow + 1);
                             }
-                            // Adjust range if we're near the end
                             if (endPage - startPage + 1 < maxPagesToShow) {
                                 endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
                             }
@@ -460,7 +424,7 @@
                             <% } %>
                         <% } %>
 
-                        <% for(let i = startPage; i <= endPage; i++) { %>
+                        <% for (let i = startPage; i <= endPage; i++) { %>
                             <li class="page-item <%= currentPage === i ? 'active' : '' %>">
                                 <a class="page-link" href="/users?page=<%= i %><%= isSearching ? '&search_name=' + (search_name || '') : '' %>"><%= i %></a>
                             </li>
@@ -481,15 +445,16 @@
                     </ul>
                 </div>
             <% } %>
+
             <% if (typeof error_message !== 'undefined' && error_message) { %>
                 <div class="message-alert">
                     <%= error_message %>
                 </div>
             <% } %>
 
-            <% if (users.length === 0) { %>
+            <% if (!users || users.length === 0) { %>
                 <div class="message-alert message-warning">
-                    No users found <%= isSearching ? 'matching your criteria.' : 'in the database.' %>
+                    No users found <%= (typeof isSearching !== 'undefined' && isSearching) ? 'matching your criteria.' : 'in the database.' %>
                 </div>
             <% } else { %>
                 <div class="table-responsive-wrapper">
@@ -504,13 +469,9 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <% 
-                            // Assuming your server passes an array called 'users' 
-                            // with properties: id, username, and role
-                            for (let iCount = 0; iCount < users.length; iCount++) { 
-                            %>
+                            <% for (let iCount = 0; iCount < users.length; iCount++) { %>
                                 <tr>
-                                    <td><%= users[iCount].id %> </td>
+                                    <td><%= users[iCount].id %></td>
                                     <td><%= users[iCount].username %></td>
                                     <td><%= users[iCount].role %></td>
                                     <td>
@@ -532,19 +493,15 @@
                         </tbody>
                     </table>
                 </div>
-                
             <% } %>
-            
         </div>
     </div>
     <%- include('../common/footer.ejs') %>
 </body>
 <script>
-    function confirmDeletion(event) {
-    // Prevent the form from submitting immediately
+function confirmDeletion(event) {
     event.preventDefault(); 
-
-    const form = event.currentTarget; // Get the form element that triggered the submit
+    const form = event.currentTarget;
 
     Swal.fire({
         title: "Are you sure?",
