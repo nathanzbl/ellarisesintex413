@@ -1901,76 +1901,6 @@ app.post("/deleteParticipant/:id", (req, res) => {
     })
 });
 
-
-app.get("/register", (req, res) => {
-    res.render("register");
-});
-
-app.post('/register', async (req, res) => {
-    const { username, password, confirmPassword } = req.body;
-
-    try {
-        // Validation
-        if (!username || !password || !confirmPassword) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'All fields are required.' 
-            });
-        }
-
-        if (password !== confirmPassword) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Passwords do not match.' 
-            });
-        }
-
-        if (password.length < 6) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Password must be at least 6 characters long.' 
-            });
-        }
-
-        // Check if username already exists
-        const existingUser = await knex.raw(
-            'SELECT * FROM users WHERE username = ?',
-            [username]
-        );
-
-        if (existingUser.rows.length > 0) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Username already exists.' 
-            });
-        }
-
-        // Hash the password
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        // Insert new owner into database
-        await knex.raw(
-            'INSERT INTO users (username, password, role) VALUES (?, ?, ?)',
-            [username, hashedPassword, 'manager']
-        );
-
-        console.log(` New manager registered: ${username}`);
-
-        return res.status(200).json({ 
-            success: true, 
-            message: 'Manager registration successful!', 
-            redirectTo: '/login' 
-        });
-
-    } catch (error) {
-        console.error('Manager registration error:', error);
-        return res.status(500).json({ 
-            success: false, 
-            message: 'An error occurred during registration.' 
-        });
-    }
-});
-
 // -----------------------------------------------------
 //  EVENT SYSTEM ROUTES (PUBLIC + MANAGER)
 // -----------------------------------------------------
@@ -2431,10 +2361,8 @@ app.post("/events/delete/:id", requireManager, async (req, res) => {
 });
 
 // Users list + search (Pagination and Filtering)
-app.get('/users', async (req, res) => {
-  // Use the same pageSize for consistent pagination
+app.get("/users", async (req, res) => {
   const pageSize = 100;
-
   let { page, search_name } = req.query;
 
   let currentPage = parseInt(page, 10);
@@ -2443,63 +2371,49 @@ app.get('/users', async (req, res) => {
   }
 
   search_name = search_name ? search_name.trim() : "";
+  const isSearching = !!search_name;
 
   try {
-    // base query for the 'users' table
-    const baseQuery = knex("users"); 
+    // Base query for the 'users' table
+    const baseQuery = knex("users");
 
-    // Reusable filter function
+    // Reusable filter function – search by username
     const applyFilters = (query) => {
       if (search_name) {
         const searchTerm = `%${search_name.toLowerCase()}%`;
-        
-        // filter users by checking username OR combined first/last name
-        query.where(function() {
-          this
-            // Match on username
-            .whereRaw("LOWER(username) LIKE ?", [searchTerm])
-            // OR Match on "First Last"
-            .orWhereRaw(
-              "LOWER(firstname || ' ' || lastname) LIKE ?",
-              [searchTerm]
-            );
+
+        query.where(function () {
+          this.whereRaw("LOWER(username) LIKE ?", [searchTerm]);
         });
       }
-
       return query;
     };
 
-
-    // total count for pagination
+    // Count distinct participantid for pagination
     const countRow = await applyFilters(baseQuery.clone())
-      .countDistinct({ total: "id" })
+      .countDistinct({ total: "participantid" })
       .first();
 
     const totalRows = parseInt(countRow?.total || 0, 10);
     const totalPages = totalRows > 0 ? Math.ceil(totalRows / pageSize) : 1;
 
-    // clamp page to valid range
     const safePage = Math.min(currentPage, totalPages);
     const offset = (safePage - 1) * pageSize;
 
-    // actual data query
+    // Data query
     const users = await applyFilters(baseQuery.clone())
-      .select(
-        "id",
-        "username",
-        "role", 
-      )
-      // Use a unique ID for stable ordering, required for robust pagination
-      .orderBy("id", "asc") 
+      // Alias participantid as id so the view can keep using users[i].id
+      .select("participantid as id", "username", "role")
+      .orderBy("participantid", "asc")
       .limit(pageSize)
       .offset(offset);
 
-    // Render the new EJS view and pass the data 
     res.render("users/users", {
       users,
       currentPage: safePage,
       totalPages,
       search_name,
+      isSearching,
       error_message: ""
     });
   } catch (err) {
@@ -2510,10 +2424,438 @@ app.get('/users', async (req, res) => {
       currentPage: 1,
       totalPages: 0,
       search_name,
+      isSearching,
       error_message: "There was a problem loading user data."
     });
   }
 });
+
+app.get("/editUser/:id", async (req, res) => {
+  const participantId = req.params.id;
+
+  try {
+    const user = await knex("users")
+      .where("participantid", participantId)
+      .first();
+
+    if (!user) {
+      return res.status(404).render("users/edituser", {
+        participantId,
+        formData: {},
+        error_message: "User not found."
+      });
+    }
+
+    const formData = {
+      username: user.username || "",
+      role: user.role || ""
+      // password is not sent to the view
+    };
+
+    res.render("users/edituser", {
+      participantId,
+      formData,
+      error_message: ""
+    });
+  } catch (err) {
+    console.error("Error loading user for edit:", err);
+    res.status(500).render("users/edituser", {
+      participantId,
+      formData: {},
+      error_message: "There was a problem loading this user."
+    });
+  }
+});
+
+app.post("/editUser/:id", async (req, res) => {
+  const participantId = req.params.id;
+
+  const {
+    username,
+    role,
+    password,
+    passwordConfirm
+  } = req.body;
+
+  if (!username) {
+    return res.status(400).render("users/edituser", {
+      participantId,
+      formData: req.body || {},
+      error_message: "Username is required."
+    });
+  }
+
+  if (!role) {
+    return res.status(400).render("users/edituser", {
+      participantId,
+      formData: req.body || {},
+      error_message: "Role is required."
+    });
+  }
+
+  if (password && passwordConfirm && password !== passwordConfirm) {
+    return res.status(400).render("users/edituser", {
+      participantId,
+      formData: req.body || {},
+      error_message: "Password and confirmation do not match."
+    });
+  }
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+
+  try {
+    const user = await knex("users")
+      .where("participantid", participantId)
+      .first();
+
+    if (!user) {
+      return res.status(404).render("users/edituser", {
+        participantId,
+        formData: req.body || {},
+        error_message: "User not found."
+      });
+    }
+
+    const updates = {
+      username,
+      role
+    };
+
+    if (password) {
+      // TODO: hash password if needed
+      updates.password = hashedPassword;
+    }
+
+    await knex("users")
+      .where("participantid", participantId)
+      .update(updates);
+
+    res.redirect("/users?success=1");
+  } catch (err) {
+    console.error("Error updating user:", err);
+    res.status(500).render("users/edituser", {
+      participantId,
+      formData: req.body || {},
+      error_message: "There was a problem saving this user."
+    });
+  }
+});
+
+app.post("/deleteUser/:id", async (req, res) => {
+  const participantId = req.params.id;
+
+  try {
+    // Delete from users table by participantid
+    const deletedCount = await knex("users")
+      .where("participantid", participantId)
+      .del();
+
+    if (deletedCount === 0) {
+      console.warn(`Delete user: no user found with participantid ${participantId}`);
+      return res.redirect("/users?error=User+not+found");
+    }
+
+    res.redirect("/users?success=User+deleted");
+  } catch (err) {
+    console.error("Error deleting user:", err);
+    res.redirect("/users?error=Error+deleting+user");
+  }
+});
+
+
+
+
+app.get("/admin/users/add", async (req, res) => {
+  try {
+    res.render("users/adduser", {
+      error_message: null,
+      formData: {}
+    });
+  } catch (err) {
+    console.error("Error rendering add user form:", err);
+    res.status(500).send("Server error");
+  }
+});
+
+
+
+app.post("/admin/users/add", async (req, res) => {
+  const {
+    // participant fields from the form
+    participantemail,
+    participantfirstname,
+    participantlastname,
+    participantdob,
+    participantphone,
+    participantcity,
+    participantstate,
+    participantzip,
+    participantschooloremployer,
+    participantfieldofinterest,
+    // user fields from the form
+    username,
+    role,
+    password,
+    passwordConfirm
+  } = req.body;
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+  // Basic validation
+  if (!participantemail || !participantfirstname || !participantlastname) {
+    return res.status(400).render("users/adduser", {
+      error_message: "Email, first name, and last name are required.",
+      formData: req.body || {}
+    });
+  }
+
+  if (password && passwordConfirm && password !== passwordConfirm) {
+    return res.status(400).render("users/adduser", {
+      error_message: "Password and confirmation do not match.",
+      formData: req.body || {}
+    });
+  }
+
+  // Normalize field of interest to allowed values
+  let cleanField = participantfieldofinterest || null;
+  const allowedFields = ["stem", "arts", "both"];
+  if (cleanField && !allowedFields.includes(cleanField)) {
+    cleanField = null;
+  }
+
+  // Map user role to participantrole
+  let participantRoleFromUser = null;
+  if (role === "admin") {
+    participantRoleFromUser = "admin";
+  } else if (role === "user" || role === "viewer") {
+    participantRoleFromUser = "participant";
+  }
+
+  try {
+    await knex.transaction(async trx => {
+      // 1. Find existing participant by email
+      let participant = await trx("participant")
+        .where("participantemail", participantemail)
+        .first();
+
+      let participantId;
+
+      if (!participant) {
+        // 2. Create a new participant
+        const [insertedParticipant] = await trx("participant").insert(
+          {
+            participantemail,
+            participantfirstname,
+            participantlastname,
+            participantdob: participantdob || null,
+            participantrole: participantRoleFromUser || null,
+            participantphone: participantphone || null,
+            participantcity: participantcity || null,
+            participantstate: participantstate || null,
+            participantzip: participantzip || null,
+            participantschooloremployer: participantschooloremployer || null,
+            participantfieldofinterest: cleanField || null
+          },
+          ["participantid"]
+        );
+
+        participantId = insertedParticipant.participantid;
+      } else {
+        // 3. Update existing participant if needed
+        participantId = participant.participantid;
+
+        const updates = {};
+
+        // Always sync required fields
+        if (participant.participantfirstname !== participantfirstname) {
+          updates.participantfirstname = participantfirstname;
+        }
+        if (participant.participantlastname !== participantlastname) {
+          updates.participantlastname = participantlastname;
+        }
+
+        // Optional fields only if provided
+        if (participantdob && participant.participantdob !== participantdob) {
+          updates.participantdob = participantdob;
+        }
+        if (participantphone && participant.participantphone !== participantphone) {
+          updates.participantphone = participantphone;
+        }
+        if (participantcity && participant.participantcity !== participantcity) {
+          updates.participantcity = participantcity;
+        }
+        if (participantstate && participant.participantstate !== participantstate) {
+          updates.participantstate = participantstate;
+        }
+        if (participantzip && participant.participantzip !== participantzip) {
+          updates.participantzip = participantzip;
+        }
+        if (
+          participantschooloremployer &&
+          participant.participantschooloremployer !== participantschooloremployer
+        ) {
+          updates.participantschooloremployer = participantschooloremployer;
+        }
+        if (cleanField && participant.participantfieldofinterest !== cleanField) {
+          updates.participantfieldofinterest = cleanField;
+        }
+        if (
+          participantRoleFromUser &&
+          participant.participantrole !== participantRoleFromUser
+        ) {
+          updates.participantrole = participantRoleFromUser;
+        }
+
+        if (Object.keys(updates).length > 0) {
+          await trx("participant")
+            .where("participantid", participantId)
+            .update(updates);
+        }
+      }
+
+      // 4. Make sure a user does not already exist for this participant
+      const existingUser = await trx("users")
+        .where("participantid", participantId)
+        .first();
+
+      if (existingUser) {
+        throw new Error("A user already exists for this participant.");
+      }
+
+      // 5. Insert user row
+      // TODO: hash the password before saving and store that hash instead
+      await trx("users").insert({
+        participantid: participantId,
+        username: username || null,
+        role: role || null,
+        password: hashedPassword || null
+      });
+    });
+
+    // Success
+    res.redirect("/admin/users?success=1");
+  } catch (err) {
+    console.error("Error adding user:", err);
+    res.status(500).render("users/adduser", {
+      error_message: err.message || "Error adding user.",
+      formData: req.body || {}
+    });
+  }
+});
+
+// The role is hardcoded to 'user' as requested.
+app.post('/register-user', async (req, res) => {
+    const { username, password, participantId, email } = req.body;
+    
+    // Basic validation
+    if (!username || !password || !participantId) {
+        return res.status(400).json({ message: "Missing required fields." });
+    }
+
+    // Hash the password (using bcrypt as an example, ensure you have it installed)
+    // const hashedPassword = await bcrypt.hash(password, 10); 
+    // For this example, we'll use a placeholder for the hash:
+    const hashedPassword = `HASHED_${password}`; 
+    
+    try {
+        // Ensure username is unique
+        const existingUsername = await knex('users')
+            .where('username', username)
+            .first();
+
+        if (existingUsername) {
+            return res.status(409).json({ message: "Username already taken." });
+        }
+
+        // Perform the registration transaction
+        await knex('users').insert({
+            // NOTE: The primary key (id) in the users table is set 
+            // to the participantid, fulfilling the linking requirement.
+            id: participantId, 
+            username: username,
+            password_hash: hashedPassword, // Use your actual column name
+            role: 'user', 
+            email: email // Store email for completeness
+        });
+
+        res.status(200).json({ 
+            message: "User account created successfully.", 
+            redirectTo: '/login' 
+        });
+
+    } catch (err) {
+        console.error("Database error during user registration:", err);
+        res.status(500).json({ message: "Failed to register user account." });
+    }
+});
+
+app.get("/register", (req, res) => {
+    res.render("register");
+});
+
+// app.post('/register', async (req, res) => {
+//     const { username, password, confirmPassword } = req.body;
+
+//     try {
+//         // Validation
+//         if (!username || !password || !confirmPassword) {
+//             return res.status(400).json({ 
+//                 success: false, 
+//                 message: 'All fields are required.' 
+//             });
+//         }
+
+//         if (password !== confirmPassword) {
+//             return res.status(400).json({ 
+//                 success: false, 
+//                 message: 'Passwords do not match.' 
+//             });
+//         }
+
+//         if (password.length < 6) {
+//             return res.status(400).json({ 
+//                 success: false, 
+//                 message: 'Password must be at least 6 characters long.' 
+//             });
+//         }
+
+//         // Check if username already exists
+//         const existingUser = await knex.raw(
+//             'SELECT * FROM users WHERE username = ?',
+//             [username]
+//         );
+
+//         if (existingUser.rows.length > 0) {
+//             return res.status(400).json({ 
+//                 success: false, 
+//                 message: 'Username already exists.' 
+//             });
+//         }
+
+//         // Hash the password
+//         const hashedPassword = await bcrypt.hash(password, 10);
+
+//         // Insert new owner into database
+//         await knex.raw(
+//             'INSERT INTO users (username, password, role) VALUES (?, ?, ?)',
+//             [username, hashedPassword, 'manager']
+//         );
+
+//         console.log(` New manager registered: ${username}`);
+
+//         return res.status(200).json({ 
+//             success: true, 
+//             message: 'Manager registration successful!', 
+//             redirectTo: '/login' 
+//         });
+
+//     } catch (error) {
+//         console.error('Manager registration error:', error);
+//         return res.status(500).json({ 
+//             success: false, 
+//             message: 'An error occurred during registration.' 
+//         });
+//     }
+// });
 
 app.get("/teapot", (req, res) => {
     // Renders the teapot.ejs file located in the views folder
