@@ -176,9 +176,13 @@ app.use((req, res, next) => {
         req.path === '/donations/new' ||
         req.path === '/donations/add' ||
         req.path === '/donations/thank-you' ||
-        req.path === '/register' ||
-        req.path === '/teapot' ||
-        req.path.startsWith('/eventspublic') ||
+        req.path === '/addParticipantPublic' ||
+req.path === '/register' ||
+req.path === '/teapot' ||
+req.path === '/check-email' ||
+req.path === '/register-user' ||
+
+req.path.startsWith('/eventspublic') ||
         req.path.startsWith('/events/detail') ||
         req.path.startsWith('/events/rsvp')
     ) {
@@ -2220,6 +2224,73 @@ app.post("/addParticipant", requireManager, async (req, res) => {
         })
     }
 });
+app.get("/addParticipantPublic", (req, res) => {
+    
+    const user = req.session.user ? {
+        ...req.session.user,
+        name: req.session.user.username,
+        isManager: req.session.user.role === 'manager'
+    } : { username: 'Guest', role: 'guest' };
+    
+    // Pass error_message as an empty string to prevent EJS crash
+    res.render("participant/addparticipant", { message: null, user: user, error_message: "" });
+});
+
+// POST /addParticipant - Handle form submission (Create Action) - Access restricted to 'manager' role
+app.post("/addParticipantPublic", async (req, res) => {
+    // Assuming fields like firstName, lastName, email, etc.
+    const { firstName, lastName, email } = req.body;
+
+    const user = req.session.user ? {
+        ...req.session.user,
+        name: req.session.user.username,
+        isManager: req.session.user.role === 'manager'
+    } : { username: 'Guest', role: 'guest' };
+
+    // Basic Validation
+    if (!firstName || !lastName || !email) {
+        // Pass validation error via error_message
+        return res.status(400).render("participant/addparticipant", {
+            user: user,
+            message: null,
+            error_message: "All fields (First Name, Last Name, Email) are required."
+        });
+    }
+
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        return res.status(400).render("participant/addparticipant", {
+            user: user,
+            message: null,
+            error_message: "Please enter a valid email address."
+        });
+    }
+
+    try {
+        // Insert new participant into the 'participant' table
+        await knex("participant").insert({
+            participantfirstname: firstName,
+            participantlastname: lastName,
+            participantemail: email
+            // Add other necessary participant fields here
+        });
+
+        // Success: Redirect to the list view
+        req.session.message = { type: 'success', text: 'Participant successfully added!' };
+        res.redirect("/participants");
+    } catch (err) {
+        console.error("Error in add Participant process:", err.message);
+        
+        // Pass database error via error_message
+        res.status(500).render("participant/addparticipant", { 
+             user: user,
+             message: null,
+             error_message: "Unable to save Participant. Check for duplicate email or database constraints."
+        })
+    }
+});
+
 
 // GET /editParticipant/:id - Display the Participant Profile/Edit Form - Access restricted to 'manager' role
 app.get('/editParticipant/:id', requireManager, async (req, res) => {
@@ -3403,21 +3474,28 @@ app.post("/admin/users/add", async (req, res) => {
 });
 
 // The role is hardcoded to 'user' as requested.
+
 app.post('/register-user', async (req, res) => {
-    const { username, password, participantId, email } = req.body;
+    const { username, password, participantId } = req.body;
     
     // Basic validation
     if (!username || !password || !participantId) {
         return res.status(400).json({ message: "Missing required fields." });
     }
 
-    // Hash the password (using bcrypt as an example, ensure you have it installed)
-    // const hashedPassword = await bcrypt.hash(password, 10); 
-    // For this example, we'll use a placeholder for the hash:
-    const hashedPassword = `HASHED_${password}`; 
-    
     try {
-        // Ensure username is unique
+        // 1) Make sure this participant doesn't already have a user account
+        const existingForParticipant = await knex('users')
+            .where('participantid', participantId)
+            .first();
+
+        if (existingForParticipant) {
+            return res.status(409).json({
+                message: "There is already a user account linked to this participant. Please log in instead."
+            });
+        }
+
+        // 2) Make sure username is unique
         const existingUsername = await knex('users')
             .where('username', username)
             .first();
@@ -3426,25 +3504,76 @@ app.post('/register-user', async (req, res) => {
             return res.status(409).json({ message: "Username already taken." });
         }
 
-        // Perform the registration transaction
+        // 3) Hash password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // 4) Insert user – match your actual schema
         await knex('users').insert({
-            // NOTE: The primary key (id) in the users table is set 
-            // to the participantid, fulfilling the linking requirement.
-            id: participantId, 
+            participantid: participantId,    // PK that links to participant
             username: username,
-            password_hash: hashedPassword, // Use your actual column name
-            role: 'user', 
-            email: email // Store email for completeness
+            password: hashedPassword,        // your column is "password", not "password_hash"
+            role: 'user'
+            // no email here unless you actually added a users.email column
         });
 
-        res.status(200).json({ 
-            message: "User account created successfully.", 
-            redirectTo: '/login' 
+        return res.status(200).json({
+            message: "User account created successfully.",
+            redirectTo: '/login'
         });
 
     } catch (err) {
         console.error("Database error during user registration:", err);
-        res.status(500).json({ message: "Failed to register user account." });
+        return res.status(500).json({ message: "Failed to register user account." });
+    }
+});
+
+
+app.post('/check-email', async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+        return res.status(400).json({ message: "Email is required." });
+    }
+
+    try {
+        const participant = await knex('participant')
+            .select(
+                'participantid',
+                'participantfirstname',
+                'participantlastname',
+                'participantemail'
+            )
+            .where('participantemail', email)
+            .first();
+
+        if (!participant) {
+            // Email not found in participant table
+            return res.json({ found: false });
+        }
+
+        // Check if there is already a user for this participant
+        const existingUser = await knex('users')
+            .where('participantid', participant.participantid)
+            .first();
+
+        if (existingUser) {
+            // 409 so the frontend can show a message
+            return res.status(409).json({
+                message: "An account is already linked to this email. Please log in instead."
+            });
+        }
+
+        // Good to go – send data needed by the frontend
+        return res.json({
+            found: true,
+            participantid: participant.participantid,
+            participantfirstname: participant.participantfirstname,
+            participantlastname: participant.participantlastname
+        });
+
+    } catch (err) {
+        console.error('Error checking email:', err);
+        return res.status(500).json({ message: 'Server error during email check.' });
     }
 });
 
