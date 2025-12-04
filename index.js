@@ -900,7 +900,7 @@ Ella Rises
 }
 
 
-app.post("/donations/add", async (req, res) => {
+app.post("/donations/add", async (req, res, next) => {
   try {
     const {
       first_name,
@@ -910,13 +910,12 @@ app.post("/donations/add", async (req, res) => {
       amount_choice,
       other_amount,
       anonymous,
-      // frequency,
-      // designation,
-      // note,
-      // updates,
     } = req.body;
 
     const ANONYMOUS_PARTICIPANT_ID = 1182;
+    const MAX_DONATION = 10_000_000; // 10M cap
+    const phoneRegex = /^\d{3}-\d{3}-\d{4}$/;
+
     const isAnonymous =
       anonymous === "1" ||
       anonymous === "on" ||
@@ -924,19 +923,32 @@ app.post("/donations/add", async (req, res) => {
 
     const donationDate = new Date();
 
-    // Validation:
-    // - Email always required
-    // - Name and phone required only if NOT anonymous
-    if (!email || (!isAnonymous && (!first_name || !last_name || !phone))) {
+    // Basic validation
+    if (!email) {
       return res.status(400).render("donations", {
-        error_message: "First name, last name, email, and phone are required unless you choose to donate anonymously.",
+        error_message: "Email is required.",
       });
     }
 
-    // 1. Figure out the actual donation amount
+    if (!isAnonymous) {
+      if (!first_name || !last_name || !phone) {
+        return res.status(400).render("donations", {
+          error_message: "First name, last name, and phone are required for non-anonymous donations.",
+        });
+      }
+
+      if (!phoneRegex.test(phone)) {
+        return res.status(400).render("donations", {
+          error_message: "Please enter a valid phone number in the format 555-555-5555.",
+        });
+      }
+    }
+
+    // 1. Figure out the actual donation amount (allow cents)
     let donationAmount = 0;
-    const other = Number(other_amount);
-    const preset = Number(amount_choice);
+
+    const other = other_amount ? parseFloat(other_amount) : NaN;
+    const preset = amount_choice ? parseFloat(amount_choice) : NaN;
 
     if (!isNaN(other) && other > 0) {
       donationAmount = other;
@@ -944,16 +956,25 @@ app.post("/donations/add", async (req, res) => {
       donationAmount = preset;
     }
 
-    if (!donationAmount || donationAmount <= 0) {
+    // Normalize to two decimal places
+    donationAmount = Math.round(donationAmount * 100) / 100;
+
+    if (!Number.isFinite(donationAmount) || donationAmount <= 0) {
       return res.status(400).render("donations", {
         error_message: "Please choose or enter a valid donation amount.",
+      });
+    }
+
+    if (donationAmount > MAX_DONATION) {
+      return res.status(400).render("donations", {
+        error_message: "For security reasons, single donations cannot exceed $10,000,000.",
       });
     }
 
     let participantIdForDonation;
 
     if (isAnonymous) {
-      // 2a. Anonymous donations get tied to the single anonymous participant row
+      // Anonymous donations counted on the anonymous participant row
       const anon = await knex("participant")
         .where({ participantid: ANONYMOUS_PARTICIPANT_ID })
         .first();
@@ -971,11 +992,8 @@ app.post("/donations/add", async (req, res) => {
         });
 
       participantIdForDonation = ANONYMOUS_PARTICIPANT_ID;
-
-      // Notice: no personal participant row is created or updated for this email.
-      // You can still email them a receipt using `email` from req.body directly.
     } else {
-      // 2b. Normal path, tie donation to real participant
+      // Normal donor flow
       let participant = await knex("participant")
         .where({ participantemail: email })
         .first();
@@ -995,7 +1013,6 @@ app.post("/donations/add", async (req, res) => {
 
         participant = inserted;
       } else {
-        // Existing participant, bump totals and optionally refresh info
         const currentTotal = Number(participant.totaldonations) || 0;
         const newTotal = currentTotal + donationAmount;
 
@@ -1014,7 +1031,7 @@ app.post("/donations/add", async (req, res) => {
       participantIdForDonation = participant.participantid;
     }
 
-    // 3. Calculate donationnumber based on the participant that this donation belongs to
+    // 3. Next donation number for this participant
     const countRow = await knex("donation")
       .where({ participantid: participantIdForDonation })
       .count("* as count")
@@ -1023,18 +1040,16 @@ app.post("/donations/add", async (req, res) => {
     const previousCount = Number(countRow.count) || 0;
     const donationNumber = previousCount + 1;
 
-    // 4. Insert into donations
+    // 4. Insert into donation
     await knex("donation").insert({
       participantid: participantIdForDonation,
       donationnumber: donationNumber,
       donationamount: donationAmount,
-      donationdate: new Date(),
+      donationdate: donationDate,
       isanonymous: isAnonymous,
     });
 
-    // 5. Send receipt email here using `email` from req.body
-    // await mailer.sendReceipt(email, donationAmount, ...);
-
+    // 5. Send receipt email (non-blocking)
     try {
       await sendDonationReceipt({
         toEmail: email,
@@ -1044,15 +1059,15 @@ app.post("/donations/add", async (req, res) => {
       });
     } catch (emailErr) {
       console.error("Failed to send receipt email:", emailErr);
-      // do not block redirect if email fails
     }
 
     res.redirect("/donations/thank-you");
   } catch (err) {
     console.error("Donation error:", err);
-    next(err);
+    return next(err);   // next now exists in the signature
   }
 });
+
 
 
 app.get("/donations/thank-you", (req, res) => { 
@@ -1508,8 +1523,45 @@ app.get("/logout", (req, res) => {
 });
 
 // Donation Routes
-app.get("/donations", (req, res) => {
-    res.render("donation/donations");
+app.get("/donations", async (req, res, next) => {
+  try {
+    const GOAL_AMOUNT = 100_000_000; // 100 million
+
+    const row = await knex("participant")
+      .sum({ totalRaised: "totaldonations" })
+      .first();
+
+    // row.totalRaised will usually be string from Postgres
+    const totalRaised = Number(row && row.totalRaised) || 0;
+
+    const progressPercent =
+      GOAL_AMOUNT > 0
+        ? Math.min(100, Math.max(0, Math.round((totalRaised / GOAL_AMOUNT) * 100)))
+        : 0;
+
+    console.log("Donations page totals:", {
+      totalRaised,
+      GOAL_AMOUNT,
+      progressPercent,
+    });
+
+    res.render("donation/donations", {
+      totalRaised,
+      goalAmount: GOAL_AMOUNT,
+      progressPercent,
+      error_message: null,
+      first_name: "",
+      last_name: "",
+      email: "",
+      phone: "",
+      anonymous: false,
+      amount_choice: "",
+      other_amount: "",
+    });
+  } catch (err) {
+    console.error("Error loading donations page:", err);
+    next(err);
+  }
 });
 
 app.get('/profile', async (req, res) => {
