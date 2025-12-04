@@ -906,11 +906,9 @@ app.get("/donations/thank-you", (req, res) => {
 // GET /donations
 app.get('/donations/view', async (req, res) => {
   try {
-    // RBAC here if you want
-    // if (!req.user || !req.user.isadmin) return res.status(403).render('403');
-
     const pageSize = 25;
-    const currentPage = Number(req.query.page) > 0 ? Number(req.query.page) : 1;
+    const rawPage = parseInt(req.query.page, 10) || 1;
+    const page = Math.max(rawPage, 1);
 
     const {
       participantSearch,
@@ -953,47 +951,57 @@ app.get('/donations/view', async (req, res) => {
     const countQuery = baseQuery.clone();
     applyFilters(countQuery);
 
-    const countResult = await countQuery.countDistinct({ total: 'd.donationid' });
-    const totalRows = Number(countResult[0].total || 0);
-    const totalPages = totalRows === 0 ? 1 : Math.ceil(totalRows / pageSize);
+    const countResult = await countQuery.countDistinct({ total: 'd.donationid' }).first();
+    const totalCount = Number(countResult.total || 0);
 
-    const safePage =
-      currentPage > totalPages ? totalPages : currentPage < 1 ? 1 : currentPage;
+    const totalPages = totalCount === 0 ? 1 : Math.ceil(totalCount / pageSize);
+    const currentPage = Math.min(page, totalPages);
+    const offset = (currentPage - 1) * pageSize;
 
     // Data query
     const dataQuery = baseQuery.clone();
     applyFilters(dataQuery);
 
     const donations = await dataQuery
-  .select(
-    'd.donationid',
-    'd.donationnumber',
-    'd.donationamount',
-    'd.donationdate',
-    'p.participantemail',
-    knex.raw(
-      "coalesce(p.participantfirstname, '') || " +
-      "case when p.participantfirstname is not null and p.participantlastname is not null then ' ' else '' end || " +
-      "coalesce(p.participantlastname, '') as participantname"
-    ),
-    knex.raw("string_agg(distinct ed.eventname, ', ') as eventname")
-  )
-  .groupBy(
-    'd.donationid',
-    'd.donationnumber',
-    'd.donationamount',
-    'd.donationdate',
-    'p.participantemail',
-    knex.raw(
-      "coalesce(p.participantfirstname, '') || " +
-      "case when p.participantfirstname is not null and p.participantlastname is not null then ' ' else '' end || " +
-      "coalesce(p.participantlastname, '')"
-    )
-  )
-  .orderBy('d.donationdate', 'asc')
-  .limit(pageSize)
-  .offset((safePage - 1) * pageSize);
+      .select(
+        'd.donationid',
+        'd.donationnumber',
+        'd.donationamount',
+        'd.donationdate',
+        'p.participantemail',
+        knex.raw(
+          "coalesce(p.participantfirstname, '') || " +
+          "case when p.participantfirstname is not null and p.participantlastname is not null then ' ' else '' end || " +
+          "coalesce(p.participantlastname, '') as participantname"
+        ),
+        knex.raw("string_agg(distinct ed.eventname, ', ') as eventname"),
+        'd.isanonymous'
+      )
+      .groupBy(
+        'd.donationid',
+        'd.donationnumber',
+        'd.donationamount',
+        'd.donationdate',
+        'p.participantemail',
+        knex.raw(
+          "coalesce(p.participantfirstname, '') || " +
+          "case when p.participantfirstname is not null and p.participantlastname is not null then ' ' else '' end || " +
+          "coalesce(p.participantlastname, '')"
+        ),
+        'd.isanonymous'
+      )
+      .orderBy('d.donationdate', 'asc')
+      .limit(pageSize)
+      .offset(offset);
 
+    const firstItem = totalCount === 0 ? 0 : offset + 1;
+    const lastItem = offset + donations.length;
+
+    // Sliding window of pages, size 10
+    const windowSize = 10;
+    const windowStart =
+      Math.floor((currentPage - 1) / windowSize) * windowSize + 1;
+    const windowEnd = Math.min(windowStart + windowSize - 1, totalPages);
 
     res.render('donation/viewDonations', {
       donations,
@@ -1001,8 +1009,17 @@ app.get('/donations/view', async (req, res) => {
       eventSearch: eventSearch || '',
       minAmount: minAmount || '',
       maxAmount: maxAmount || '',
-      currentPage: safePage,
-      totalPages
+      pagination: {
+        currentPage,
+        totalPages,
+        totalCount,
+        pageSize,
+        firstItem,
+        lastItem,
+        windowSize,
+        windowStart,
+        windowEnd
+      }
     });
   } catch (err) {
     console.error('Error loading donations:', err);
@@ -1275,53 +1292,51 @@ app.post('/login', async (req, res) => {
     console.log(`Login attempt for user: ${username}`);
 
     try {
-        // Query the database for the user
         const result = await knex.raw(
             'SELECT * FROM users WHERE username = ?',
             [username]
         );
 
-        if (result.rows.length === 0) {
-            return res.status(401).json({ 
-                success: false, 
-                message: 'Invalid username or password.' 
+        if (!result.rows || result.rows.length === 0) {
+            return res.status(401).render('login', {
+                error_message: 'Invalid username or password.',
+                username // optional: prefill the username field
             });
         }
 
         const user = result.rows[0];
-        // Compare the provided password with the hashed password
         const passwordMatch = await bcrypt.compare(password, user.password);
 
         if (!passwordMatch) {
-            return res.status(401).json({ 
-                success: false, 
-                message: 'Invalid username or password.' 
+            return res.status(401).render('login', {
+                error_message: 'Invalid username or password.',
+                username
             });
         }
 
-        // Success! Store user info in session
+        // Success
         req.session.user = {
-            id: user.id,
+            // if your table uses participantid, fix this:
+            id: user.participantid || user.id,
             username: user.username,
             role: user.role
         };
-        // Mark session as logged in so the auth middleware allows access
         req.session.isLoggedIn = true;
-        
-        // Redirect to the stored URL or default to the landing page ('/')
+
         const redirectTo = req.session.redirectTo || '/';
-        delete req.session.redirectTo; // Clear the stored destination
+        delete req.session.redirectTo;
 
         return res.redirect(redirectTo);
 
     } catch (error) {
         console.error('Login error:', error);
-        return res.status(500).json({ 
-            success: false, 
-            message: 'An error occurred during login.' 
+        return res.status(500).render('login', {
+            error_message: 'An error occurred during login. Please try again.',
+            username
         });
     }
 });
+
 
 // Logout route
 app.get("/logout", (req, res) => {
@@ -1438,7 +1453,6 @@ app.get('/milestones', async (req, res) => {
 
   let { page, search_name, search_milestone, date } = req.query;
 
-  // Normalize query params
   let currentPage = parseInt(page, 10);
   if (isNaN(currentPage) || currentPage < 1) {
     currentPage = 1;
@@ -1448,37 +1462,34 @@ app.get('/milestones', async (req, res) => {
   search_milestone = search_milestone ? search_milestone.trim() : "";
   date = date ? date.trim() : "";
 
+  // base query
+  const baseQuery = knex("milestone as m")
+    .innerJoin("participant as p", "m.participantid", "p.participantid");
+
+  const applyFilters = (query) => {
+    if (search_name) {
+      query.whereRaw(
+        "LOWER(p.participantfirstname || ' ' || p.participantlastname) LIKE ?",
+        [`%${search_name.toLowerCase()}%`]
+      );
+    }
+
+    if (search_milestone) {
+      query.whereRaw(
+        "LOWER(m.milestonetitle) LIKE ?",
+        [`%${search_milestone.toLowerCase()}%`]
+      );
+    }
+
+    if (date) {
+      query.where("m.milestonedate", "<=", date);
+    }
+
+    return query;
+  };
+
   try {
-    const baseQuery = knex("milestone as m")
-      .innerJoin("participant as p", "m.participantid", "p.participantid");
-
-    // Reusable filter function
-    const applyFilters = (query) => {
-      if (search_name) {
-        // Match on "First Last"
-        query.whereRaw(
-          "LOWER(p.participantfirstname || ' ' || p.participantlastname) LIKE ?",
-          [`%${search_name.toLowerCase()}%`]
-        );
-      }
-
-      if (search_milestone) {
-        query.whereRaw(
-          "LOWER(m.milestonetitle) LIKE ?",
-          [`%${search_milestone.toLowerCase()}%`]
-        );
-      }
-
-      if (date) {
-        // "To Date" filter
-        query.where("m.milestonedate", "<=", date);
-      }
-
-      return query;
-    };
-
-
-    // Total count for pagination
+    // count
     const countRow = await applyFilters(baseQuery.clone())
       .countDistinct({ total: "m.milestoneid" })
       .first();
@@ -1486,11 +1497,10 @@ app.get('/milestones', async (req, res) => {
     const totalRows = parseInt(countRow?.total || 0, 10);
     const totalPages = totalRows > 0 ? Math.ceil(totalRows / pageSize) : 1;
 
-    // Clamp page to valid range
     const safePage = Math.min(currentPage, totalPages);
     const offset = (safePage - 1) * pageSize;
 
-    // Actual data query
+    // data
     const milestone = await applyFilters(baseQuery.clone())
       .select(
         "m.milestoneid",
@@ -1506,26 +1516,46 @@ app.get('/milestones', async (req, res) => {
       .limit(pageSize)
       .offset(offset);
 
+    // sliding window pagination
+    const windowSize = 10;
+    const windowStart =
+      Math.floor((safePage - 1) / windowSize) * windowSize + 1;
+    const windowEnd = Math.min(windowStart + windowSize - 1, totalPages);
+
     res.render("milestone/milestones", {
       milestone,
-      currentPage: safePage,
-      totalPages,
       search_name,
       search_milestone,
       date,
-      error_message: ""
+      error_message: "",
+      pagination: {
+        currentPage: safePage,
+        totalPages,
+        totalRows,
+        pageSize,
+        windowSize,
+        windowStart,
+        windowEnd
+      }
     });
   } catch (err) {
     console.error("Error loading milestones:", err);
 
     res.render("milestone/milestones", {
       milestone: [],
-      currentPage: 1,
-      totalPages: 0,
       search_name,
       search_milestone,
       date,
-      error_message: "There was a problem loading milestones."
+      error_message: "There was a problem loading milestones.",
+      pagination: {
+        currentPage: 1,
+        totalPages: 1,
+        totalRows: 0,
+        pageSize,
+        windowSize: 10,
+        windowStart: 1,
+        windowEnd: 1
+      }
     });
   }
 });
@@ -1741,145 +1771,160 @@ const fetchAllParticipants = async (limit, offset) => {
 
 // GET /participants - Display the list of all participants with pagination and search
 app.get('/participants', requireManager, async (req, res) => {
-    
-    // Setup user object for EJS rendering
-    const user = req.session.user ? {
+  // Setup user object for EJS rendering
+  const user = req.session.user
+    ? {
         ...req.session.user,
         name: req.session.user.username,
         isManager: req.session.user.role === 'manager'
-    } : { username: 'Guest', role: 'guest' };
-    
-    // Get and clear session message
-    const message = req.session.message;
-    delete req.session.message;
-    
-    // --- Pagination Logic ---
-    const limit = 100;
-    const currentPage = parseInt(req.query.page) > 0 ? parseInt(req.query.page) : 1;
+      }
+    : { username: 'Guest', role: 'guest' };
+
+  // Get and clear session message
+  const message = req.session.message;
+  delete req.session.message;
+
+  const limit = 100;
+  const rawPage = parseInt(req.query.page, 10) || 1;
+  const page = Math.max(rawPage, 1);
+
+  // Search Parameters
+  const { search_name, search_id, search_email, search_phone } = req.query;
+
+  // Apply filters helper
+  const applyFilters = (queryBuilder) => {
+    queryBuilder.where(function () {
+      const builder = this;
+      let firstCondition = true;
+
+      const chainCondition = (conditionFunc) => {
+        if (firstCondition) {
+          builder.where(conditionFunc);
+          firstCondition = false;
+        } else {
+          builder.andWhere(conditionFunc);
+        }
+      };
+
+      // 1. Name
+      if (search_name) {
+        const wildCardSearch = `%${search_name.toLowerCase()}%`;
+
+        chainCondition(function () {
+          this.whereRaw('LOWER(participantfirstname) LIKE ?', [wildCardSearch])
+            .orWhereRaw('LOWER(participantlastname) LIKE ?', [wildCardSearch]);
+        });
+      }
+
+      // 2. ID
+      if (search_id) {
+        chainCondition(function () {
+          if (!isNaN(parseInt(search_id))) {
+            this.where('participantid', parseInt(search_id));
+          } else {
+            const wildCardSearch = `%${search_id}%`;
+            this.where('participantid', 'LIKE', wildCardSearch);
+          }
+        });
+      }
+
+      // 3. Email
+      if (search_email) {
+        const wildCardSearch = `%${search_email.toLowerCase()}%`;
+
+        chainCondition(function () {
+          this.whereRaw('LOWER(participantemail) LIKE ?', [wildCardSearch]);
+        });
+      }
+
+      // 4. Phone
+      if (search_phone) {
+        const wildCardSearch = `%${search_phone}%`;
+
+        chainCondition(function () {
+          this.where('participantphone', 'LIKE', wildCardSearch);
+        });
+      }
+    });
+
+    return queryBuilder;
+  };
+
+  try {
+    // Count
+    let countQuery = knex('participant').clone();
+    countQuery = applyFilters(countQuery);
+    const countResult = await countQuery.count('* as count').first();
+    const totalCount = parseInt(countResult.count, 10) || 0;
+
+    const totalPages = totalCount === 0 ? 1 : Math.ceil(totalCount / limit);
+    const currentPage = Math.min(page, totalPages);
     const offset = (currentPage - 1) * limit;
-    let totalParticipants = 0;
-    
-    // --- Search Parameters ---
-    // Extract search parameters from the URL query
-    const { search_name, search_id, search_email, search_phone } = req.query; 
 
-    // Function to apply filtering logic to the query builder (used for both count and data)
-    const applyFilters = (queryBuilder) => {
-        queryBuilder.where(function() {
-            const builder = this;
-            let firstCondition = true;
+    // Data
+    let dataQuery = knex.select('*').from('participant');
+    dataQuery = applyFilters(dataQuery);
 
-            // Helper to determine if we use WHERE (first) or ANDWHERE (subsequent)
-            const chainCondition = (conditionFunc) => {
-                if (firstCondition) {
-                    builder.where(conditionFunc);
-                    firstCondition = false;
-                } else {
-                    builder.andWhere(conditionFunc);
-                }
-            };
-            
-            // 1. Participant Name Filter (First Name OR Last Name)
-            if (search_name) {
-                const wildCardSearch = `%${search_name.toLowerCase()}%`;
-                
-                chainCondition(function() {
-                    this.whereRaw('LOWER(participantfirstname) LIKE ?', [wildCardSearch])
-                        .orWhereRaw('LOWER(participantlastname) LIKE ?', [wildCardSearch]);
-                });
-            }
+    const participants = await dataQuery
+      .orderBy('participantlastname', 'asc')
+      .orderBy('participantfirstname', 'asc')
+      .limit(limit)
+      .offset(offset);
 
-            // 2. Participant ID Filter
-            if (search_id) {
-                // If it's a number, treat as exact. Otherwise, use LIKE for partial string search.
-                chainCondition(function() {
-                    if (!isNaN(parseInt(search_id))) {
-                        this.where('participantid', parseInt(search_id));
-                    } else {
-                         const wildCardSearch = `%${search_id}%`;
-                         this.where('participantid', 'LIKE', wildCardSearch);
-                    }
-                });
-            }
-            
-            // 3. Participant Email Filter
-            if (search_email) {
-                const wildCardSearch = `%${search_email.toLowerCase()}%`;
+    console.log(
+      `PARTICIPANT DATA STATUS: Fetched ${participants.length} participants for page ${currentPage} (Total: ${totalCount}).`
+    );
 
-                chainCondition(function() {
-                    this.whereRaw('LOWER(participantemail) LIKE ?', [wildCardSearch]);
-                });
-            }
-            
-            // 4. Participant Phone Filter
-            if (search_phone) {
-                const wildCardSearch = `%${search_phone}%`;
+    // Sliding window (like surveys and donations)
+    const windowSize = 10;
+    const windowStart =
+      Math.floor((currentPage - 1) / windowSize) * windowSize + 1;
+    const windowEnd = Math.min(windowStart + windowSize - 1, totalPages);
 
-                chainCondition(function() {
-                    // Note: Phone numbers are often stored as strings and searched using LIKE
-                    this.where('participantphone', 'LIKE', wildCardSearch);
-                });
-            }
-        });
-        
-        return queryBuilder;
-    };
+    res.render('participant/participants', {
+      user,
+      participants,
+      message,
+      error_message: null,
+      pagination: {
+        currentPage,
+        totalPages,
+        totalCount,
+        limit,
+        windowSize,
+        windowStart,
+        windowEnd
+      },
+      search_name,
+      search_id,
+      search_email,
+      search_phone
+    });
+  } catch (error) {
+    console.error('Participant Route Render Error:', error.message);
 
-
-    try {
-        // --- 1. Get total count for pagination ---
-        let countQuery = knex('participant').clone();
-        countQuery = applyFilters(countQuery);
-        
-        const countResult = await countQuery.count('* as count');
-        totalParticipants = parseInt(countResult[0].count, 10);
-        
-        // --- 2. Fetch paginated data ---
-        let dataQuery = knex.select('*').from('participant');
-        dataQuery = applyFilters(dataQuery);
-        
-        // Apply pagination limits to the filtered results
-        const allParticipants = await dataQuery
-            .limit(limit)
-            .offset(offset);
-        
-        console.log(`PARTICIPANT DATA STATUS: Fetched ${allParticipants.length} participants for page ${currentPage} (Total: ${totalParticipants}).`);
-        
-        // --- 3. Render View ---
-        const totalPages = Math.ceil(totalParticipants / limit);
-        
-        res.render('participant/participants', { 
-            user: user, 
-            participants: allParticipants, 
-            message: message, 
-            error_message: null,
-            currentPage: currentPage, 
-            totalPages: totalPages,
-            // Pass search parameters back to EJS for sticky fields
-            search_name,
-            search_id,
-            search_email,
-            search_phone
-        });
-        
-    } catch (error) {
-        console.error("Participant Route Render Error:", error.message);
-        
-        // Ensure search params stick even on error
-        res.render('participant/participants', {
-            user: user, 
-            participants: [],
-            message: null,
-            error_message: error.message,
-            currentPage: 1, 
-            totalPages: 1,
-            search_name: req.query.search_name, 
-            search_id: req.query.search_id,
-            search_email: req.query.search_email,
-            search_phone: req.query.search_phone
-        });
-    }
+    res.render('participant/participants', {
+      user,
+      participants: [],
+      message: null,
+      error_message: error.message,
+      pagination: {
+        currentPage: 1,
+        totalPages: 1,
+        totalCount: 0,
+        limit,
+        windowSize: 10,
+        windowStart: 1,
+        windowEnd: 1
+      },
+      search_name: req.query.search_name,
+      search_id: req.query.search_id,
+      search_email: req.query.search_email,
+      search_phone: req.query.search_phone
+    });
+  }
 });
+
 
 // GET /addParticipant - Display the form (Create Form) - Access restricted to 'manager' role
 app.get("/addParticipant", requireManager, (req, res) => {
@@ -2222,83 +2267,142 @@ function requireManager(req, res, next) {
 // MANAGER — Search All Events (Joined)
 // -----------------------------------------------------
 app.get("/events/manage/all", requireManager, async (req, res) => {
-    const { search_name, search_location, search_type, search_start, search_end } = req.query;
+  const {
+    search_name,
+    search_location,
+    search_type,
+    search_start,
+    search_end
+  } = req.query;
 
-    try {
-        let query = knex("event as e")
-            .join("eventdefinition as d", "e.eventdefid", "d.eventdefid")
-            .select(
-                "e.eventid",
-                "e.eventdatetimestart",
-                "e.eventdatetimeend",
-                "e.eventlocation",
-                "d.eventname",
-                "d.eventtype"
-            )
-            .orderBy("e.eventdatetimestart", "asc");
+  const pageSize = 100;
+  const rawPage = parseInt(req.query.page, 10) || 1;
+  const page = Math.max(rawPage, 1);
 
-        // ---------- FILTERS ----------
-        if (search_name && search_name.trim() !== "") {
-            query.whereILike("d.eventname", `%${search_name.trim()}%`);
-        }
+  try {
+    // Base query
+    const baseQuery = knex("event as e")
+      .join("eventdefinition as d", "e.eventdefid", "d.eventdefid");
 
-        if (search_location && search_location.trim() !== "") {
-            query.whereILike("e.eventlocation", `%${search_location.trim()}%`);
-        }
+    // Filters
+    const applyFilters = (q) => {
+      if (search_name && search_name.trim() !== "") {
+        q.whereILike("d.eventname", `%${search_name.trim()}%`);
+      }
 
-        if (search_type && search_type.trim() !== "") {
-            query.where("d.eventtype", search_type);
-        }
+      if (search_location && search_location.trim() !== "") {
+        q.whereILike("e.eventlocation", `%${search_location.trim()}%`);
+      }
 
-        if (search_start && search_start !== "") {
-            query.where("e.eventdatetimestart", ">=", search_start);
-        }
+      if (search_type && search_type.trim() !== "") {
+        q.where("d.eventtype", search_type);
+      }
 
-        if (search_end && search_end !== "") {
-            query.where("e.eventdatetimestart", "<=", search_end);
-        }
+      if (search_start && search_start !== "") {
+        q.where("e.eventdatetimestart", ">=", search_start);
+      }
 
-        const events = await query;
+      if (search_end && search_end !== "") {
+        q.where("e.eventdatetimestart", "<=", search_end);
+      }
 
-        // Format dates for display
-        const formattedEvents = events.map(ev => {
-            const start = new Date(ev.eventdatetimestart);
-            const end = new Date(ev.eventdatetimeend);
+      return q;
+    };
 
-            return {
-                ...ev,
-                startFormatted: start.toLocaleString("en-US", {
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                    hour: "numeric",
-                    minute: "2-digit"
-                }),
-                endFormatted: end.toLocaleString("en-US", {
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                    hour: "numeric",
-                    minute: "2-digit"
-                })
-            };
-        });
+    // Count
+    const countRow = await applyFilters(baseQuery.clone())
+      .countDistinct({ total: "e.eventid" })
+      .first();
 
-        res.render("events/manageallevents", {
-            events: formattedEvents,
-            search_name,
-            search_location,
-            search_type,
-            search_start,
-            search_end
-        });
+    const totalRows = parseInt(countRow?.total || 0, 10);
+    const totalPages = totalRows > 0 ? Math.ceil(totalRows / pageSize) : 1;
 
-    } catch (err) {
-        console.error("Error loading all-event manager search:", err);
-        res.status(500).render("404");
-    }
+    const currentPage = Math.min(page, totalPages);
+    const offset = (currentPage - 1) * pageSize;
+
+    // Data query
+    const rawEvents = await applyFilters(baseQuery.clone())
+      .select(
+        "e.eventid",
+        "e.eventdatetimestart",
+        "e.eventdatetimeend",
+        "e.eventlocation",
+        "d.eventname",
+        "d.eventtype"
+      )
+      .orderBy("e.eventdatetimestart", "asc")
+      .limit(pageSize)
+      .offset(offset);
+
+    // Format dates for display
+    const events = rawEvents.map((ev) => {
+      const start = new Date(ev.eventdatetimestart);
+      const end = new Date(ev.eventdatetimeend);
+
+      return {
+        ...ev,
+        startFormatted: start.toLocaleString("en-US", {
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+          hour: "numeric",
+          minute: "2-digit"
+        }),
+        endFormatted: end.toLocaleString("en-US", {
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+          hour: "numeric",
+          minute: "2-digit"
+        })
+      };
+    });
+
+    // Sliding window pagination
+    const windowSize = 10;
+    const windowStart =
+      Math.floor((currentPage - 1) / windowSize) * windowSize + 1;
+    const windowEnd = Math.min(windowStart + windowSize - 1, totalPages);
+
+    res.render("events/manageallevents", {
+      events,
+      search_name,
+      search_location,
+      search_type,
+      search_start,
+      search_end,
+      pagination: {
+        currentPage,
+        totalPages,
+        totalRows,
+        pageSize,
+        windowSize,
+        windowStart,
+        windowEnd
+      }
+    });
+  } catch (err) {
+    console.error("Error loading all-event manager search:", err);
+    res.status(500).render("events/manageallevents", {
+      events: [],
+      search_name,
+      search_location,
+      search_type,
+      search_start,
+      search_end,
+      pagination: {
+        currentPage: 1,
+        totalPages: 1,
+        totalRows: 0,
+        pageSize,
+        windowSize: 10,
+        windowStart: 1,
+        windowEnd: 1
+      },
+      error_message: "There was a problem loading events."
+    });
+  }
 });
-
 
 // Add Event via Calendar Modal — MUST COME FIRST
 app.post("/events/:eventdefid/day/:date/add", requireManager, async (req, res) => {
