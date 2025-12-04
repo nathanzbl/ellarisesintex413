@@ -17,19 +17,19 @@ nav {
     background-color: var(--pink);
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
     position: sticky;
-    top: 0; 
+    top: 0;
     z-index: 100;
     font-family: "Montserrat", system-ui, sans-serif;
     color: var(--er-charcoal);
 }
 
 .nav-container {
-    max-width: 1200px;
-    margin: 0 auto;
+    width: 100%;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.75rem 100px; 
+    padding: 0.75rem 2rem;
+    gap: 2rem;
 }
 
 .nav-logo {
@@ -39,12 +39,14 @@ nav {
 
 .nav-links {
     display: flex;
-    gap: 1rem;
-    margin-right: 1.5rem;
-    align-items: center; /* Important for aligning the new profile container */
+    gap: 0.5rem;
+    align-items: center;
+    margin-left: auto;
+    margin-right: 1rem;
 }
 
-.nav-links a {
+.nav-links a,
+.nav-links .nav-dropdown > a {
     text-decoration: none;
     color: var(--er-charcoal);
     font-size: 0.9rem;
@@ -54,10 +56,58 @@ nav {
     border-radius: 0.5rem;
     transition: all 0.2s ease;
     white-space: nowrap;
+    display: block;
 }
 
-.nav-links a:hover {
+.nav-links a:hover,
+.nav-links .nav-dropdown:hover > a {
     background: var(--er-cream);
+    color: var(--er-rose);
+}
+
+/* Dropdown container */
+.nav-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+/* Dropdown menu */
+.nav-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 0.5rem;
+    background-color: var(--er-cream);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-radius: 0.75rem;
+    overflow: hidden;
+    min-width: 180px;
+    z-index: 200;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
+}
+
+.nav-dropdown:hover .nav-dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.nav-dropdown-menu a {
+    display: block;
+    padding: 0.75rem 1rem;
+    text-decoration: none;
+    color: var(--er-charcoal);
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background-color 0.2s, color 0.2s;
+    white-space: nowrap;
+}
+
+.nav-dropdown-menu a:hover {
+    background-color: var(--er-blush);
     color: var(--er-rose);
 }
 
@@ -210,7 +260,25 @@ nav {
         <!-- these nav-links contains all navigation and action links -->
         <div class="nav-links">
             <a href="/" data-i18n-key="nav_home">Home</a>
-            <a href="/donations" data-i18n-key="nav_donations">Donations</a>
+
+            <%
+            // Get the user's role
+            const userRole = (typeof user !== 'undefined' && user) ? user.role : null;
+            %>
+
+            <% // Donations - Dropdown for managers, single link for others %>
+            <% if (typeof isLoggedIn !== 'undefined' && isLoggedIn && userRole === 'manager') { %>
+                <div class="nav-dropdown">
+                    <a href="#" data-i18n-key="nav_donations">Donations ▾</a>
+                    <div class="nav-dropdown-menu">
+                        <a href="/donations">Make Donation</a>
+                        <a href="/donations/view">View Donations</a>
+                        <a href="/donations/new">Admin Donations</a>
+                    </div>
+                </div>
+            <% } else { %>
+                <a href="/donations" data-i18n-key="nav_donations">Donations</a>
+            <% } %>
 
             <% // Events link logic %>
             <% if (typeof currentUser !== "undefined" && currentUser) { %>
@@ -219,11 +287,6 @@ nav {
                 <a href="/eventspublic" class="nav-link" data-i18n-key="nav_events">Events</a>
             <% } %>
 
-            <%
-            // Get the user's role
-            const userRole = (typeof user !== 'undefined' && user) ? user.role : null;
-            %>
-
             <% if (typeof isLoggedIn !== 'undefined' && isLoggedIn) { %>
                 <% // Show Milestones and Participants only for viewers and managers %>
                 <% if (userRole === 'viewer' || userRole === 'manager') { %>
@@ -231,8 +294,23 @@ nav {
                     <a href="/participants" data-i18n-key="nav_participants">Participants</a>
                 <% } %>
 
-                <% // Show Surveys for all logged-in users %>
-                <a href="/surveys" data-i18n-key="nav_surveys">Surveys</a>
+                <% // Surveys - Dropdown for managers, single link for others %>
+                <% if (userRole === 'manager') { %>
+                    <div class="nav-dropdown">
+                        <a href="#" data-i18n-key="nav_surveys">Surveys ▾</a>
+                        <div class="nav-dropdown-menu">
+                            <a href="/surveys">Take Survey</a>
+                            <a href="/survey/responses">Survey Responses</a>
+                        </div>
+                    </div>
+                <% } else { %>
+                    <a href="/surveys" data-i18n-key="nav_surveys">Surveys</a>
+                <% } %>
+
+                <% // Dashboard link for managers only %>
+                <% if (userRole === 'manager') { %>
+                    <a href="/dashboard" data-i18n-key="nav_dashboard">Dashboard</a>
+                <% } %>
             <% } else { %>
                 <% // Show Surveys for non-logged-in users (will redirect to login) %>
                 <a href="/surveys" data-i18n-key="nav_surveys">Surveys</a>

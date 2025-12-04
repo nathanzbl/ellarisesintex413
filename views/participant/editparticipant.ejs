@@ -81,6 +81,16 @@
             display: grid;
             grid-template-columns: 1fr 1fr; /* Default to 2 columns for medium screens */
             gap: 1.5rem;
+            align-items: start; /* Align all items to the top */
+        }
+
+        /* Ensure consistent label heights */
+        .address-group .field-label {
+            min-height: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            white-space: nowrap; /* Prevent wrapping */
         }
 
         /* NEW: Stack City/State/Zip on small screens */
@@ -291,46 +301,65 @@
                 
                 <!-- NEW: Phone Number -->
                 <div class="mb-3">
-                    <label for="phone" class="field-label">Phone Number:</label>
-                    <input type="tel" 
-                           class="text-input" 
-                           id="phone" 
-                           name="phone" 
-                           value="<%= participant.participantphone || '' %>" 
-                           placeholder="e.g., (555) 555-5555">
+                    <label for="phone" class="field-label">
+                        <span>Phone Number</span>
+                        <span style="font-weight: 400; font-size: 0.7rem; color: #999;">Optional</span>
+                    </label>
+                    <input type="tel"
+                           class="text-input"
+                           id="phone"
+                           name="phone"
+                           value="<%= participant.participantphone || '' %>"
+                           pattern="[\(]?[0-9]{3}[\)]?[\s\-]?[0-9]{3}[\s\-]?[0-9]{4}"
+                           title="Enter a valid phone number (e.g., 555-555-5555 or (555) 555-5555)"
+                           placeholder="e.g., (555) 555-5555 or 555-555-5555">
                 </div>
 
                 <!-- NEW: City, State, Zip (Grouped for Layout) -->
                 <div class="address-group mb-3">
-                    
+
                     <div>
-                        <label for="city" class="field-label">City:</label>
-                        <input type="text" 
-                               class="text-input" 
-                               id="city" 
-                               name="city" 
-                               value="<%= participant.participantcity || '' %>" 
-                               required>
+                        <label for="city" class="field-label">
+                            <span>City</span>
+                            <span style="font-weight: 400; font-size: 0.7rem; color: #999;">Optional</span>
+                        </label>
+                        <input type="text"
+                               class="text-input"
+                               id="city"
+                               name="city"
+                               value="<%= participant.participantcity || '' %>"
+                               placeholder="e.g., Austin">
                     </div>
 
                     <div>
-                        <label for="state" class="field-label">State:</label>
-                        <input type="text" 
-                               class="text-input" 
-                               id="state" 
-                               name="state" 
-                               value="<%= participant.participantstate || '' %>" 
-                               required>
+                        <label for="state" class="field-label">
+                            <span>State</span>
+                            <span style="font-weight: 400; font-size: 0.7rem; color: #999;">Optional</span>
+                        </label>
+                        <input type="text"
+                               class="text-input"
+                               id="state"
+                               name="state"
+                               value="<%= participant.participantstate || '' %>"
+                               maxlength="2"
+                               pattern="[A-Za-z]{2}"
+                               title="Enter 2-letter state code (e.g., TX, CA, NY)"
+                               placeholder="e.g., TX">
                     </div>
-                    
+
                     <div>
-                        <label for="zip" class="field-label">Zip Code:</label>
-                        <input type="text" 
-                               class="text-input" 
-                               id="zip" 
-                               name="zip" 
-                               value="<%= participant.participantzip || '' %>" 
-                               required>
+                        <label for="zip" class="field-label">
+                            <span>Zip Code</span>
+                            <span style="font-weight: 400; font-size: 0.7rem; color: #999;">Optional</span>
+                        </label>
+                        <input type="text"
+                               class="text-input"
+                               id="zip"
+                               name="zip"
+                               value="<%= participant.participantzip || '' %>"
+                               pattern="[0-9]{5}(-[0-9]{4})?"
+                               title="Enter 5-digit zip code or 9-digit zip+4 (e.g., 12345 or 12345-6789)"
+                               placeholder="e.g., 12345">
                     </div>
                     </div>
 

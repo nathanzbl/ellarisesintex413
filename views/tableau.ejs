@@ -2,13 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Program Impact Dashboard | Ella Rises</title>
+  <title>Manager Dashboard | Ella Rises</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:wght@400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
 
   <style>
     :root {
@@ -31,283 +34,389 @@
     }
 
     body {
-      font-family: "Montserrat", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: linear-gradient(135deg, var(--er-cream), #fff);
+      font-family: "Montserrat", system-ui, sans-serif;
+      background: var(--er-cream);
       color: var(--er-charcoal);
       min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
+      padding: 0;
+      margin: 0;
     }
 
-    .page-wrapper {
-      width: 100%;
-      max-width: 1200px;
-      background: var(--er-light);
-      border-radius: 18px;
-      box-shadow: 0 10px 30px rgba(58, 63, 59, 0.12);
-      padding: 28px 28px 32px;
-      border: 1px solid rgba(153, 183, 198, 0.25);
+    .dashboard-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
     }
 
-    .page-header {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-bottom: 20px;
+    .dashboard-header {
+      margin-bottom: 2rem;
     }
 
-    .breadcrumb {
-      font-size: 0.85rem;
+    .dashboard-title {
+      font-family: "DM Serif Display", serif;
+      font-size: 2.5rem;
+      color: var(--er-charcoal);
+      margin-bottom: 0.5rem;
+    }
+
+    .dashboard-subtitle {
+      font-size: 1rem;
       color: rgba(58, 63, 59, 0.7);
     }
 
-    .breadcrumb a {
-      color: var(--er-lavender);
-      text-decoration: none;
-      font-weight: 500;
+    /* Statistics Cards Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1.5rem;
+      margin-bottom: 2rem;
     }
 
-    .breadcrumb a:hover {
-      text-decoration: underline;
+    .stat-card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      border-left: 4px solid var(--er-pink);
+      transition: transform 0.2s, box-shadow 0.2s;
     }
 
-    .page-title {
-      font-family: "DM Serif Display", "Times New Roman", serif;
-      font-size: 1.9rem;
-      letter-spacing: 0.03em;
+    .stat-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    }
+
+    .stat-card.blue { border-left-color: var(--er-blue); }
+    .stat-card.lavender { border-left-color: var(--er-lavender); }
+    .stat-card.sage { border-left-color: var(--er-sage); }
+    .stat-card.rose { border-left-color: var(--er-rose); }
+    .stat-card.peach { border-left-color: var(--er-peach); }
+
+    .stat-label {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: rgba(58, 63, 59, 0.6);
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
       color: var(--er-charcoal);
+      margin-bottom: 0.25rem;
     }
 
-    .page-subtitle {
-      font-size: 0.95rem;
-      color: rgba(58, 63, 59, 0.8);
-      max-width: 640px;
-      line-height: 1.4;
+    .stat-detail {
+      font-size: 0.8rem;
+      color: rgba(58, 63, 59, 0.6);
     }
 
-    .toolbar {
+    /* Chart Section */
+    .chart-section {
+      background: white;
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      margin-bottom: 2rem;
+    }
+
+    .chart-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin: 18px 0 16px;
-      gap: 12px;
+      margin-bottom: 1.5rem;
       flex-wrap: wrap;
+      gap: 1rem;
     }
 
-    .toolbar-left {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .chip {
-      display: inline-flex;
-      align-items: center;
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-size: 0.8rem;
-      background: rgba(153, 183, 198, 0.15);
-      color: rgba(58, 63, 59, 0.85);
-      border: 1px solid rgba(153, 183, 198, 0.45);
-    }
-
-    .chip-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: #2ecc71;
-      margin-right: 6px;
-    }
-
-    .toolbar-right {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 8px 14px;
-      border-radius: 999px;
-      border: none;
-      cursor: pointer;
-      font-size: 0.85rem;
-      font-weight: 500;
-      text-decoration: none;
-      transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.15s ease, color 0.15s ease;
-      white-space: nowrap;
-    }
-
-    .btn-outline {
-      background: transparent;
-      border: 1px solid rgba(58, 63, 59, 0.2);
-      color: rgba(58, 63, 59, 0.8);
-    }
-
-    .btn-outline:hover {
-      background: rgba(153, 183, 198, 0.08);
-      border-color: rgba(153, 183, 198, 0.7);
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, var(--er-lavender), var(--er-pink));
-      color: #fff;
-      box-shadow: 0 6px 16px rgba(151, 142, 196, 0.3);
-      border: none;
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 8px 20px rgba(151, 142, 196, 0.4);
-      filter: brightness(1.02);
-    }
-
-    .btn-icon {
-      margin-right: 6px;
-      font-size: 1rem;
-      line-height: 0;
-    }
-
-    .content-card {
-      background: linear-gradient(135deg, rgba(249, 245, 234, 0.9), rgba(255, 216, 209, 0.9));
-      border-radius: 16px;
-      padding: 16px;
-      border: 1px solid rgba(153, 183, 198, 0.4);
-    }
-
-    .dashboard-shell {
-      position: relative;
-      width: 100%;
-      min-height: 70vh;
-      background: #fff;
-      border-radius: 12px;
-      overflow: hidden;
-      border: 1px solid rgba(153, 183, 198, 0.4);
-      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.6);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .dashboard-placeholder {
-      text-align: center;
-      padding: 24px;
-      max-width: 420px;
-    }
-
-    .placeholder-icon {
-      width: 46px;
-      height: 46px;
-      border-radius: 999px;
-      margin: 0 auto 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(153, 183, 198, 0.12);
-      border: 1px solid rgba(153, 183, 198, 0.4);
-      font-size: 1.2rem;
-    }
-
-    .placeholder-title {
+    .chart-title {
+      font-size: 1.5rem;
       font-weight: 600;
-      font-size: 1rem;
-      margin-bottom: 6px;
       color: var(--er-charcoal);
     }
 
-    .placeholder-text {
-      font-size: 0.9rem;
-      color: rgba(58, 63, 59, 0.8);
-      margin-bottom: 10px;
+    .year-selector {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
     }
 
-    .placeholder-hint {
-      font-size: 0.8rem;
+    .year-selector label {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--er-charcoal);
+    }
+
+    .year-selector select {
+      padding: 0.5rem 1rem;
+      border: 2px solid var(--er-blush);
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      color: var(--er-charcoal);
+      background: white;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    .year-selector select:hover {
+      border-color: var(--er-pink);
+    }
+
+    .year-selector select:focus {
+      outline: none;
+      border-color: var(--er-rose);
+    }
+
+    .chart-container {
+      position: relative;
+      height: 400px;
+    }
+
+    /* Birthdays Section */
+    .birthdays-section {
+      background: white;
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .birthdays-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--er-charcoal);
+      margin-bottom: 1.5rem;
+    }
+
+    .birthdays-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1rem;
+    }
+
+    .birthday-item {
+      padding: 1rem;
+      background: var(--er-cream);
+      border-radius: 8px;
+      border-left: 3px solid var(--er-pink);
+      transition: transform 0.2s;
+    }
+
+    .birthday-item:hover {
+      transform: translateX(4px);
+      border-left-color: var(--er-rose);
+    }
+
+    .birthday-name {
+      font-weight: 600;
+      color: var(--er-charcoal);
+      margin-bottom: 0.25rem;
+    }
+
+    .birthday-date {
+      font-size: 0.85rem;
       color: rgba(58, 63, 59, 0.7);
+    }
+
+    .no-birthdays {
+      text-align: center;
+      padding: 2rem;
+      color: rgba(58, 63, 59, 0.6);
       font-style: italic;
     }
 
+    @media (max-width: 1200px) {
+      .stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
     @media (max-width: 768px) {
-      .page-wrapper {
-        padding: 20px 16px 24px;
+      .dashboard-container {
+        padding: 1rem;
       }
 
-      .page-title {
-        font-size: 1.6rem;
+      .dashboard-title {
+        font-size: 2rem;
       }
 
-      .dashboard-shell {
-        min-height: 60vh;
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .chart-container {
+        height: 300px;
+      }
+
+      .birthdays-list {
+        grid-template-columns: 1fr;
       }
     }
   </style>
 </head>
 <body>
-    
-  <div class="page-wrapper">
-    <header class="page-header">
-      <div class="breadcrumb">
-        <a href="/admin">Admin</a> / <span>Program Impact Dashboard</span>
-      </div>
-      <h1 class="page-title">Program Impact Dashboard</h1>
-      <p class="page-subtitle">
-        Explore survey results, milestones, and event performance in one place. Use this view
-        to answer donor and leadership questions about how Ella Rises is moving the needle.
-      </p>
-    </header>
+  <%- include('common/navbar.ejs') %>
 
-    <div class="toolbar">
-      <div class="toolbar-left">
-        <div class="chip">
-          <span class="chip-dot"></span>
-          Live Tableau analytics
-        </div>
-        <div class="chip">
-          🎯 Donor facing ready
-        </div>
+  <div class="dashboard-container">
+    <div class="dashboard-header">
+      <h1 class="dashboard-title">Manager Dashboard</h1>
+      <p class="dashboard-subtitle">Overview of key metrics and statistics for Ella Rises</p>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+      <div class="stat-card pink">
+        <div class="stat-label">Total Participants</div>
+        <div class="stat-value"><%= stats.totalParticipants %></div>
+        <div class="stat-detail">Registered participants</div>
       </div>
-      <div class="toolbar-right">
-        <a href="/admin/donations" class="btn btn-outline">
-          <span class="btn-icon">←</span>
-          Back to admin
-        </a>
-        <button type="button" class="btn btn-primary" onclick="window.location.reload()">
-          <span class="btn-icon">⟳</span>
-          Refresh dashboard
-        </button>
+
+      <div class="stat-card blue">
+        <div class="stat-label">Total Donations</div>
+        <div class="stat-value">$<%= stats.totalDonations %></div>
+        <div class="stat-detail">All time contributions</div>
+      </div>
+
+      <div class="stat-card lavender">
+        <div class="stat-label">Avg Donation</div>
+        <div class="stat-value">$<%= stats.avgDonation %></div>
+        <div class="stat-detail">Per participant</div>
+      </div>
+
+      <div class="stat-card sage">
+        <div class="stat-label">Total Events</div>
+        <div class="stat-value"><%= stats.totalEvents %></div>
+        <div class="stat-detail">Events held</div>
+      </div>
+
+      <div class="stat-card rose">
+        <div class="stat-label">Milestones Completed</div>
+        <div class="stat-value"><%= stats.completionPercentage %>%</div>
+        <div class="stat-detail"><%= stats.completedMilestones %> of <%= stats.totalMilestones %> milestones</div>
       </div>
     </div>
 
-    <section class="content-card">
-      <div class="dashboard-shell" id="tableau-dashboard-container">
-        <!-- 
-          Paste your Tableau embed code inside this container.
-          For example, the script and <iframe> or <div> that Tableau gives you.
-        -->
-        <!-- BEGIN TABLEAU EMBED -->
-        <!-- Your Tableau embed snippet goes here -->
-        <!-- END TABLEAU EMBED -->
-
-        <!-- Temporary placeholder so the page does not look broken before you embed -->
-        <div class="dashboard-placeholder">
-          <div class="placeholder-icon">📊</div>
-          <div class="placeholder-title">Tableau dashboard not embedded yet</div>
-          <p class="placeholder-text">
-            When you are ready, paste the Tableau embed code into the
-            <code>tableau-dashboard-container</code> div in this view.
-          </p>
-          <p class="placeholder-hint">
-            Tip: Make sure the embed uses 100 percent width and height so it fills this container.
-          </p>
+    <!-- Donations Chart -->
+    <div class="chart-section">
+      <div class="chart-header">
+        <h2 class="chart-title">Donations by Month</h2>
+        <div class="year-selector">
+          <label for="yearSelect">Year:</label>
+          <select id="yearSelect" onchange="changeYear(this.value)">
+            <% availableYears.forEach(year => { %>
+              <option value="<%= year %>" <%= year === selectedYear ? 'selected' : '' %>><%= year %></option>
+            <% }); %>
+          </select>
         </div>
       </div>
-    </section>
+      <div class="chart-container">
+        <canvas id="donationsChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Upcoming Birthdays -->
+    <div class="birthdays-section">
+      <h2 class="birthdays-title">🎂 Upcoming Birthdays This Week</h2>
+      <% if (upcomingBirthdays && upcomingBirthdays.length > 0) { %>
+        <div class="birthdays-list">
+          <% upcomingBirthdays.forEach(birthday => {
+            const birthDate = new Date(birthday.participantdob);
+            const monthDay = birthDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          %>
+            <div class="birthday-item">
+              <div class="birthday-name"><%= birthday.participantfirstname %> <%= birthday.participantlastname %></div>
+              <div class="birthday-date"><%= monthDay %></div>
+            </div>
+          <% }); %>
+        </div>
+      <% } else { %>
+        <div class="no-birthdays">No birthdays this week</div>
+      <% } %>
+    </div>
   </div>
+
+  <script>
+    // Chart.js configuration
+    const ctx = document.getElementById('donationsChart').getContext('2d');
+    const monthlyData = <%- JSON.stringify(monthlyData) %>;
+
+    const chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        datasets: [{
+          label: 'Donations ($)',
+          data: monthlyData,
+          borderColor: '#F9AFB1',
+          backgroundColor: 'rgba(249, 175, 177, 0.1)',
+          borderWidth: 3,
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: '#CE325B',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          pointRadius: 5,
+          pointHoverRadius: 7
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+            labels: {
+              font: {
+                family: 'Montserrat',
+                size: 12
+              }
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return 'Donations: $' + context.parsed.y.toFixed(2);
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: function(value) {
+                return '$' + value;
+              },
+              font: {
+                family: 'Montserrat'
+              }
+            },
+            grid: {
+              color: 'rgba(0, 0, 0, 0.05)'
+            }
+          },
+          x: {
+            ticks: {
+              font: {
+                family: 'Montserrat'
+              }
+            },
+            grid: {
+              display: false
+            }
+          }
+        }
+      }
+    });
+
+    function changeYear(year) {
+      window.location.href = '/dashboard?year=' + year;
+    }
+  </script>
+
+  <%- include('common/footer.ejs') %>
 </body>
 </html>
