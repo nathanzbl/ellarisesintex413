@@ -2092,21 +2092,20 @@ app.get('/participants', requireViewerOrManager, async (req, res) => {
 
 // GET /addParticipant - Display the form (Create Form) - Access restricted to 'manager' role
 app.get("/addParticipant", requireManager, (req, res) => {
-    
+
     const user = req.session.user ? {
         ...req.session.user,
         name: req.session.user.username,
         isManager: req.session.user.role === 'manager'
     } : { username: 'Guest', role: 'guest' };
-    
+
     // Pass error_message as an empty string to prevent EJS crash
-    res.render("participant/addparticipant", { message: null, user: user, error_message: "" });
+    res.render("participant/addparticipant", { message: null, user: user, error_message: "", isPublic: false });
 });
 
 // POST /addParticipant - Handle form submission (Create Action) - Access restricted to 'manager' role
 app.post("/addParticipant", requireManager, async (req, res) => {
-    // Assuming fields like firstName, lastName, email, etc.
-    const { firstName, lastName, email } = req.body;
+    const { firstName, lastName, email, phone, city, state, zip, dob, schoolOrEmployer, fieldOfInterest } = req.body;
 
     const user = req.session.user ? {
         ...req.session.user,
@@ -2116,11 +2115,11 @@ app.post("/addParticipant", requireManager, async (req, res) => {
 
     // Basic Validation
     if (!firstName || !lastName || !email) {
-        // Pass validation error via error_message
         return res.status(400).render("participant/addparticipant", {
             user: user,
             message: null,
-            error_message: "All fields (First Name, Last Name, Email) are required."
+            error_message: "First Name, Last Name, and Email are required.",
+            isPublic: false
         });
     }
 
@@ -2130,8 +2129,48 @@ app.post("/addParticipant", requireManager, async (req, res) => {
         return res.status(400).render("participant/addparticipant", {
             user: user,
             message: null,
-            error_message: "Please enter a valid email address."
+            error_message: "Please enter a valid email address.",
+            isPublic: false
         });
+    }
+
+    // Phone validation (if provided)
+    if (phone && phone.trim() !== '') {
+        const phoneRegex = /^[\(]?[0-9]{3}[\)]?[\s\-]?[0-9]{3}[\s\-]?[0-9]{4}$/;
+        if (!phoneRegex.test(phone)) {
+            return res.status(400).render("participant/addparticipant", {
+                user: user,
+                message: null,
+                error_message: "Please enter a valid phone number.",
+                isPublic: false
+            });
+        }
+    }
+
+    // Zip validation (if provided)
+    if (zip && zip.trim() !== '') {
+        const zipRegex = /^[0-9]{5}(-[0-9]{4})?$/;
+        if (!zipRegex.test(zip)) {
+            return res.status(400).render("participant/addparticipant", {
+                user: user,
+                message: null,
+                error_message: "Please enter a valid 5-digit zip code.",
+                isPublic: false
+            });
+        }
+    }
+
+    // State validation (if provided)
+    if (state && state.trim() !== '') {
+        const stateRegex = /^[A-Za-z]{2}$/;
+        if (!stateRegex.test(state)) {
+            return res.status(400).render("participant/addparticipant", {
+                user: user,
+                message: null,
+                error_message: "Please enter a valid 2-letter state code.",
+                isPublic: false
+            });
+        }
     }
 
     try {
@@ -2139,54 +2178,50 @@ app.post("/addParticipant", requireManager, async (req, res) => {
         await knex("participant").insert({
             participantfirstname: firstName,
             participantlastname: lastName,
-            participantemail: email
-            // Add other necessary participant fields here
+            participantemail: email,
+            participantphone: phone || null,
+            participantcity: city || null,
+            participantstate: state || null,
+            participantzip: zip || null,
+            participantdob: dob || null,
+            participantschooloremployer: schoolOrEmployer || null,
+            participantfieldofinterest: fieldOfInterest || null
         });
 
-        // Success: Redirect to the list view
         req.session.message = { type: 'success', text: 'Participant successfully added!' };
         res.redirect("/participants");
     } catch (err) {
         console.error("Error in add Participant process:", err.message);
-        
-        // Pass database error via error_message
-        res.status(500).render("participant/addparticipant", { 
+
+        res.status(500).render("participant/addparticipant", {
              user: user,
              message: null,
-             error_message: "Unable to save Participant. Check for duplicate email or database constraints."
+             error_message: "Unable to save Participant. Check for duplicate email or database constraints.",
+             isPublic: false
         })
     }
 });
 app.get("/addParticipantPublic", (req, res) => {
-    
-    const user = req.session.user ? {
-        ...req.session.user,
-        name: req.session.user.username,
-        isManager: req.session.user.role === 'manager'
-    } : { username: 'Guest', role: 'guest' };
-    
+
+    const user = { username: 'Guest', role: 'guest' };
+
     // Pass error_message as an empty string to prevent EJS crash
-    res.render("participant/addparticipant", { message: null, user: user, error_message: "" });
+    res.render("participant/addparticipant", { message: null, user: user, error_message: "", isPublic: true });
 });
 
-// POST /addParticipant - Handle form submission (Create Action) - Access restricted to 'manager' role
+// POST /addParticipantPublic - Handle public registration form submission
 app.post("/addParticipantPublic", async (req, res) => {
-    // Assuming fields like firstName, lastName, email, etc.
-    const { firstName, lastName, email } = req.body;
+    const { username, password, firstName, lastName, email, phone, city, state, zip, dob, schoolOrEmployer, fieldOfInterest } = req.body;
 
-    const user = req.session.user ? {
-        ...req.session.user,
-        name: req.session.user.username,
-        isManager: req.session.user.role === 'manager'
-    } : { username: 'Guest', role: 'guest' };
+    const user = { username: 'Guest', role: 'guest' };
 
     // Basic Validation
-    if (!firstName || !lastName || !email) {
-        // Pass validation error via error_message
+    if (!username || !password || !firstName || !lastName || !email) {
         return res.status(400).render("participant/addparticipant", {
             user: user,
             message: null,
-            error_message: "All fields (First Name, Last Name, Email) are required."
+            error_message: "Username, Password, First Name, Last Name, and Email are required.",
+            isPublic: true
         });
     }
 
@@ -2196,30 +2231,117 @@ app.post("/addParticipantPublic", async (req, res) => {
         return res.status(400).render("participant/addparticipant", {
             user: user,
             message: null,
-            error_message: "Please enter a valid email address."
+            error_message: "Please enter a valid email address.",
+            isPublic: true
         });
     }
 
+    // Phone validation (if provided)
+    if (phone && phone.trim() !== '') {
+        const phoneRegex = /^[\(]?[0-9]{3}[\)]?[\s\-]?[0-9]{3}[\s\-]?[0-9]{4}$/;
+        if (!phoneRegex.test(phone)) {
+            return res.status(400).render("participant/addparticipant", {
+                user: user,
+                message: null,
+                error_message: "Please enter a valid phone number.",
+                isPublic: true
+            });
+        }
+    }
+
+    // Zip validation (if provided)
+    if (zip && zip.trim() !== '') {
+        const zipRegex = /^[0-9]{5}(-[0-9]{4})?$/;
+        if (!zipRegex.test(zip)) {
+            return res.status(400).render("participant/addparticipant", {
+                user: user,
+                message: null,
+                error_message: "Please enter a valid 5-digit zip code.",
+                isPublic: true
+            });
+        }
+    }
+
+    // State validation (if provided)
+    if (state && state.trim() !== '') {
+        const stateRegex = /^[A-Za-z]{2}$/;
+        if (!stateRegex.test(state)) {
+            return res.status(400).render("participant/addparticipant", {
+                user: user,
+                message: null,
+                error_message: "Please enter a valid 2-letter state code.",
+                isPublic: true
+            });
+        }
+    }
+
     try {
+        // Check if email already exists
+        const existingParticipant = await knex("participant")
+            .where("participantemail", email)
+            .first();
+
+        if (existingParticipant) {
+            return res.status(400).render("participant/addparticipant", {
+                user: user,
+                message: null,
+                error_message: "This email is already registered. Please use a different email or login.",
+                isPublic: true
+            });
+        }
+
+        // Check if username already exists
+        const existingUser = await knex("users")
+            .where("username", username)
+            .first();
+
+        if (existingUser) {
+            return res.status(400).render("participant/addparticipant", {
+                user: user,
+                message: null,
+                error_message: "This username is already taken. Please choose a different username.",
+                isPublic: true
+            });
+        }
+
+        // Hash the password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
         // Insert new participant into the 'participant' table
-        await knex("participant").insert({
+        const [newParticipant] = await knex("participant").insert({
             participantfirstname: firstName,
             participantlastname: lastName,
-            participantemail: email
-            // Add other necessary participant fields here
+            participantemail: email,
+            participantphone: phone || null,
+            participantcity: city || null,
+            participantstate: state || null,
+            participantzip: zip || null,
+            participantdob: dob || null,
+            participantschooloremployer: schoolOrEmployer || null,
+            participantfieldofinterest: fieldOfInterest || null
+        }).returning('participantid');
+
+        const participantId = newParticipant.participantid || newParticipant;
+
+        // Create user account with role='user'
+        await knex("users").insert({
+            username: username,
+            password: hashedPassword,
+            role: 'user',
+            participantid: participantId
         });
 
-        // Success: Redirect to the list view
-        req.session.message = { type: 'success', text: 'Participant successfully added!' };
-        res.redirect("/participants");
+        // Success: Redirect to login page
+        req.session.message = { type: 'success', text: 'Account successfully created! Please log in.' };
+        res.redirect("/login");
     } catch (err) {
-        console.error("Error in add Participant process:", err.message);
-        
-        // Pass database error via error_message
-        res.status(500).render("participant/addparticipant", { 
+        console.error("Error in public registration process:", err.message);
+
+        res.status(500).render("participant/addparticipant", {
              user: user,
              message: null,
-             error_message: "Unable to save Participant. Check for duplicate email or database constraints."
+             error_message: "Unable to create account. Please try again later.",
+             isPublic: true
         })
     }
 });
@@ -3509,7 +3631,7 @@ app.post('/check-email', async (req, res) => {
 });
 
 app.get("/register", (req, res) => {
-    res.render("register");
+    res.redirect("/addParticipantPublic");
 });
 
 // app.post('/register', async (req, res) => {
