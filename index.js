@@ -20,7 +20,21 @@ let path = require("path");
 let bodyParser = require("body-parser");
 
 let app = express();
+
 const nodemailer = require("nodemailer");
+const { MailtrapTransport } = require("mailtrap");
+
+const mailtrapClient = nodemailer.createTransport(
+  MailtrapTransport({
+    token: process.env.MAILTRAP_TOKEN, // put your token in .env
+  })
+);
+
+const mailSender = {
+  address: "hello@byuisresearch.com",
+  name: "Ella Rises",
+};
+
 
 
 const surveyEmailTransporter = nodemailer.createTransport({
@@ -191,7 +205,7 @@ app.get("/login", (req, res) => {
 app.get("/surveys", (req, res) => {
     // Check if user is logged in
     if (req.session.isLoggedIn) {        
-        knex.select("eventdefid","eventname").from("eventdefinition")
+        knex.select("eventdefid","eventname").from("eventdefinition").orderBy("eventdefid", "asc")
             .then(events => {
                 res.render("survey/surveys", {
                     events: events,
@@ -213,7 +227,7 @@ app.get("/surveys", (req, res) => {
 app.post("/survey", async (req, res) => {
   const {
     SurveyEmail,
-    SurveyEventId,
+    SurveyEventDefId,
     SurveyEventDate,
     SurveySatisfactionScore,
     SurveyUsefulnessScore,
@@ -223,22 +237,49 @@ app.post("/survey", async (req, res) => {
   } = req.body;
 
   try {
-    // 1) Look up participant by email using knex.raw
+    // 1) Look up participant by email
     const emailResult = await knex.raw(
       "SELECT participantid, participantemail FROM participant WHERE participantemail = ?",
       [SurveyEmail]
     );
 
-    // With Postgres, knex.raw returns { rows: [...] }
-    const rows = emailResult.rows || emailResult;
+    const rawDate = SurveyEventDate;
+    const isoDate = new Date(rawDate).toISOString().slice(0, 10);
 
-    if (!rows || rows.length === 0) {
-      // Email not found, reload page with error
+    // 2) Look up event by eventdefid + date (ignore time)
+    const eventResult = await knex.raw(
+      `
+      SELECT eventid
+      FROM event
+      WHERE eventdefid = ?
+        AND eventdatetimestart::date = ?::date
+      LIMIT 1
+      `,
+      [SurveyEventDefId, isoDate]
+    );
+
+    const eventRows = eventResult.rows || eventResult;
+    if (!eventRows || eventRows.length === 0) {
       const events = await knex("eventdefinition")
         .select("eventdefid", "eventname")
         .orderBy("eventdefid", "asc");
 
-      return res.status(400).render("surveys", {
+      return res.status(400).render("survey/surveys", {
+        events,
+        error_message:
+          "We could not find that event in our records. Please verify the event and date.",
+      });
+    }
+
+    const eventId = eventRows[0].eventid;
+
+    const rows = emailResult.rows || emailResult;
+    if (!rows || rows.length === 0) {
+      const events = await knex("eventdefinition")
+        .select("eventdefid", "eventname")
+        .orderBy("eventdefid", "asc");
+
+      return res.status(400).render("survey/surveys", {
         events,
         error_message:
           "We could not find that email in our records. Please use the email you used to register.",
@@ -247,19 +288,18 @@ app.post("/survey", async (req, res) => {
 
     const participantId = rows[0].participantid;
 
-    // Parse scores to integers
+    // Parse scores
     const sat = Number(SurveySatisfactionScore);
     const useful = Number(SurveyUsefulnessScore);
     const instr = Number(SurveyInstructorScore);
     const recom = Number(SurveyRecommendationScore);
-
     const overall = Math.round((sat + useful + instr + recom) / 4);
 
-    // 2) Insert into survey table
+    // 3) Insert into survey
     await knex("survey").insert({
       participantid: participantId,
-      eventid: SurveyEventId,
-      recommendationid: recom, // or whatever id you actually want here
+      eventid: eventId,
+      recommendationid: recom,
       surveysatisfactionscore: sat,
       surveyusefulnessscore: useful,
       surveyinstructorscore: instr,
@@ -269,34 +309,147 @@ app.post("/survey", async (req, res) => {
       surveysubmissiondate: knex.fn.now(),
     });
 
-    // 3) Send confirmation email (do not block the user if this fails)
+    // 4) Send confirmation email via Mailtrap
     try {
-      await surveyEmailTransporter.sendMail({
-        from: `"${process.env.SMTP_FROM_NAME || "Ella Rises"}" <${
-          process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER
-        }>`,
-        to: SurveyEmail,
-        subject: "Thank you for completing the Ella Rises survey",
-        text:
-          "Thank you for taking the time to complete our post event survey. Your feedback helps us improve future Ella Rises events.",
-        html: `
-          <p>Hi,</p>
-          <p>Thank you for taking the time to complete our post event survey for Ella Rises.</p>
-          <p>Your feedback helps us improve future events and better support young women in STEAM.</p>
-          ${
-            SurveyEventDate
-              ? `<p><strong>Event date:</strong> ${SurveyEventDate}</p>`
-              : ""
-          }
-          <p>With gratitude,<br/>The Ella Rises Team</p>
-        `,
-      });
+      await mailtrapClient.sendMail({
+  from: mailSender,
+  to: [{ address: SurveyEmail }],
+  subject: "Thank you for completing the Ella Rises survey",
+  text:
+    "Thank you for taking the time to complete our post event survey for Ella Rises. Your feedback helps us improve future events and better support young women in STEAM.",
+  html: `
+  <!DOCTYPE html>
+  <html>
+    <head>
+      <meta charset="UTF-8" />
+      <title>Thank you from Ella Rises</title>
+      <style>
+        body, table, td, p { margin: 0; padding: 0; }
+      </style>
+    </head>
+    <body style="background-color:#f5f5f5; font-family: Arial, sans-serif; color:#333333;">
+      <table width="100%" border="0" cellspacing="0" cellpadding="0" style="padding: 20px 0;">
+        <tr>
+          <td align="center">
+            <table width="600" border="0" cellspacing="0" cellpadding="0" style="background-color:#ffffff; border-radius:8px; overflow:hidden; box-shadow:0 2px 6px rgba(0,0,0,0.08);">
+              <!-- Header -->
+              <tr>
+                <td align="center" style="background: linear-gradient(90deg, #99B7C6, #F9AFB1); padding: 24px 20px;">
+                  <h1 style="margin:0; font-size:24px; color:#ffffff; font-weight:600;">
+                    Ella Rises
+                  </h1>
+                  <p style="margin:8px 0 0; font-size:14px; color:#fdfdfd;">
+                    Empowering young women in STEAM
+                  </p>
+                </td>
+              </tr>
+
+              <!-- Body -->
+              <tr>
+                <td style="padding: 24px 28px;">
+                  <p style="font-size:16px; margin-bottom:16px;">
+                    Hi,
+                  </p>
+
+                  <p style="font-size:15px; line-height:1.6; margin-bottom:16px;">
+                    Thank you for taking the time to complete our post event survey for <strong>Ella Rises</strong>.
+                    Your feedback plays a direct role in how we improve our programs and better support young women
+                    as they explore opportunities in STEAM.
+                  </p>
+
+                  ${
+                    SurveyEventDate
+                      ? `
+                      <p style="font-size:15px; margin-bottom:16px;">
+                        <strong>Event date:</strong> ${SurveyEventDate}
+                      </p>
+                    `
+                      : ""
+                  }
+
+                  <!-- Survey summary block -->
+                  <h2 style="font-size:18px; margin:24px 0 12px;">Survey summary</h2>
+
+                  <table width="100%" cellpadding="6" cellspacing="0" style="border-collapse:collapse; font-size:14px;">
+                    <tr>
+                      <td style="background-color:#f9f9f9; width:40%; font-weight:600;">Participant ID</td>
+                      <td style="background-color:#f9f9f9;">${participantId}</td>
+                    </tr>
+                    <tr>
+                      <td style="width:40%; font-weight:600;">Event ID</td>
+                      <td>${eventId}</td>
+                    </tr>
+                    <tr>
+                      <td style="background-color:#f9f9f9; font-weight:600;">Recommendation ID</td>
+                      <td style="background-color:#f9f9f9;">${recom}</td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight:600;">Satisfaction score</td>
+                      <td>${sat}</td>
+                    </tr>
+                    <tr>
+                      <td style="background-color:#f9f9f9; font-weight:600;">Usefulness score</td>
+                      <td style="background-color:#f9f9f9;">${useful}</td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight:600;">Instructor score</td>
+                      <td>${instr}</td>
+                    </tr>
+                    <tr>
+                      <td style="background-color:#f9f9f9; font-weight:600;">Recommendation score</td>
+                      <td style="background-color:#f9f9f9;">${recom}</td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight:600;">Overall score</td>
+                      <td>${overall}</td>
+                    </tr>
+                    <tr>
+                      <td style="background-color:#f9f9f9; font-weight:600;">Comments</td>
+                      <td style="background-color:#f9f9f9;">${SurveyComments ? SurveyComments : "None provided"}</td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight:600;">Submission date</td>
+                      <td>${knex.fn.now().toLocaleString("en-US", { timeZone: "America/Denver" })}</td>
+                    </tr>
+                  </table>
+
+                  <p style="font-size:15px; line-height:1.6; margin-top:24px; margin-bottom:0;">
+                    We are grateful you chose to spend time with us and to share your perspective.
+                  </p>
+
+                  <p style="font-size:15px; line-height:1.6; margin-top:12px; margin-bottom:4px;">
+                    With gratitude,
+                  </p>
+                  <p style="font-size:15px; line-height:1.4; margin-bottom:0;">
+                    The Ella Rises Team
+                  </p>
+                </td>
+              </tr>
+
+              <!-- Footer -->
+              <tr>
+                <td align="center" style="background-color:#fafafa; padding: 16px 20px;">
+                  <p style="font-size:12px; color:#777777; margin:0;">
+                    Ella Rises | Supporting young women through mentoring, creativity, and leadership
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </body>
+  </html>
+  `,
+  category: "survey-confirmation",
+});
+      console.log("Survey confirmation email sent to:", SurveyEmail);
     } catch (emailErr) {
       console.error("Survey email send error:", emailErr);
-      // do not throw, user already submitted successfully
+      // do not throw - survey already saved
     }
 
-    // 4) Redirect to a thank you page
+    // 5) Redirect to thank you page
     res.redirect("/survey/thankyou");
   } catch (err) {
     console.error("Survey submit error:", err);
@@ -305,13 +458,14 @@ app.post("/survey", async (req, res) => {
       .select("eventdefid", "eventname")
       .orderBy("eventdefid", "asc");
 
-    res.status(500).render("surveys", {
+    res.status(500).render("survey/surveys", {
       events,
       error_message:
         "There was a problem saving your survey. Please try again.",
     });
   }
 });
+
 
 // app.post("/survey", async (req, res) => {
 //   const {
@@ -767,10 +921,10 @@ app.get('/donations/view', async (req, res) => {
 
     // Base query with Participant + PrimaryKey + Event + EventDefinition
     const baseQuery = knex('donation as d')
-      .leftJoin('participant as p', 'd.participantid', 'p.participantid')
-      .leftJoin('primarykey as pk', 'd.donationid', 'pk.donationid')
-      .leftJoin('event as ev', 'pk.eventid', 'ev.eventid')
-      .leftJoin('eventdefinition as ed', 'ev.eventdefid', 'ed.eventdefid');
+      .innerJoin('participant as p', 'd.participantid', 'p.participantid')
+      .innerJoin('primarykey as pk', 'd.donationid', 'pk.donationid')
+      .innerJoin('event as ev', 'pk.eventid', 'ev.eventid')
+      .innerJoin('eventdefinition as ed', 'ev.eventdefid', 'ed.eventdefid');
 
     const applyFilters = (q) => {
       if (participantSearch && participantSearch.trim() !== '') {
@@ -811,22 +965,35 @@ app.get('/donations/view', async (req, res) => {
     applyFilters(dataQuery);
 
     const donations = await dataQuery
-      .select(
-        'd.donationid',
-        'd.donationnumber',
-        'd.donationamount',
-        'd.donationdate',
-        'p.participantemail',
-        'ed.eventname as eventname',
-        knex.raw(
-          "coalesce(p.participantfirstname, '') || " +
-          "case when p.participantfirstname is not null and p.participantlastname is not null then ' ' else '' end || " +
-          "coalesce(p.participantlastname, '') as participantname"
-        )
-      )
-      .orderBy('d.donationdate', 'asc')
-      .limit(pageSize)
-      .offset((safePage - 1) * pageSize);
+  .select(
+    'd.donationid',
+    'd.donationnumber',
+    'd.donationamount',
+    'd.donationdate',
+    'p.participantemail',
+    knex.raw(
+      "coalesce(p.participantfirstname, '') || " +
+      "case when p.participantfirstname is not null and p.participantlastname is not null then ' ' else '' end || " +
+      "coalesce(p.participantlastname, '') as participantname"
+    ),
+    knex.raw("string_agg(distinct ed.eventname, ', ') as eventname")
+  )
+  .groupBy(
+    'd.donationid',
+    'd.donationnumber',
+    'd.donationamount',
+    'd.donationdate',
+    'p.participantemail',
+    knex.raw(
+      "coalesce(p.participantfirstname, '') || " +
+      "case when p.participantfirstname is not null and p.participantlastname is not null then ' ' else '' end || " +
+      "coalesce(p.participantlastname, '')"
+    )
+  )
+  .orderBy('d.donationdate', 'asc')
+  .limit(pageSize)
+  .offset((safePage - 1) * pageSize);
+
 
     res.render('donation/viewDonations', {
       donations,
