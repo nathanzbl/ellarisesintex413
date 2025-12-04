@@ -2162,6 +2162,7 @@ app.get("/eventspublic/detail/:eventdefid", async (req, res) => {
         const formattedEvents = upcomingEvents.map(ev => ({
             ...ev,
             label: new Date(ev.eventdatetimestart).toLocaleString("en-US", {
+                year: "numeric",
                 weekday: "short",
                 month: "short",
                 day: "numeric",
@@ -3129,8 +3130,8 @@ app.get("/register", (req, res) => {
 // });
 
 app.get("/teapot", (req, res) => {
-    // Renders the teapot.ejs file located in the views folder
-    res.render("teapot"); 
+    // Renders the teapot.ejs file located in the views folder with 418 status code
+    res.status(418).render("teapot"); 
 });
 
 const PORT = process.env.PORT || 3000;
