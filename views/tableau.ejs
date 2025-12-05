@@ -322,26 +322,27 @@
     <!-- Embedded Tableau Dashboard -->
     <div class="tableau-section">
       <h2 class="tableau-title">Interactive Analytics Dashboard</h2>
-      <div class='tableauPlaceholder' id='viz1764944072890' style='position: relative; width: 100%;'>
+      <div class='tableauPlaceholder' id='viz1764949414382' style='position: relative'>
         <noscript>
           <a href='#'>
-            <img alt='Dashboard 1 (2)' src='https://public.tableau.com/static/images/El/EllaRisesManagerDashboard/Dashboard12/1_rss.png' style='border: none' />
+            <img alt='Dashboard 1 (2) ' src='https://public.tableau.com/static/images/El/EllaRisesManagerDashboard_17649492653730/Dashboard12/1_rss.png' style='border: none' />
           </a>
         </noscript>
         <object class='tableauViz' style='display:none;'>
           <param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' />
           <param name='embed_code_version' value='3' />
           <param name='site_root' value='' />
-          <param name='name' value='EllaRisesManagerDashboard/Dashboard12' />
+          <param name='name' value='EllaRisesManagerDashboard_17649492653730/Dashboard12' />
           <param name='tabs' value='no' />
           <param name='toolbar' value='yes' />
-          <param name='static_image' value='https://public.tableau.com/static/images/El/EllaRisesManagerDashboard/Dashboard12/1.png' />
+          <param name='static_image' value='https://public.tableau.com/static/images/El/EllaRisesManagerDashboard_17649492653730/Dashboard12/1.png' />
           <param name='animate_transition' value='yes' />
           <param name='display_static_image' value='yes' />
           <param name='display_spinner' value='yes' />
           <param name='display_overlay' value='yes' />
           <param name='display_count' value='yes' />
           <param name='language' value='en-US' />
+          <param name='filter' value='publish=yes' />
         </object>
       </div>
     </div>
@@ -600,39 +601,29 @@
 
   <!-- Tableau Visualization Script -->
   <script type='text/javascript'>
-    // Wait for DOM to be fully loaded
-    document.addEventListener('DOMContentLoaded', function() {
-      var divElement = document.getElementById('viz1764944072890');
-      if (divElement) {
-        var vizElement = divElement.getElementsByTagName('object')[0];
-        if (vizElement) {
-          if (divElement.offsetWidth > 800) {
-            vizElement.style.minWidth = '1300px';
-            vizElement.style.maxWidth = '1366px';
-            vizElement.style.width = '100%';
-            vizElement.style.minHeight = '827px';
-            vizElement.style.maxHeight = '1627px';
-            vizElement.style.height = (divElement.offsetWidth * 0.75) + 'px';
-          } else if (divElement.offsetWidth > 500) {
-            vizElement.style.minWidth = '1300px';
-            vizElement.style.maxWidth = '1366px';
-            vizElement.style.width = '100%';
-            vizElement.style.minHeight = '827px';
-            vizElement.style.maxHeight = '1627px';
-            vizElement.style.height = (divElement.offsetWidth * 0.75) + 'px';
-          } else {
-            vizElement.style.width = '100%';
-            vizElement.style.height = '2677px';
-          }
-
-          // Load Tableau API
-          var scriptElement = document.createElement('script');
-          scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';
-          scriptElement.async = true;
-          vizElement.parentNode.insertBefore(scriptElement, vizElement);
-        }
-      }
-    });
+    var divElement = document.getElementById('viz1764949414382');
+    var vizElement = divElement.getElementsByTagName('object')[0];
+    if (divElement.offsetWidth > 800) {
+      vizElement.style.minWidth='1300px';
+      vizElement.style.maxWidth='1366px';
+      vizElement.style.width='100%';
+      vizElement.style.minHeight='827px';
+      vizElement.style.maxHeight='1627px';
+      vizElement.style.height=(divElement.offsetWidth*0.75)+'px';
+    } else if (divElement.offsetWidth > 500) {
+      vizElement.style.minWidth='1300px';
+      vizElement.style.maxWidth='1366px';
+      vizElement.style.width='100%';
+      vizElement.style.minHeight='827px';
+      vizElement.style.maxHeight='1627px';
+      vizElement.style.height=(divElement.offsetWidth*0.75)+'px';
+    } else {
+      vizElement.style.width='100%';
+      vizElement.style.height='2727px';
+    }
+    var scriptElement = document.createElement('script');
+    scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';
+    vizElement.parentNode.insertBefore(scriptElement, vizElement);
   </script>
 
   <%- include('common/footer.ejs') %>
