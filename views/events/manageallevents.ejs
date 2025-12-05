@@ -405,14 +405,14 @@
             <th>Location</th>
             <th>Start</th>
             <th>End</th>
-            <th colspan="2">Actions</th>
+            <th>Actions</th>
           </tr>
         </thead>
 
         <tbody>
           <% if (!events || events.length === 0) { %>
             <tr>
-              <td colspan="7" class="no-results">
+              <td colspan="6" class="no-results">
                 No events found <%= isSearching ? 'matching your criteria.' : 'in the system.' %>
               </td>
             </tr>
@@ -426,9 +426,7 @@
                 <td><%= ev.endFormatted %></td>
                 <td class="actions-cell">
                   <a href="/events/edit/<%= ev.eventid %>" class="btn-small btn-edit">Edit</a>
-                </td>
-                <td class="actions-cell">
-                  <form action="/events/delete/<%= ev.eventid %>" method="post">
+                  <form action="/events/delete/<%= ev.eventid %>" method="post" style="margin: 0;">
                     <button class="btn-small btn-delete" type="submit">Delete</button>
                   </form>
                 </td>
