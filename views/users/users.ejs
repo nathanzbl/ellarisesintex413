@@ -91,8 +91,11 @@
 
         .add-button-wrapper {
             text-align: center;
-            flex-shrink: 0; 
-            padding-bottom: 0.7rem;
+            flex-shrink: 0;
+            padding: 1.25rem 0;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid var(--er-blush);
+            background: rgba(249, 175, 177, 0.03);
         }
 
         .search-group {
@@ -219,11 +222,13 @@
         .btn-add-user {
             background: var(--er-pink);
             color: #fff;
+            box-shadow: 0 4px 12px rgba(249, 175, 177, 0.3);
         }
-        
+
         .btn-add-user:hover {
             background: var(--er-rose);
-            transform: translateY(-1px);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(206, 50, 91, 0.4);
         }
 
         .btn-small {
@@ -240,28 +245,41 @@
             text-decoration: none;
             display: inline-block;
             text-align: center;
+            min-width: 95px;
         }
 
         .btn-edit-user {
             background: var(--er-sage);
             color: #fff;
-            box-shadow: none;
+            box-shadow: 0 2px 8px rgba(154, 181, 157, 0.3);
         }
-        
+
         .btn-edit-user:hover {
-            background: var(--er-blue);
-            transform: translateY(-1px);
+            background: var(--er-charcoal);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(58, 63, 59, 0.4);
         }
-        
+
         .btn-delete-user {
             background: var(--er-rose);
             color: #fff;
-            box-shadow: none;
+            box-shadow: 0 2px 8px rgba(206, 50, 91, 0.3);
         }
-        
+
         .btn-delete-user:hover {
             background: var(--er-charcoal);
-            transform: translateY(-1px);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(58, 63, 59, 0.4);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .action-buttons form {
+            margin: 0;
         }
 
         .message-alert {
@@ -464,8 +482,7 @@
                                 <th>ID</th>
                                 <th>Username</th>
                                 <th>Role</th>
-                                <th>Edit</th>
-                                <th>Delete</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -475,18 +492,18 @@
                                     <td><%= users[iCount].username %></td>
                                     <td><%= users[iCount].role %></td>
                                     <td>
-                                        <form action="/editUser/<%= users[iCount].id %>" method="get">
-                                            <input type="submit" name="Edit" value="Edit" class="btn-small btn-edit-user"/>
-                                        </form>
-                                    </td>
-                                    <td>
-                                        <form 
-                                            action="/deleteUser/<%= users[iCount].id %>" 
-                                            method="post"
-                                            onsubmit="return confirmDeletion(event);" 
-                                        >
-                                            <input type="submit" name="Delete" value="Delete" class="btn-small btn-delete-user"/>
-                                        </form>
+                                        <div class="action-buttons">
+                                            <form action="/editUser/<%= users[iCount].id %>" method="get">
+                                                <input type="submit" name="Edit" value="Edit" class="btn-small btn-edit-user"/>
+                                            </form>
+                                            <form
+                                                action="/deleteUser/<%= users[iCount].id %>"
+                                                method="post"
+                                                onsubmit="return confirmDeletion(event);"
+                                            >
+                                                <input type="submit" name="Delete" value="Delete" class="btn-small btn-delete-user"/>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                             <% } %>

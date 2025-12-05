@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Ella Rises | Events</title>
+<title data-i18n-key="doc_title_events">Ella Rises | Events</title>
 
 <style>
     :root {
@@ -54,6 +54,13 @@
         gap: 25px;
     }
 
+    @media only screen and (max-width: 768px) {
+        .event-grid {
+            grid-template-columns: 1fr !important;
+            width: 92% !important;
+        }
+    }
+
     .event-card {
         background: #fff;
         padding: 2rem;
@@ -96,7 +103,7 @@
         position: absolute;
         left: 0;
         right: 0;
-        bottom: -80px; /* Hidden at first */
+        bottom: -120px; /* Hidden further down to accommodate longer Spanish text */
         padding: 1rem;
         text-align: center;
         transition: bottom 0.3s ease;
@@ -110,22 +117,26 @@
     }
 
     .btn-action {
-        padding: .7rem 1.3rem;
+        padding: .7rem 1rem;
         border-radius: 0; /* No rounded corners */
         border: none;
         background: var(--er-pink);
         color: #fff;
         font-weight: 600;
-        letter-spacing: 0.07em;
-        font-size: .9rem;
+        letter-spacing: 0.05em;
+        font-size: .85rem; /* Slightly smaller to fit longer Spanish text */
         text-decoration: none;
-        margin: .4rem 0;
+        margin: .3rem .2rem;
         display: inline-block;
-        transition: background 0.2s ease;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 8px rgba(249, 175, 177, 0.3);
+        white-space: nowrap; /* Prevent text wrapping */
     }
 
     .btn-action:hover {
         background: var(--er-rose);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(206, 50, 91, 0.4);
     }
 
     .event-img {
@@ -136,6 +147,70 @@
     margin-bottom: 1rem;
 }
 
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    body {
+        font-size: 18px;
+    }
+
+    .page-title {
+        font-size: 2.2rem;
+        margin-top: 1.5rem;
+        padding: 0 1rem;
+        font-weight: 600;
+    }
+
+    .event-grid {
+        width: 92%;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        margin: 1.5rem auto;
+    }
+
+    .event-card {
+        padding: 1.8rem;
+        width: 100%;
+        max-width: 100%;
+        min-width: 280px;
+    }
+
+    .event-card:hover {
+        padding-bottom: 6.5rem;
+    }
+
+    .event-name {
+        font-size: 1.3rem;
+        font-weight: 600;
+    }
+
+    .event-description {
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+
+    .hover-actions {
+        bottom: -150px;
+        padding: 1.2rem 0.8rem;
+    }
+
+    .btn-action {
+        padding: 1rem 1.4rem;
+        font-size: 1rem;
+        margin: 0.4rem;
+        min-height: 48px;
+        min-width: 120px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+    }
+
+    .event-img {
+        height: 220px;
+    }
+}
+
+
 
 </style>
 </head>
@@ -144,7 +219,9 @@
 
 <%- include('../common/navbar.ejs') %>
 
-<h1 class="page-title">Events</h1>
+<%- include('../spanishtranslationstorage.ejs') %>
+
+<h1 class="page-title" data-i18n-key="events_page_title">Events</h1>
 
 
 <div class="event-grid">
@@ -160,8 +237,8 @@
 
             <!-- Expand-down Actions -->
             <div class="hover-actions">
-                <a href="/eventspublic/detail/<%= def.eventdefid %>" class="btn-action">More Info</a>
-                <a href="/rsvp/<%= def.eventdefid %>" class="btn-action">RSVP</a>
+                <a href="/eventspublic/detail/<%= def.eventdefid %>" class="btn-action" data-i18n-key="events_btn_more_info">More Info</a>
+                <a href="/rsvp/<%= def.eventdefid %>" class="btn-action" data-i18n-key="events_btn_rsvp">RSVP</a>
             </div>
 
         </div>

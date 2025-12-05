@@ -66,7 +66,7 @@
             display: grid;
             grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
             gap: 2.5rem;
-            align-items: flex-start;
+            align-items: stretch;
         }
 
         /* LEFT - Story and impact */
@@ -76,6 +76,8 @@
             padding: 2rem;
             box-shadow: 0 18px 40px rgba(58, 63, 59, 0.08);
             border: 1px solid var(--er-blush);
+            display: flex;
+            flex-direction: column;
         }
 
         .tagline {
@@ -156,6 +158,8 @@
             padding: 2rem;
             box-shadow: 0 18px 40px rgba(58, 63, 59, 0.08);
             border: 1px solid var(--er-blush);
+            display: flex;
+            flex-direction: column;
         }
 
         .donation-card h2 {
@@ -257,6 +261,7 @@
             background-color: var(--er-cream);
             color: var(--er-charcoal);
             font-family: 'Montserrat', sans-serif;
+            transition: all 0.2s ease;
         }
 
         .pill-toggle input[type="radio"]:checked + span {
@@ -268,10 +273,13 @@
 
         .pill-toggle span:hover {
             background-color: var(--er-blush);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(154, 181, 157, 0.3);
         }
 
         .pill-toggle input[type="radio"]:checked + span:hover {
             background-color: var(--er-rose);
+            box-shadow: 0 2px 8px rgba(206, 50, 91, 0.3);
         }
 
         .help {
@@ -310,10 +318,14 @@
             font-weight: 600;
             cursor: pointer;
             font-family: 'Montserrat', sans-serif;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(249, 175, 177, 0.3);
         }
 
         .submit-row button:hover {
             background-color: var(--er-rose);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(206, 50, 91, 0.4);
         }
 
         .secure-text {
@@ -338,6 +350,53 @@
         @media (max-width: 900px) {
             .page-layout {
                 grid-template-columns: minmax(0, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .page-container {
+                padding: 0 1rem 2rem;
+                margin: 1.5rem auto;
+            }
+
+            .page-layout {
+                gap: 1.5rem;
+            }
+
+            .story-card,
+            .donation-form-card {
+                padding: 1.5rem;
+            }
+
+            .story-card h1 {
+                font-size: 1.5rem;
+            }
+
+            .donation-form-card h2 {
+                font-size: 1.4rem;
+            }
+
+            .pill-toggle label {
+                padding: 0.9rem 1rem;
+                font-size: 0.95rem;
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .submit-btn {
+                padding: 1rem 2rem;
+                font-size: 1rem;
+                min-height: 48px;
+            }
+
+            input[type="text"],
+            input[type="email"],
+            input[type="number"],
+            textarea {
+                font-size: 16px;
+                padding: 0.85rem;
             }
         }
     </style>
@@ -604,6 +663,21 @@
             el.style.width = pct + '%';
           }, 100);
         }
+
+        // Add unselect functionality to donation amount radio buttons
+        var lastChecked = null;
+        var radioButtons = document.querySelectorAll('.pill-toggle input[type="radio"]');
+
+        radioButtons.forEach(function(radio) {
+          radio.addEventListener('click', function() {
+            if (this === lastChecked) {
+              this.checked = false;
+              lastChecked = null;
+            } else {
+              lastChecked = this;
+            }
+          });
+        });
       });
     </script>
 </body>

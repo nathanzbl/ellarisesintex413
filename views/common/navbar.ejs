@@ -28,8 +28,8 @@ nav {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.75rem 2rem;
-    gap: 2rem;
+    padding: 0.75rem 1rem;
+    gap: 1rem;
 }
 
 .nav-logo {
@@ -42,7 +42,7 @@ nav {
     gap: 0.5rem;
     align-items: center;
     margin-left: auto;
-    margin-right: 1rem;
+    margin-right: 0.25rem;
 }
 
 .nav-links a,
@@ -118,9 +118,10 @@ nav {
     /* Ensure the container sits nicely in the flex layout */
     display: flex;
     align-items: center;
-    padding: 0.25rem; 
+    padding: 0.25rem;
     border-radius: 50%;
     transition: background-color 0.2s;
+    margin-right: 60px;
 }
 
 .profile-container:hover {
@@ -194,7 +195,7 @@ nav {
     background: var(--er-cream);
     border-radius: 0.75rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    margin-right: 3rem;
+    margin-right: 60px;
 }
 
 .lang-button {
@@ -228,26 +229,141 @@ nav {
     background-color: var(--er-rose);
 }
 
-/* Responsive adjustments remain the same */
+/* Hamburger Menu Styles */
+.hamburger {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+    padding: 0.5rem;
+    z-index: 1001;
+    background: none;
+    border: none;
+    margin-left: 0.5rem;
+}
+
+.hamburger span {
+    width: 25px;
+    height: 3px;
+    background-color: var(--er-charcoal);
+    margin: 3px 0;
+    transition: 0.3s;
+    border-radius: 2px;
+}
+
+.hamburger.active span:nth-child(1) {
+    transform: rotate(-45deg) translate(-5px, 6px);
+}
+
+.hamburger.active span:nth-child(2) {
+    opacity: 0;
+}
+
+.hamburger.active span:nth-child(3) {
+    transform: rotate(45deg) translate(-5px, -6px);
+}
+
+/* Mobile Responsive */
 @media (max-width: 768px) {
+    .hamburger {
+        display: flex;
+        margin-left: auto;
+    }
+
     .nav-container {
         padding: 0.75rem 1rem;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 1rem;
+        position: relative;
     }
 
     .nav-links {
-        justify-content: center; 
-        flex-wrap: wrap;
-        margin-right: 0;
+        position: fixed;
+        left: 0;
+        right: 0;
+        top: -100%;
+        width: 100%;
+        background-color: var(--pink);
+        flex-direction: column;
+        padding: 1rem 1.5rem 2rem;
+        margin: 0;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        transition: top 0.3s ease-in-out;
+        overflow-y: auto;
+        z-index: 1000;
+        gap: 0;
+        max-height: 90vh;
+    }
+
+    .nav-links.active {
+        top: 70px;
+    }
+
+    .nav-links a,
+    .nav-links .nav-dropdown > a {
+        width: 100%;
+        padding: 1rem 0.75rem;
+        font-size: 1.1rem;
+        border-radius: 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .nav-dropdown {
         width: 100%;
     }
 
+    .nav-dropdown-menu {
+        position: static;
+        box-shadow: none;
+        margin-top: 0;
+        transform: none;
+        opacity: 1;
+        visibility: visible;
+        background-color: rgba(255, 255, 255, 0.5);
+        display: none;
+        border-radius: 0;
+    }
+
+    .nav-dropdown.active .nav-dropdown-menu {
+        display: block;
+    }
+
+    .nav-dropdown-menu a {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+    }
+
+    .profile-container {
+        margin-right: 0;
+        padding: 1rem 0.75rem;
+        border-radius: 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .dropdown-menu {
+        position: static;
+        box-shadow: none;
+        margin-top: 0;
+        transform: none;
+        opacity: 1;
+        visibility: visible;
+        background-color: rgba(255, 255, 255, 0.5);
+        display: none;
+        border-radius: 0;
+    }
+
+    .profile-container.active .dropdown-menu {
+        display: block;
+    }
+
     .lang-toggle {
-        position: absolute;
-        top: 0.75rem;
-        right: 3rem;
+        margin: 1rem 0;
+        margin-left: 50px;
+        width: auto;
+        max-width: 200px;
+        justify-content: center;
+    }
+
+    .lang-button {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
     }
 }
 </style>
@@ -258,8 +374,15 @@ nav {
             <img src="/images/EllaRisesLogo.png.avif" alt="Ella Rises Logo" width="75px" onerror="this.onerror=null; this.src='https://placehold.co/75x50/F9AFB1/3A3F3B?text=Logo';">
         </a>
 
+        <!-- Hamburger Menu Button -->
+        <button class="hamburger" id="hamburger" aria-label="Toggle navigation menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
         <!-- these nav-links contains all navigation and action links -->
-        <div class="nav-links">
+        <div class="nav-links" id="navLinks">
             <a href="/" data-i18n-key="nav_home">Home</a>
 
             <%
@@ -281,8 +404,8 @@ nav {
                 <a href="/donations" data-i18n-key="nav_donations">Donations</a>
             <% } %>
 
-            <% // Events link logic %>
-            <% if (typeof currentUser !== "undefined" && currentUser) { %>
+            <% // Events link logic - managers/viewers see admin events, others see public %>
+            <% if (typeof isLoggedIn !== 'undefined' && isLoggedIn && (userRole === 'viewer' || userRole === 'manager')) { %>
                 <a href="/events" class="nav-link" data-i18n-key="nav_events">Events</a>
             <% } else { %>
                 <a href="/eventspublic" class="nav-link" data-i18n-key="nav_events">Events</a>
@@ -356,9 +479,14 @@ nav {
         // Default to 'en' if currentLanguage is not defined (requires server-side variable)
         // OR get the client-side preference if using client-side routing
         const lang = typeof currentLanguage !== 'undefined' ? currentLanguage : 'en';
+
+        // Show language toggle only for non-logged-in users or users with 'user' or 'guest' roles
+        // Hide it for 'manager' and 'viewer' roles
+        const showLanguageToggle = !isLoggedIn || (userRole !== 'manager' && userRole !== 'viewer');
         %>
 
-        <!-- lang-toggle options -->
+        <!-- lang-toggle options - only show for public/user pages -->
+        <% if (showLanguageToggle) { %>
         <div class="lang-toggle">
             <button class="lang-button <%= lang === 'en' ? 'active' : '' %>"
                     onclick="setLanguage('en')"
@@ -366,7 +494,7 @@ nav {
                     data-i18n-key="lang_en_label">
                 <%= lang === 'en' ? 'ENG' : 'ING' %>
             </button>
-            
+
             <button class="lang-button <%= lang === 'es' ? 'active' : '' %>"
                     onclick="setLanguage('es')"
                     data-lang="es"
@@ -374,5 +502,69 @@ nav {
                 <%= lang === 'en' ? 'SPA' : 'ESP' %>
             </button>
         </div>
+        <% } %>
+
     </div>
 </nav>
+
+<script>
+// Hamburger menu functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const hamburger = document.getElementById('hamburger');
+    const navLinks = document.getElementById('navLinks');
+    const navDropdowns = document.querySelectorAll('.nav-dropdown');
+    const profileContainer = document.querySelector('.profile-container');
+
+    // Toggle mobile menu
+    if (hamburger) {
+        hamburger.addEventListener('click', function() {
+            hamburger.classList.toggle('active');
+            navLinks.classList.toggle('active');
+            document.body.style.overflow = navLinks.classList.contains('active') ? 'hidden' : '';
+        });
+    }
+
+    // Handle dropdown clicks on mobile
+    navDropdowns.forEach(dropdown => {
+        const dropdownLink = dropdown.querySelector('a[href="#"]');
+        if (dropdownLink) {
+            dropdownLink.addEventListener('click', function(e) {
+                if (window.innerWidth <= 768) {
+                    e.preventDefault();
+                    dropdown.classList.toggle('active');
+                }
+            });
+        }
+    });
+
+    // Handle profile dropdown on mobile
+    if (profileContainer) {
+        profileContainer.addEventListener('click', function(e) {
+            if (window.innerWidth <= 768) {
+                e.preventDefault();
+                profileContainer.classList.toggle('active');
+            }
+        });
+    }
+
+    // Close menu when clicking outside
+    document.addEventListener('click', function(e) {
+        if (window.innerWidth <= 768) {
+            if (!navLinks.contains(e.target) && !hamburger.contains(e.target) && navLinks.classList.contains('active')) {
+                hamburger.classList.remove('active');
+                navLinks.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+    });
+
+    // Close menu on window resize
+    window.addEventListener('resize', function() {
+        if (window.innerWidth > 768) {
+            hamburger.classList.remove('active');
+            navLinks.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    });
+});
+</script>
