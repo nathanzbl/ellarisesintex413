@@ -28,7 +28,7 @@
 
 | Field | Value |
 |-------|-------|
-| Username | `"BrooklyAllen"` |
+| Username | `BrooklyAllen` |
 | Password | `user12` |
 
 ### Other Requirements
