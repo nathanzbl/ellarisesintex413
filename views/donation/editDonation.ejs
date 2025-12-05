@@ -1,221 +1,296 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Edit Donation | Ella Rises</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Edit Donation | Ella Rises</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:wght@400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:wght@400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-  <style>
-    :root {
-      --er-blue:     #99B7C6;
-      --er-lavender: #978EC4;
-      --er-cream:    #F9F5EA;
-      --er-blush:    #FFD8D1;
-      --er-pink:     #F9AFB1;
-      --er-sage:     #9AB59D;
-      --er-charcoal: #3A3F3B;
-      --er-peach:    #F4B89D;
-      --er-rose:     #CE325B;
-    }
+    <style>
+        :root {
+            --er-blue:     #99B7C6;
+            --er-lavender: #978EC4;
+            --er-cream:    #F9F5EA;
+            --er-blush:    #FFD8D1;
+            --er-pink:     #F9AFB1;
+            --er-sage:     #9AB59D;
+            --er-charcoal: #3A3F3B;
+            --er-peach:    #F4B092;
+            --er-rose:     #CE325B;
+        }
 
-    * { box-sizing: border-box; }
+        * { box-sizing: border-box; }
 
-    body {
-      margin: 0;
-      font-family: 'Montserrat', sans-serif;
-      background: var(--er-cream);
-      color: var(--er-charcoal);
-    }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0;
+            font-family: "Montserrat", system-ui, sans-serif;
+            background: var(--er-cream);
+            color: var(--er-charcoal);
+        }
 
-    .page-wrapper {
-      min-height: 100vh;
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-    }
+        .main-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+            width: 100%;
+        }
 
-    h1 {
-      font-family: 'DM Serif Display', serif;
-      font-size: 2rem;
-      margin: 0 0 4px 0;
-      color: var(--er-lavender);
-    }
+        .data-card {
+            max-width: 720px;
+            width: 100%;
+            padding: 2.5rem 2.25rem;
+            border-radius: 1.5rem;
+            background-color: #ffffff;
+            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.08);
+            border-top: 6px solid var(--er-pink);
+        }
 
-    .subtitle {
-      margin: 0;
-      font-size: 0.95rem;
-      color: #555;
-    }
+        .milestone-title {
+            font-family: "DM Serif Display", serif;
+            font-size: 2rem;
+            text-align: center;
+            letter-spacing: 0.06em;
+            margin: 0 0 0.25rem;
+        }
 
-    .card {
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
-      padding: 20px 20px 24px;
-      max-width: 700px;
-    }
+        .milestone-subtitle {
+            font-size: 0.95rem;
+            text-align: center;
+            color: rgba(58, 63, 59, 0.7);
+            margin-bottom: 2rem;
+        }
 
-    .field-group {
-      margin-bottom: 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
+        .mb-3 {
+            margin-bottom: 2rem;
+        }
 
-    label {
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #555;
-    }
+        .field-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 0.75rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
 
-    input[type="text"],
-    input[type="number"],
-    input[type="datetime-local"],
-    select {
-      padding: 8px 10px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      font-size: 0.95rem;
-      font-family: inherit;
-      width: 100%;
-    }
+        .text-input,
+        .date-input,
+        .select-input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid var(--er-blush);
+            border-radius: 0.75rem;
+            font-family: inherit;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s ease;
+            background: #fff;
+        }
 
-    .readonly-text {
-      padding: 8px 0;
-      font-size: 0.95rem;
-    }
+        .text-input:focus,
+        .date-input:focus,
+        .select-input:focus {
+            border-color: var(--er-pink);
+        }
 
-    .checkbox-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 4px;
-    }
+        .text-input::placeholder,
+        .date-input::placeholder {
+            color: rgba(58, 63, 59, 0.5);
+        }
 
-    .btn-row {
-      margin-top: 16px;
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
+        input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+            filter: invert(30%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(50%);
+            cursor: pointer;
+        }
 
-    .btn {
-      display: inline-block;
-      padding: 9px 16px;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      font-size: 0.95rem;
-      font-weight: 600;
-      font-family: inherit;
-      text-decoration: none;
-      text-align: center;
-    }
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-top: 0.5rem;
+        }
 
-    .btn-primary {
-      background: var(--er-sage);
-      color: #fff;
-    }
+        .checkbox-row input[type="checkbox"] {
+            width: 1.2rem;
+            height: 1.2rem;
+            cursor: pointer;
+        }
 
-    .btn-primary:hover {
-      background: var(--er-lavender);
-    }
+        .checkbox-row label {
+            font-size: 0.9rem;
+            font-weight: 400;
+            text-transform: none;
+            letter-spacing: normal;
+            cursor: pointer;
+        }
 
-    .btn-secondary {
-      background: #fff;
-      color: var(--er-charcoal);
-      border: 1px solid #ccc;
-    }
+        .btn-action {
+            padding: 0.85rem 1rem;
+            border-radius: 999px;
+            border: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 0 10px 24px rgba(206, 50, 91, 0.25);
+            transition: all 0.18s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
 
-    .btn-secondary:hover {
-      border-color: var(--er-lavender);
-      color: var(--er-lavender);
-    }
+        .btn-save-milestone {
+            background: var(--er-pink);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(249, 175, 177, 0.3);
+        }
 
-    .error-message {
-      color: var(--er-rose);
-      margin-bottom: 10px;
-      font-size: 0.9rem;
-      font-weight: 600;
-    }
+        .btn-save-milestone:hover {
+            background: var(--er-rose);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(206, 50, 91, 0.4);
+        }
 
-    @media (max-width: 768px) {
-      .page-wrapper {
-        padding: 16px;
-      }
-    }
-  </style>
+        .btn-back {
+            background: var(--er-charcoal);
+            color: #fff;
+            margin-left: 1rem;
+            box-shadow: 0 4px 12px rgba(58, 63, 59, 0.3);
+        }
+
+        .btn-back:hover {
+            background: rgba(58, 63, 59, 0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(58, 63, 59, 0.4);
+        }
+
+        .message-alert {
+            text-align: center;
+            color: var(--er-rose);
+            background: rgba(206, 50, 91, 0.07);
+            padding: 0.8rem 1.2rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .text-center-wrapper {
+             text-align: center;
+             margin-top: 2rem;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid var(--er-blush);
+            margin: 2rem 0;
+        }
+
+        @media (max-width: 768px) {
+            .data-card {
+                padding: 2rem 1.25rem;
+            }
+
+            .milestone-title {
+                font-size: 1.7rem;
+            }
+
+            .btn-back {
+                margin-left: 0;
+                margin-top: 0.5rem;
+            }
+
+            .text-center-wrapper {
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="page-wrapper">
-    <header>
-      <h1>Edit Donation #<%= donation.donationid %></h1>
-      <p class="subtitle">
-        <strong>Participant:</strong>
-        <%= donation.participantname || 'Anonymous' %>
-        <% if (donation.participantemail) { %>
-          (<%= donation.participantemail %>)
-        <% } %>
-        <% if (donation.eventname) { %>
-          · <strong>Event:</strong> <%= donation.eventname %>
-        <% } %>
-      </p>
-    </header>
+    <%- include('../common/navbar.ejs') %>
 
-    <div class="card">
-      <% if (error_message && error_message !== "") { %>
-        <div class="error-message"><%= error_message %></div>
-      <% } %>
+    <div class="main-content">
+        <div class="data-card">
 
-      <form action="/donations/<%= donation.donationid %>/edit" method="post">
-        <div class="field-group">
-          <label for="donationamount">Amount (USD)</label>
-          <input
-            type="number"
-            step="0.01"
-            id="donationamount"
-            name="donationamount"
-            value="<%= donation.donationamount %>"
-            required
-          />
+            <h1 class="milestone-title">Edit Donation</h1>
+            <p class="milestone-subtitle">
+                Update donation details for
+                <strong><%= donation.participantname || 'Anonymous' %></strong>
+                <% if (donation.participantemail) { %>
+                    (<%= donation.participantemail %>)
+                <% } %>
+            </p>
+
+            <% if (error_message && error_message !== "") { %>
+                <div class="message-alert">
+                    <%= error_message %>
+                </div>
+            <% } %>
+
+            <form action="/donations/<%= donation.donationid %>/edit" method="post">
+
+                <div class="mb-3">
+                    <label for="donationamount" class="field-label">Amount (USD):</label>
+                    <input
+                        type="number"
+                        step="0.01"
+                        class="text-input"
+                        id="donationamount"
+                        name="donationamount"
+                        value="<%= donation.donationamount %>"
+                        placeholder="0.00"
+                        required
+                    />
+                </div>
+
+                <div class="mb-3">
+                    <label for="donationdate" class="field-label">Donation Date and Time:</label>
+                    <input
+                        type="datetime-local"
+                        class="date-input"
+                        id="donationdate"
+                        name="donationdate"
+                        value="<%= donation.donationdate_local || '' %>"
+                    />
+                </div>
+
+                <div class="mb-3">
+                    <label class="field-label">Anonymous Status:</label>
+                    <div class="checkbox-row">
+                        <input
+                            type="checkbox"
+                            id="isanonymous"
+                            name="isanonymous"
+                            value="1"
+                            <%= donation.isanonymous ? 'checked' : '' %>
+                        />
+                        <label for="isanonymous">Mark this donation as anonymous</label>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="text-center-wrapper">
+                    <button type="submit" class="btn-action btn-save-milestone">Update Donation</button>
+                    <a href="/donations/view" class="btn-action btn-back">Back to Donations</a>
+                </div>
+
+            </form>
         </div>
-
-        <div class="field-group">
-          <label for="donationdate">Donation date and time</label>
-          <input
-            type="datetime-local"
-            id="donationdate"
-            name="donationdate"
-            value="<%= donation.donationdate_local || '' %>"
-          />
-        </div>
-
-        <div class="field-group">
-          <label>Anonymous status</label>
-          <div class="checkbox-row">
-            <!-- we put this here in case a donation doesn't have a user -->
-            <input
-              type="checkbox"
-              id="isanonymous"
-              name="isanonymous"
-              value="1"
-              <%= donation.isanonymous ? 'checked' : '' %>
-            />
-            <label for="isanonymous">Mark this donation as anonymous</label>
-          </div>
-        </div>
-
-        <div class="btn-row">
-          <button type="submit" class="btn btn-primary">Save changes</button>
-          <a href="/donations/view" class="btn btn-secondary">Cancel</a>
-        </div>
-      </form>
     </div>
-  </div>
+    <%- include('../common/footer.ejs') %>
 </body>
 </html>

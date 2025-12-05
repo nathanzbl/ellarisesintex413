@@ -319,7 +319,7 @@ app.post("/survey", async (req, res) => {
 
     // 1) Look up participant by email
     const emailResult = await knex.raw(
-      "SELECT participantid, participantemail FROM participant WHERE LOWER(participantemail) = LOWER(?)",
+      "SELECT participantid, participantemail, participantfirstname, participantlastname FROM participant WHERE LOWER(participantemail) = LOWER(?)",
       [SurveyEmail.trim()]
     );
 
@@ -334,7 +334,15 @@ app.post("/survey", async (req, res) => {
     }
 
     const participantId = rows[0].participantid;
+    const participantFirstName = rows[0].participantfirstname || "";
+    const participantLastName = rows[0].participantlastname || "";
     const eventId = SurveyEventId;
+
+    // Get event name
+    const eventInfo = await knex("eventdefinition")
+      .where({ eventdefid: eventId })
+      .first();
+    const eventName = eventInfo ? eventInfo.eventname : "Ella Rises Event";
 
     // Parse scores
     const sat = Number(SurveySatisfactionScore);
@@ -358,35 +366,56 @@ app.post("/survey", async (req, res) => {
     });
 
     // 4) Send confirmation email via Mailtrap
+    const displayName = participantFirstName ? participantFirstName : "there";
+    const submissionDate = new Date().toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      timeZone: "America/Denver"
+    });
+
     try {
       await mailtrapClient.sendMail({
   from: mailSender,
   to: [{ address: SurveyEmail }],
-  subject: "Thank you for completing the Ella Rises survey",
-  text:
-    "Thank you for taking the time to complete our post event survey for Ella Rises. Your feedback helps us improve future events and better support young women in STEAM.",
+  subject: "Thank you for your feedback, " + displayName + "!",
+  text: `Hi ${displayName},
+
+Thank you for completing the survey for ${eventName}! Your feedback helps us improve future events and better support young women in STEAM.
+
+Survey Summary:
+- Event: ${eventName}
+- Satisfaction: ${sat}/5
+- Usefulness: ${useful}/5
+- Instructor: ${instr}/5
+- Recommendation: ${recom}/5
+- Overall Score: ${overall}/5
+${SurveyComments ? '- Your comment: "' + SurveyComments + '"' : ''}
+
+We are grateful you chose to spend time with us and share your perspective.
+
+With gratitude,
+The Ella Rises Team`,
   html: `
   <!DOCTYPE html>
   <html>
     <head>
       <meta charset="UTF-8" />
       <title>Thank you from Ella Rises</title>
-      <style>
-        body, table, td, p { margin: 0; padding: 0; }
-      </style>
     </head>
-    <body style="background-color:#f5f5f5; font-family: Arial, sans-serif; color:#333333;">
-      <table width="100%" border="0" cellspacing="0" cellpadding="0" style="padding: 20px 0;">
+    <body style="margin:0; padding:0; background-color:#F9F5EA; font-family: 'Montserrat', Arial, sans-serif;">
+      <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color:#F9F5EA;">
         <tr>
-          <td align="center">
-            <table width="600" border="0" cellspacing="0" cellpadding="0" style="background-color:#ffffff; border-radius:8px; overflow:hidden; box-shadow:0 2px 6px rgba(0,0,0,0.08);">
-              <!-- Header -->
+          <td align="center" style="padding: 40px 20px;">
+            <table width="600" border="0" cellspacing="0" cellpadding="0" style="background-color:#ffffff; border-radius:16px; overflow:hidden; box-shadow:0 14px 40px rgba(0,0,0,0.08);">
+
+              <!-- Header with gradient -->
               <tr>
-                <td align="center" style="background: linear-gradient(90deg, #99B7C6, #F9AFB1); padding: 24px 20px;">
-                  <h1 style="margin:0; font-size:24px; color:#ffffff; font-weight:600;">
+                <td style="background: linear-gradient(135deg, #F9AFB1, #99B7C6); padding: 32px 28px; border-top:6px solid #CE325B;">
+                  <h1 style="margin:0; font-size:28px; color:#ffffff; font-weight:700; text-align:center; font-family: 'DM Serif Display', Georgia, serif;">
                     Ella Rises
                   </h1>
-                  <p style="margin:8px 0 0; font-size:14px; color:#fdfdfd;">
+                  <p style="margin:8px 0 0; font-size:14px; color:#ffffff; text-align:center; opacity:0.95;">
                     Empowering young women in STEAM
                   </p>
                 </td>
@@ -394,91 +423,105 @@ app.post("/survey", async (req, res) => {
 
               <!-- Body -->
               <tr>
-                <td style="padding: 24px 28px;">
-                  <p style="font-size:16px; margin-bottom:16px;">
-                    Hi,
+                <td style="padding: 32px 32px;">
+                  <p style="font-size:18px; margin:0 0 20px 0; color:#3A3F3B;">
+                    Hi <strong>${displayName}</strong>,
                   </p>
 
-                  <p style="font-size:15px; line-height:1.6; margin-bottom:16px;">
-                    Thank you for taking the time to complete our post event survey for <strong>Ella Rises</strong>.
-                    Your feedback plays a direct role in how we improve our programs and better support young women
-                    as they explore opportunities in STEAM.
+                  <p style="font-size:15px; line-height:1.7; margin:0 0 20px 0; color:#3A3F3B;">
+                    Thank you for completing the survey for <strong>${eventName}</strong>! Your thoughtful feedback plays a direct role in how we improve our programs and better support young women as they explore opportunities in STEAM.
                   </p>
 
-                  ${
-                    SurveyEventDate
-                      ? `
-                      <p style="font-size:15px; margin-bottom:16px;">
-                        <strong>Event date:</strong> ${SurveyEventDate}
-                      </p>
-                    `
-                      : ""
-                  }
+                  <!-- Survey Summary Card -->
+                  <div style="background: linear-gradient(135deg, rgba(249,175,177,0.08), rgba(153,183,198,0.08)); border-radius:12px; padding:20px 24px; margin:24px 0; border-left:4px solid #F9AFB1;">
+                    <h2 style="font-size:18px; margin:0 0 16px 0; color:#CE325B; font-weight:600;">
+                      Your Survey Summary
+                    </h2>
 
-                  <!-- Survey summary block -->
-                  <h2 style="font-size:18px; margin:24px 0 12px;">Survey summary</h2>
+                    <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+                      <tr>
+                        <td style="padding:8px 0; font-size:14px; color:#3A3F3B;">
+                          <strong>Event:</strong>
+                        </td>
+                        <td style="padding:8px 0; font-size:14px; color:#3A3F3B; text-align:right;">
+                          ${eventName}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:8px 0; font-size:14px; color:#3A3F3B; border-top:1px solid #FFD8D1;">
+                          <strong>Satisfaction:</strong>
+                        </td>
+                        <td style="padding:8px 0; font-size:14px; color:#3A3F3B; text-align:right; border-top:1px solid #FFD8D1;">
+                          ${sat}/5 ${'★'.repeat(sat)}${'☆'.repeat(5-sat)}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:8px 0; font-size:14px; color:#3A3F3B; border-top:1px solid #FFD8D1;">
+                          <strong>Usefulness:</strong>
+                        </td>
+                        <td style="padding:8px 0; font-size:14px; color:#3A3F3B; text-align:right; border-top:1px solid #FFD8D1;">
+                          ${useful}/5 ${'★'.repeat(useful)}${'☆'.repeat(5-useful)}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:8px 0; font-size:14px; color:#3A3F3B; border-top:1px solid #FFD8D1;">
+                          <strong>Instructor:</strong>
+                        </td>
+                        <td style="padding:8px 0; font-size:14px; color:#3A3F3B; text-align:right; border-top:1px solid #FFD8D1;">
+                          ${instr}/5 ${'★'.repeat(instr)}${'☆'.repeat(5-instr)}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:8px 0; font-size:14px; color:#3A3F3B; border-top:1px solid #FFD8D1;">
+                          <strong>Recommendation:</strong>
+                        </td>
+                        <td style="padding:8px 0; font-size:14px; color:#3A3F3B; text-align:right; border-top:1px solid #FFD8D1;">
+                          ${recom}/5 ${'★'.repeat(recom)}${'☆'.repeat(5-recom)}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:12px 0 8px 0; font-size:15px; color:#CE325B; border-top:2px solid #F9AFB1;">
+                          <strong>Overall Score:</strong>
+                        </td>
+                        <td style="padding:12px 0 8px 0; font-size:15px; color:#CE325B; text-align:right; border-top:2px solid #F9AFB1;">
+                          <strong>${overall}/5</strong> ${'★'.repeat(overall)}${'☆'.repeat(5-overall)}
+                        </td>
+                      </tr>
+                    </table>
 
-                  <table width="100%" cellpadding="6" cellspacing="0" style="border-collapse:collapse; font-size:14px;">
-                    <tr>
-                      <td style="background-color:#f9f9f9; width:40%; font-weight:600;">Participant ID</td>
-                      <td style="background-color:#f9f9f9;">${participantId}</td>
-                    </tr>
-                    <tr>
-                      <td style="width:40%; font-weight:600;">Event ID</td>
-                      <td>${eventId}</td>
-                    </tr>
-                    <tr>
-                      <td style="background-color:#f9f9f9; font-weight:600;">Recommendation ID</td>
-                      <td style="background-color:#f9f9f9;">${recom}</td>
-                    </tr>
-                    <tr>
-                      <td style="font-weight:600;">Satisfaction score</td>
-                      <td>${sat}</td>
-                    </tr>
-                    <tr>
-                      <td style="background-color:#f9f9f9; font-weight:600;">Usefulness score</td>
-                      <td style="background-color:#f9f9f9;">${useful}</td>
-                    </tr>
-                    <tr>
-                      <td style="font-weight:600;">Instructor score</td>
-                      <td>${instr}</td>
-                    </tr>
-                    <tr>
-                      <td style="background-color:#f9f9f9; font-weight:600;">Recommendation score</td>
-                      <td style="background-color:#f9f9f9;">${recom}</td>
-                    </tr>
-                    <tr>
-                      <td style="font-weight:600;">Overall score</td>
-                      <td>${overall}</td>
-                    </tr>
-                    <tr>
-                      <td style="background-color:#f9f9f9; font-weight:600;">Comments</td>
-                      <td style="background-color:#f9f9f9;">${SurveyComments ? SurveyComments : "None provided"}</td>
-                    </tr>
-                    <tr>
-                      <td style="font-weight:600;">Submission date</td>
-                      <td>${knex.fn.now().toLocaleString("en-US", { timeZone: "America/Denver" })}</td>
-                    </tr>
-                  </table>
+                    ${SurveyComments ? `
+                      <div style="margin-top:16px; padding-top:16px; border-top:1px solid #FFD8D1;">
+                        <p style="margin:0 0 8px 0; font-size:13px; font-weight:600; color:#3A3F3B; text-transform:uppercase; letter-spacing:0.05em;">
+                          Your Comment:
+                        </p>
+                        <p style="margin:0; font-size:14px; line-height:1.6; color:#3A3F3B; font-style:italic;">
+                          "${SurveyComments}"
+                        </p>
+                      </div>
+                    ` : ''}
 
-                  <p style="font-size:15px; line-height:1.6; margin-top:24px; margin-bottom:0;">
-                    We are grateful you chose to spend time with us and to share your perspective.
+                    <p style="margin:16px 0 0 0; font-size:12px; color:rgba(58,63,59,0.7);">
+                      Submitted on ${submissionDate}
+                    </p>
+                  </div>
+
+                  <p style="font-size:15px; line-height:1.7; margin:24px 0 0 0; color:#3A3F3B;">
+                    We are grateful you chose to spend time with us and share your perspective. Your voice helps shape the future of Ella Rises.
                   </p>
 
-                  <p style="font-size:15px; line-height:1.6; margin-top:12px; margin-bottom:4px;">
-                    With gratitude,
-                  </p>
-                  <p style="font-size:15px; line-height:1.4; margin-bottom:0;">
-                    The Ella Rises Team
+                  <p style="font-size:15px; margin:20px 0 0 0; color:#3A3F3B;">
+                    With gratitude,<br/>
+                    <strong style="color:#CE325B;">The Ella Rises Team</strong>
                   </p>
                 </td>
               </tr>
 
               <!-- Footer -->
               <tr>
-                <td align="center" style="background-color:#fafafa; padding: 16px 20px;">
-                  <p style="font-size:12px; color:#777777; margin:0;">
-                    Ella Rises | Supporting young women through mentoring, creativity, and leadership
+                <td style="background-color:#F9F5EA; padding:20px 28px; text-align:center;">
+                  <p style="font-size:12px; color:rgba(58,63,59,0.7); margin:0; line-height:1.6;">
+                    <strong>Ella Rises</strong><br/>
+                    Supporting young women through mentoring, creativity, and leadership
                   </p>
                 </td>
               </tr>
@@ -810,7 +853,7 @@ app.post("/survey/:surveyid/edit", async (req, res) => {
 });
 
 // Helper to send a donation receipt
-async function sendDonationReceipt({ toEmail, amount, isAnonymous, donationDate }) {
+async function sendDonationReceipt({ toEmail, amount, isAnonymous, donationDate, firstName, lastName }) {
   if (!toEmail) return;
 
   const formattedDate = donationDate.toLocaleDateString("en-US", {
@@ -819,59 +862,145 @@ async function sendDonationReceipt({ toEmail, amount, isAnonymous, donationDate 
     day: "numeric",
   });
 
-  const subject = "Your Ella Rises donation receipt";
+  const displayName = firstName || "Friend";
+  const fullName = firstName && lastName ? `${firstName} ${lastName}` : displayName;
+
+  const subject = `Thank you for your donation, ${displayName}!`;
 
   const text = `
-Thank you for your generous donation to Ella Rises.
+Hi ${displayName},
 
-Amount: $${amount.toFixed(2)}
-Date: ${formattedDate}
-Donation type: ${isAnonymous ? "Anonymous" : "Named"}
+Thank you for your generous donation to Ella Rises!
 
-This email serves as your receipt for tax purposes. 
-No goods or services were provided in exchange for this contribution.
+Donation Summary:
+- Amount: $${amount.toFixed(2)}
+- Date: ${formattedDate}
+- Donation type: ${isAnonymous ? "Anonymous" : "Named"}
+${!isAnonymous && fullName ? `- Donor: ${fullName}` : ''}
+
+This email serves as your receipt for tax purposes. No goods or services were provided in exchange for this contribution. Please keep this for your records.
+
+Your gift helps young Latinas in Utah see themselves in college, in STEAM fields, and as leaders in their communities.
 
 With gratitude,
 Ella Rises
   `.trim();
 
   const html = `
-  <div style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color:#333; line-height:1.5;">
-    <div style="max-width:600px; margin:0 auto; padding:24px;">
-      <h2 style="margin-top:0; color:#CE325B; font-weight:700;">
-        Thank you for supporting Ella Rises
-      </h2>
+  <!DOCTYPE html>
+  <html>
+    <head>
+      <meta charset="UTF-8" />
+      <title>Donation Receipt from Ella Rises</title>
+    </head>
+    <body style="margin:0; padding:0; background-color:#F9F5EA; font-family: 'Montserrat', Arial, sans-serif;">
+      <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color:#F9F5EA;">
+        <tr>
+          <td align="center" style="padding: 40px 20px;">
+            <table width="600" border="0" cellspacing="0" cellpadding="0" style="background-color:#ffffff; border-radius:16px; overflow:hidden; box-shadow:0 14px 40px rgba(0,0,0,0.08);">
 
-      <p>
-        We are grateful for your recent ${isAnonymous ? "anonymous " : ""}donation to Ella Rises.
-        Your gift helps young Latinas in Utah see themselves in college, in STEAM fields,
-        and as leaders in their communities.
-      </p>
+              <!-- Header with gradient -->
+              <tr>
+                <td style="background: linear-gradient(135deg, #F9AFB1, #99B7C6); padding: 32px 28px; border-top:6px solid #CE325B;">
+                  <h1 style="margin:0; font-size:28px; color:#ffffff; font-weight:700; text-align:center; font-family: 'DM Serif Display', Georgia, serif;">
+                    Ella Rises
+                  </h1>
+                  <p style="margin:8px 0 0; font-size:14px; color:#ffffff; text-align:center; opacity:0.95;">
+                    Empowering young women in STEAM
+                  </p>
+                </td>
+              </tr>
 
-      <div style="margin:20px 0; padding:16px 18px; border-radius:12px; background:#F9F5EA; border:1px solid #FFD8D1;">
-        <h3 style="margin:0 0 10px 0; font-size:16px;">Donation Summary</h3>
-        <p style="margin:4px 0;"><strong>Amount:</strong> $${amount.toFixed(2)}</p>
-        <p style="margin:4px 0;"><strong>Date:</strong> ${formattedDate}</p>
-        <p style="margin:4px 0;"><strong>Donation type:</strong> ${isAnonymous ? "Anonymous" : "Named"}</p>
-      </div>
+              <!-- Body -->
+              <tr>
+                <td style="padding: 32px 32px;">
+                  <p style="font-size:18px; margin:0 0 20px 0; color:#3A3F3B;">
+                    Hi <strong>${displayName}</strong>,
+                  </p>
 
-      <p style="font-size:14px; margin-top:18px;">
-        This email serves as your donation receipt. No goods or services were provided
-        in exchange for this contribution. Please keep this for your records.
-      </p>
+                  <p style="font-size:15px; line-height:1.7; margin:0 0 20px 0; color:#3A3F3B;">
+                    Thank you for your generous ${isAnonymous ? "anonymous " : ""}donation to Ella Rises! Your gift helps young Latinas in Utah see themselves in college, in STEAM fields, and as leaders in their communities.
+                  </p>
 
-      <p style="margin-top:18px;">
-        With gratitude,<br/>
-        <strong>Ella Rises</strong>
-      </p>
+                  <!-- Donation Summary Card -->
+                  <div style="background: linear-gradient(135deg, rgba(249,175,177,0.08), rgba(153,183,198,0.08)); border-radius:12px; padding:20px 24px; margin:24px 0; border-left:4px solid #F9AFB1;">
+                    <h2 style="font-size:18px; margin:0 0 16px 0; color:#CE325B; font-weight:600;">
+                      Donation Receipt
+                    </h2>
 
-      <hr style="margin:24px 0; border:none; border-top:1px solid #eee;"/>
+                    <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+                      ${!isAnonymous && fullName ? `
+                      <tr>
+                        <td style="padding:8px 0; font-size:14px; color:#3A3F3B;">
+                          <strong>Donor:</strong>
+                        </td>
+                        <td style="padding:8px 0; font-size:14px; color:#3A3F3B; text-align:right;">
+                          ${fullName}
+                        </td>
+                      </tr>
+                      ` : ''}
+                      <tr>
+                        <td style="padding:8px 0; font-size:14px; color:#3A3F3B; ${!isAnonymous && fullName ? 'border-top:1px solid #FFD8D1;' : ''}">
+                          <strong>Amount:</strong>
+                        </td>
+                        <td style="padding:8px 0; font-size:16px; color:#CE325B; text-align:right; font-weight:600; ${!isAnonymous && fullName ? 'border-top:1px solid #FFD8D1;' : ''}">
+                          $${amount.toFixed(2)}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:8px 0; font-size:14px; color:#3A3F3B; border-top:1px solid #FFD8D1;">
+                          <strong>Date:</strong>
+                        </td>
+                        <td style="padding:8px 0; font-size:14px; color:#3A3F3B; text-align:right; border-top:1px solid #FFD8D1;">
+                          ${formattedDate}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:8px 0; font-size:14px; color:#3A3F3B; border-top:1px solid #FFD8D1;">
+                          <strong>Donation Type:</strong>
+                        </td>
+                        <td style="padding:8px 0; font-size:14px; color:#3A3F3B; text-align:right; border-top:1px solid #FFD8D1;">
+                          ${isAnonymous ? "Anonymous" : "Named"}
+                        </td>
+                      </tr>
+                    </table>
 
-      <p style="font-size:12px; color:#666; margin:0;">
-        If you have questions about this donation, reply to this email.
-      </p>
-    </div>
-  </div>
+                    <div style="margin-top:16px; padding-top:16px; border-top:1px solid #FFD8D1;">
+                      <p style="margin:0; font-size:12px; color:rgba(58,63,59,0.7); line-height:1.6;">
+                        <strong>Tax Information:</strong> This email serves as your official donation receipt for tax purposes. No goods or services were provided in exchange for this contribution. Please keep this for your records.
+                      </p>
+                    </div>
+                  </div>
+
+                  <p style="font-size:15px; line-height:1.7; margin:24px 0 0 0; color:#3A3F3B;">
+                    Your support makes a real difference. Together, we're opening doors for the next generation of young women leaders.
+                  </p>
+
+                  <p style="font-size:15px; margin:20px 0 0 0; color:#3A3F3B;">
+                    With gratitude,<br/>
+                    <strong style="color:#CE325B;">The Ella Rises Team</strong>
+                  </p>
+                </td>
+              </tr>
+
+              <!-- Footer -->
+              <tr>
+                <td style="background-color:#F9F5EA; padding:20px 28px; text-align:center;">
+                  <p style="font-size:12px; color:rgba(58,63,59,0.7); margin:0 0 8px 0; line-height:1.6;">
+                    <strong>Ella Rises</strong><br/>
+                    Supporting young women through mentoring, creativity, and leadership
+                  </p>
+                  <p style="font-size:11px; color:rgba(58,63,59,0.6); margin:0;">
+                    Questions? Reply to this email or contact us at ${process.env.SMTP_FROM_EMAIL || 'support@ellarises.org'}
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </body>
+  </html>
   `;
 
   await mailtrapClient.sendMail({
@@ -1041,6 +1170,8 @@ app.post("/donations/add", async (req, res, next) => {
         amount: donationAmount,
         isAnonymous,
         donationDate,
+        firstName: isAnonymous ? null : first_name,
+        lastName: isAnonymous ? null : last_name,
       });
     } catch (emailErr) {
       console.error("Failed to send receipt email:", emailErr);
