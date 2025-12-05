@@ -1,303 +1,387 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Edit Survey Response | Ella Rises</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Edit Survey Response | Ella Rises</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:wght@400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:wght@400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-  <style>
-    :root {
-      --er-blue:     #99B7C6;
-      --er-lavender: #978EC4;
-      --er-cream:    #F9F5EA;
-      --er-charcoal: #3A3F3B;
-      --er-rose:     #CE325B;
-    }
+    <style>
+        :root {
+            --er-blue:     #99B7C6;
+            --er-lavender: #978EC4;
+            --er-cream:    #F9F5EA;
+            --er-blush:    #FFD8D1;
+            --er-pink:     #F9AFB1;
+            --er-sage:     #9AB59D;
+            --er-charcoal: #3A3F3B;
+            --er-peach:    #F4B092;
+            --er-rose:     #CE325B;
+        }
 
-    * { box-sizing: border-box; }
+        * { box-sizing: border-box; }
 
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: "Montserrat", system-ui, sans-serif;
-      background: var(--er-cream);
-      color: var(--er-charcoal);
-    }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0;
+            font-family: "Montserrat", system-ui, sans-serif;
+            background: var(--er-cream);
+            color: var(--er-charcoal);
+        }
 
-    .page {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 2rem 1rem 3rem;
-    }
+        .main-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+            width: 100%;
+        }
 
-    .card {
-      background: #fff;
-      border-radius: 1.25rem;
-      padding: 2rem 1.75rem;
-      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.08);
-      border-top: 5px solid var(--er-rose);
-    }
+        .data-card {
+            max-width: 800px;
+            width: 100%;
+            padding: 2.5rem 2.25rem;
+            border-radius: 1.5rem;
+            background-color: #ffffff;
+            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.08);
+            border-top: 6px solid var(--er-pink);
+        }
 
-    .page-title {
-      font-family: "DM Serif Display", serif;
-      font-size: 1.8rem;
-      margin: 0 0 0.25rem;
-    }
+        .milestone-title {
+            font-family: "DM Serif Display", serif;
+            font-size: 2rem;
+            text-align: center;
+            letter-spacing: 0.06em;
+            margin: 0 0 0.25rem;
+        }
 
-    .page-subtitle {
-      font-size: 0.9rem;
-      color: rgba(0,0,0,0.65);
-      margin-bottom: 1.5rem;
-    }
+        .milestone-subtitle {
+            font-size: 0.95rem;
+            text-align: center;
+            color: rgba(58, 63, 59, 0.7);
+            margin-bottom: 2rem;
+        }
 
-    .meta {
-      font-size: 0.8rem;
-      background: rgba(153, 183, 198, 0.15);
-      padding: 0.6rem 0.8rem;
-      border-radius: 0.75rem;
-      margin-bottom: 1.5rem;
-    }
+        .meta-info {
+            background: rgba(153, 183, 198, 0.12);
+            padding: 1rem 1.25rem;
+            border-radius: 0.75rem;
+            margin-bottom: 2rem;
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
 
-    .meta strong {
-      font-weight: 600;
-    }
+        .meta-info strong {
+            font-weight: 600;
+            color: var(--er-charcoal);
+        }
 
-    .form-section {
-      margin-bottom: 1.4rem;
-    }
+        .mb-3 {
+            margin-bottom: 2rem;
+        }
 
-    .field-label {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      margin-bottom: 0.4rem;
-    }
+        .field-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 0.75rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
 
-    .label-main {
-      font-size: 0.8rem;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
+        .label-hint {
+            font-size: 0.75rem;
+            color: rgba(58, 63, 59, 0.6);
+            text-transform: none;
+            letter-spacing: normal;
+            font-weight: 400;
+        }
 
-    .label-hint {
-      font-size: 0.78rem;
-      color: rgba(0,0,0,0.6);
-    }
+        .text-input,
+        .score-input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid var(--er-blush);
+            border-radius: 0.75rem;
+            font-family: inherit;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s ease;
+            background: #fff;
+        }
 
-    .score-input {
-      width: 80px;
-      padding: 0.4rem 0.5rem;
-      border-radius: 0.5rem;
-      border: 1px solid rgba(0,0,0,0.2);
-      font-family: inherit;
-      font-size: 0.9rem;
-    }
+        .text-input:focus,
+        .score-input:focus {
+            border-color: var(--er-pink);
+        }
 
-    .score-input:focus {
-      outline: none;
-      border-color: var(--er-rose);
-    }
+        .score-input {
+            width: 100%;
+            max-width: 100px;
+        }
 
-    .score-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem 1.5rem;
-    }
+        .score-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1.25rem;
+        }
 
-    .score-item {
-      flex: 1 1 160px;
-    }
+        .score-item label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
 
-    .comments-textarea {
-      width: 100%;
-      min-height: 100px;
-      padding: 0.8rem;
-      border-radius: 0.75rem;
-      border: 1px solid rgba(0,0,0,0.2);
-      font-family: inherit;
-      font-size: 0.9rem;
-      resize: vertical;
-    }
+        .comments-textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 1rem;
+            border: 2px solid var(--er-blush);
+            border-radius: 0.75rem;
+            font-family: inherit;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s ease;
+            background: #fff;
+            resize: vertical;
+        }
 
-    .comments-textarea:focus {
-      outline: none;
-      border-color: var(--er-rose);
-    }
+        .comments-textarea:focus {
+            border-color: var(--er-pink);
+        }
 
-    .button-row {
-      display: flex;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 0.75rem;
-      margin-top: 1.5rem;
-    }
+        .comments-textarea::placeholder {
+            color: rgba(58, 63, 59, 0.5);
+        }
 
-    .btn-primary {
-      padding: 0.75rem 1.4rem;
-      border-radius: 999px;
-      border: none;
-      font-weight: 600;
-      font-size: 0.9rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      cursor: pointer;
-      background: var(--er-rose);
-      color: #fff;
-      box-shadow: 0 10px 22px rgba(206, 50, 91, 0.35);
-    }
+        .btn-action {
+            padding: 0.85rem 1rem;
+            border-radius: 999px;
+            border: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 0 10px 24px rgba(206, 50, 91, 0.25);
+            transition: all 0.18s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
 
-    .btn-primary:hover {
-      background: var(--er-lavender);
-    }
+        .btn-save-milestone {
+            background: var(--er-pink);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(249, 175, 177, 0.3);
+        }
 
-    .btn-secondary {
-      padding: 0.7rem 1.2rem;
-      border-radius: 999px;
-      border: 1px solid rgba(0,0,0,0.18);
-      background: #fff;
-      font-size: 0.85rem;
-      font-weight: 500;
-      cursor: pointer;
-    }
+        .btn-save-milestone:hover {
+            background: var(--er-rose);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(206, 50, 91, 0.4);
+        }
 
-    .btn-secondary:hover {
-      background: rgba(0,0,0,0.03);
-    }
+        .btn-back {
+            background: var(--er-charcoal);
+            color: #fff;
+            margin-left: 1rem;
+            box-shadow: 0 4px 12px rgba(58, 63, 59, 0.3);
+        }
 
-    .danger-note {
-      margin-top: 0.75rem;
-      font-size: 0.8rem;
-      color: rgba(0,0,0,0.55);
-    }
-  </style>
+        .btn-back:hover {
+            background: rgba(58, 63, 59, 0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(58, 63, 59, 0.4);
+        }
+
+        .text-center-wrapper {
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid var(--er-blush);
+            margin: 2rem 0;
+        }
+
+        .info-note {
+            margin-top: 1.5rem;
+            padding: 0.75rem 1rem;
+            background: rgba(249, 175, 177, 0.08);
+            border-left: 3px solid var(--er-pink);
+            border-radius: 0.5rem;
+            font-size: 0.85rem;
+            color: rgba(58, 63, 59, 0.75);
+        }
+
+        @media (max-width: 768px) {
+            .data-card {
+                padding: 2rem 1.25rem;
+            }
+
+            .milestone-title {
+                font-size: 1.7rem;
+            }
+
+            .btn-back {
+                margin-left: 0;
+                margin-top: 0.5rem;
+            }
+
+            .text-center-wrapper {
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .score-row {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                gap: 1rem;
+            }
+        }
+    </style>
 </head>
 <body>
-  <%- include("../common/navbar.ejs") %>
+    <%- include("../common/navbar.ejs") %>
 
-  <main class="page">
-    <div class="card">
-      <h1 class="page-title">Edit Survey Response</h1>
-      <p class="page-subtitle">
-        Adjust scores or comments for this survey entry. Changes save immediately to the database.
-      </p>
+    <div class="main-content">
+        <div class="data-card">
 
-      <div class="meta">
-        <div><strong>Event:</strong> <%= survey.eventname %> (Event ID <%= survey.eventid %>)</div>
-        <div><strong>Participant:</strong> <%= survey.participantemail %></div>
-        <div><strong>Submitted:</strong>
-          <%= new Date(survey.surveysubmissiondate).toLocaleString("en-US", {
-            month: "short",
-            day: "2-digit",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit"
-          }) %>
-        </div>
-      </div>
+            <h1 class="milestone-title">Edit Survey Response</h1>
+            <p class="milestone-subtitle">
+                Adjust scores or comments for this survey entry.
+            </p>
 
-      <form
-        action="/survey/<%= survey.surveyid %>/edit?<%=
-          eventDefId ? 'eventDefId=' + encodeURIComponent(eventDefId) : ''
-        %>"
-        method="POST"
-      >
-        <div class="form-section">
-          <div class="field-label">
-            <span class="label-main">Scores</span>
-            <span class="label-hint">Values from 1 to 5</span>
-          </div>
-          <div class="score-row">
-            <div class="score-item">
-              <label class="label-main" for="sat">Satisfaction</label><br />
-              <input
-                id="sat"
-                type="number"
-                name="SurveySatisfactionScore"
-                class="score-input"
-                min="1"
-                max="5"
-                value="<%= survey.surveysatisfactionscore %>"
-                required
-              />
+            <div class="meta-info">
+                <div><strong>Event:</strong> <%= survey.eventname %> (Event ID <%= survey.eventid %>)</div>
+                <div><strong>Participant:</strong> <%= survey.participantemail %></div>
+                <div><strong>Submitted:</strong>
+                    <%= new Date(survey.surveysubmissiondate).toLocaleString("en-US", {
+                        month: "short",
+                        day: "2-digit",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit"
+                    }) %>
+                </div>
             </div>
 
-            <div class="score-item">
-              <label class="label-main" for="useful">Usefulness</label><br />
-              <input
-                id="useful"
-                type="number"
-                name="SurveyUsefulnessScore"
-                class="score-input"
-                min="1"
-                max="5"
-                value="<%= survey.surveyusefulnessscore %>"
-                required
-              />
-            </div>
+            <form
+                action="/survey/<%= survey.surveyid %>/edit?<%=
+                    eventDefId ? 'eventDefId=' + encodeURIComponent(eventDefId) : ''
+                %>"
+                method="POST"
+            >
+                <div class="mb-3">
+                    <div class="field-label">
+                        <span>Scores</span>
+                        <span class="label-hint">Values from 1 to 5</span>
+                    </div>
+                    <div class="score-row">
+                        <div class="score-item">
+                            <label for="sat">Satisfaction</label>
+                            <input
+                                id="sat"
+                                type="number"
+                                name="SurveySatisfactionScore"
+                                class="score-input"
+                                min="1"
+                                max="5"
+                                value="<%= survey.surveysatisfactionscore %>"
+                                required
+                            />
+                        </div>
 
-            <div class="score-item">
-              <label class="label-main" for="instr">Instructor</label><br />
-              <input
-                id="instr"
-                type="number"
-                name="SurveyInstructorScore"
-                class="score-input"
-                min="1"
-                max="5"
-                value="<%= survey.surveyinstructorscore %>"
-                required
-              />
-            </div>
+                        <div class="score-item">
+                            <label for="useful">Usefulness</label>
+                            <input
+                                id="useful"
+                                type="number"
+                                name="SurveyUsefulnessScore"
+                                class="score-input"
+                                min="1"
+                                max="5"
+                                value="<%= survey.surveyusefulnessscore %>"
+                                required
+                            />
+                        </div>
 
-            <div class="score-item">
-              <label class="label-main" for="recom">Recommendation</label><br />
-              <input
-                id="recom"
-                type="number"
-                name="SurveyRecommendationScore"
-                class="score-input"
-                min="1"
-                max="5"
-                value="<%= survey.surveyrecommendationscore %>"
-                required
-              />
-            </div>
-          </div>
+                        <div class="score-item">
+                            <label for="instr">Instructor</label>
+                            <input
+                                id="instr"
+                                type="number"
+                                name="SurveyInstructorScore"
+                                class="score-input"
+                                min="1"
+                                max="5"
+                                value="<%= survey.surveyinstructorscore %>"
+                                required
+                            />
+                        </div>
+
+                        <div class="score-item">
+                            <label for="recom">Recommendation</label>
+                            <input
+                                id="recom"
+                                type="number"
+                                name="SurveyRecommendationScore"
+                                class="score-input"
+                                min="1"
+                                max="5"
+                                value="<%= survey.surveyrecommendationscore %>"
+                                required
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="field-label">
+                        <span>Comments</span>
+                        <span class="label-hint">Optional</span>
+                    </div>
+                    <textarea
+                        name="SurveyComments"
+                        class="comments-textarea"
+                        placeholder="Update or correct the participant comment..."
+                    ><%= survey.surveycomments || "" %></textarea>
+                </div>
+
+                <hr>
+
+                <div class="text-center-wrapper">
+                    <button type="submit" class="btn-action btn-save-milestone">Save Changes</button>
+                    <button
+                        type="button"
+                        class="btn-action btn-back"
+                        onclick="window.location.href='<%= eventDefId ? `/survey/responses?eventDefId=${encodeURIComponent(eventDefId)}` : `/survey/responses` %>'"
+                    >
+                        Cancel
+                    </button>
+                </div>
+
+                <div class="info-note">
+                    Note: If you need to completely remove a survey response, use the Delete action from the Survey Responses table.
+                </div>
+            </form>
         </div>
-
-        <div class="form-section">
-          <div class="field-label">
-            <span class="label-main">Comments</span>
-            <span class="label-hint">Optional</span>
-          </div>
-          <textarea
-            name="SurveyComments"
-            class="comments-textarea"
-            placeholder="Update or correct the participant comment..."
-          ><%= survey.surveycomments || "" %></textarea>
-        </div>
-
-        <div class="button-row">
-          <button type="submit" class="btn-primary">Save Changes</button>
-          <button
-            type="button"
-            class="btn-secondary"
-            onclick="window.location.href='<%= eventDefId ? `/survey/responses?eventDefId=${encodeURIComponent(eventDefId)}` : `/survey/responses` %>'"
-          >
-            Cancel
-          </button>
-        </div>
-
-        <p class="danger-note">
-          Note: If you need to completely remove a survey response, use the Delete action from the Survey Responses table.
-        </p>
-      </form>
     </div>
-  </main>
+    <%- include('../common/footer.ejs') %>
 </body>
 </html>

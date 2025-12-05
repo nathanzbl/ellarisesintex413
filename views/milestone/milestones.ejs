@@ -190,16 +190,53 @@
         .table-custom thead tr {
             background-color: var(--er-charcoal);
             color: var(--er-cream);
-            font-size: 0.8rem;
-            letter-spacing: 0.08em;
+            font-size: 0.7rem;
+            letter-spacing: 0.05em;
             text-transform: uppercase;
         }
 
         .table-custom th,
         .table-custom td {
-            padding: 1rem 1.25rem;
+            padding: 0.75rem 0.5rem;
             text-align: left;
             border-bottom: 1px solid var(--er-blush);
+            white-space: normal;
+            word-wrap: break-word;
+        }
+
+        .table-custom th:first-child,
+        .table-custom td:first-child {
+            width: 8%;
+        }
+
+        .table-custom th:nth-child(2),
+        .table-custom td:nth-child(2) {
+            width: 15%;
+        }
+
+        .table-custom th:nth-child(3),
+        .table-custom td:nth-child(3) {
+            width: 20%;
+        }
+
+        .table-custom th:nth-child(4),
+        .table-custom td:nth-child(4) {
+            width: 20%;
+        }
+
+        .table-custom th:nth-child(5),
+        .table-custom td:nth-child(5) {
+            width: 15%;
+        }
+
+        .table-custom th:nth-child(6),
+        .table-custom td:nth-child(6) {
+            width: 12%;
+        }
+
+        .table-custom th:nth-child(7),
+        .table-custom td:nth-child(7) {
+            width: 10%;
         }
 
         .table-responsive-wrapper {
@@ -210,6 +247,10 @@
 
         .table-custom tbody tr:nth-child(even) {
             background-color: var(--er-cream);
+        }
+
+        .table-custom tbody td {
+            font-size: 0.85rem;
         }
 
         .btn-action {
@@ -240,12 +281,12 @@
         }
 
         .btn-small {
-            padding: 0.75rem 1rem;
+            padding: 0.5rem 0.7rem;
             border-radius: 999px;
             border: none;
             font-weight: 600;
-            font-size: 0.65rem;
-            letter-spacing: 0.08em;
+            font-size: 0.6rem;
+            letter-spacing: 0.05em;
             text-transform: uppercase;
             cursor: pointer;
             box-shadow: 0 5px 12px rgba(32, 131, 47, 0.25);
@@ -253,7 +294,7 @@
             text-decoration: none;
             display: inline-block;
             text-align: center;
-            min-width: 95px;
+            min-width: 70px;
         }
 
         .btn-edit-milestone {
@@ -282,12 +323,14 @@
 
         .action-buttons {
             display: flex;
-            gap: 0.5rem;
+            gap: 0.3rem;
             align-items: center;
+            flex-wrap: nowrap;
         }
 
         .action-buttons form {
             margin: 0;
+            flex-shrink: 0;
         }
 
         .message-alert {
@@ -348,6 +391,27 @@
             opacity: 0.4;
             pointer-events: none;
             cursor: default;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.3rem 0.5rem;
+            border-radius: 999px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            white-space: nowrap;
+        }
+
+        .status-complete {
+            background: #e5f5ec;
+            color: #2f6f4a;
+        }
+
+        .status-in-progress {
+            background: #fff4e6;
+            color: #c77700;
         }
     </style>
 
@@ -443,6 +507,7 @@
                                 <th>Participant Email</th>
                                 <th>Milestone Title</th>
                                 <th>Date Achieved</th>
+                                <th>Status</th>
                                 <% if (typeof userRole !== 'undefined' && userRole === 'manager') { %>
                                 <th>Actions</th>
                                 <% } %>
@@ -465,6 +530,20 @@
                                           const dateValue = new Date(milestone[i].milestonedate);
                                         %>
                                         <%= dateValue.toLocaleDateString('en-US', dateOptions) %>
+                                    </td>
+                                    <td>
+                                        <%
+                                          const today = new Date();
+                                          today.setHours(0, 0, 0, 0);
+                                          const milestoneDate = new Date(milestone[i].milestonedate);
+                                          milestoneDate.setHours(0, 0, 0, 0);
+                                          const isComplete = milestoneDate < today;
+                                        %>
+                                        <% if (isComplete) { %>
+                                            <span class="status-badge status-complete">Complete</span>
+                                        <% } else { %>
+                                            <span class="status-badge status-in-progress">In Progress</span>
+                                        <% } %>
                                     </td>
                                     <% if (typeof userRole !== 'undefined' && userRole === 'manager') { %>
                                     <td>
