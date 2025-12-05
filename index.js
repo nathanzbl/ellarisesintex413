@@ -136,11 +136,12 @@ app.use((req, res, next) => {
     res.setHeader(
         'Content-Security-Policy',
         "default-src 'self' http://localhost:* ws://localhost:* wss://localhost:*; " +
-        "connect-src 'self' http://localhost:* ws://localhost:* wss://localhost:*; " +
-        "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; " +
-        "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; " +
+        "connect-src 'self' http://localhost:* ws://localhost:* wss://localhost:* https://cdn.jsdelivr.net https://public.tableau.com; " +
+        "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://public.tableau.com; " +
+        "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; " +
         "img-src 'self' data: https:; " +
-        "font-src 'self' https://cdn.jsdelivr.net;"
+        "font-src 'self' https://cdn.jsdelivr.net https://fonts.gstatic.com; " +
+        "frame-src 'self' https://public.tableau.com;"
     );
     next();
 });
@@ -3252,6 +3253,67 @@ app.get("/dashboard", requireManager, async (req, res) => {
         `);
         const upcomingBirthdays = birthdaysResult.rows;
 
+        // 9. Milestone Goals by Education Level and Year
+        const milestonesData = await knex("milestone")
+            .select(
+                knex.raw("EXTRACT(YEAR FROM milestonedate) as year"),
+                "milestonetitle"
+            )
+            .whereNotNull("milestonedate")
+            .orderBy("year");
+
+        // Categorize milestones by education level and year
+        const milestonesByLevel = {
+            middleSchool: {},
+            highSchool: {},
+            college: {}
+        };
+
+        milestonesData.forEach(milestone => {
+            const year = parseInt(milestone.year);
+            const title = (milestone.milestonetitle || "").toLowerCase();
+            const titleUpper = (milestone.milestonetitle || "").toUpperCase();
+
+            // Check for college degree abbreviations
+            const hasCollegeDegree =
+                titleUpper.includes("AA") || titleUpper.includes("AS") || titleUpper.includes("AAS") ||
+                titleUpper.includes("BA") || titleUpper.includes("BS") || titleUpper.includes("BAS") ||
+                titleUpper.includes("MA") || titleUpper.includes("MS") || titleUpper.includes("MBA") ||
+                titleUpper.includes("MFA") || titleUpper.includes("PHD") || titleUpper.includes("MD");
+
+            // Categorize based on title keywords
+            if (title.includes("middle") || title.includes("8th grade") || title.includes("sixth") ||
+                title.includes("seventh") || title.includes("eighth") || title.includes("6th") ||
+                title.includes("7th") || title.includes("8th")) {
+                milestonesByLevel.middleSchool[year] = (milestonesByLevel.middleSchool[year] || 0) + 1;
+            } else if ((title.includes("high school") || title.includes("9th") || title.includes("10th") ||
+                       title.includes("11th") || title.includes("12th") || title.includes("freshman") ||
+                       title.includes("sophomore") || title.includes("junior") || title.includes("senior") ||
+                       title.includes("diploma") || title.includes("graduation")) && !title.includes("college") && !hasCollegeDegree) {
+                milestonesByLevel.highSchool[year] = (milestonesByLevel.highSchool[year] || 0) + 1;
+            } else if (hasCollegeDegree || title.includes("college") || title.includes("university") ||
+                       title.includes("bachelor") || title.includes("master") || title.includes("associate") ||
+                       title.includes("associates") || title.includes("undergraduate") || title.includes("undergrad") ||
+                       title.includes("graduate") || title.includes("doctorate") || title.includes("doctoral")) {
+                milestonesByLevel.college[year] = (milestonesByLevel.college[year] || 0) + 1;
+            }
+        });
+
+        // Get all unique years from milestones
+        const allYears = [...new Set([
+            ...Object.keys(milestonesByLevel.middleSchool),
+            ...Object.keys(milestonesByLevel.highSchool),
+            ...Object.keys(milestonesByLevel.college)
+        ])].map(y => parseInt(y)).sort();
+
+        // Format data for chart - each year should have data for all education levels
+        const milestoneChartData = {
+            years: allYears,
+            middleSchool: allYears.map(year => milestonesByLevel.middleSchool[year] || 0),
+            highSchool: allYears.map(year => milestonesByLevel.highSchool[year] || 0),
+            college: allYears.map(year => milestonesByLevel.college[year] || 0)
+        };
+
         res.render("tableau", {
             stats: {
                 totalParticipants: participantCount.count,
@@ -3265,7 +3327,8 @@ app.get("/dashboard", requireManager, async (req, res) => {
             monthlyData: monthlyData,
             selectedYear: parseInt(selectedYear),
             availableYears: availableYears,
-            upcomingBirthdays: upcomingBirthdays
+            upcomingBirthdays: upcomingBirthdays,
+            milestoneChartData: milestoneChartData
         });
     } catch (error) {
         console.error("Error fetching dashboard data:", error);
@@ -3275,6 +3338,7 @@ app.get("/dashboard", requireManager, async (req, res) => {
             selectedYear: new Date().getFullYear(),
             availableYears: [],
             upcomingBirthdays: [],
+            milestoneChartData: { years: [], middleSchool: [], highSchool: [], college: [] },
             error_message: "Error loading dashboard data"
         });
     }
