@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Thank You | Ella Rises</title>
 
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:wght@400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
 
     <style>
         :root {
+            /* Full Ella Rises Color Palette */
             --er-blue:     #99B7C6;
             --er-lavender: #978EC4;
             --er-cream:    #F9F5EA;
@@ -19,95 +19,277 @@
             --er-pink:     #F9AFB1;
             --er-sage:     #9AB59D;
             --er-charcoal: #3A3F3B;
-            --er-peach:    #F4B89D;
+            --er-peach:    #F4B092;
+            --er-rose:     #CE325B;
         }
+
+        * { box-sizing: border-box; }
 
         body {
             margin: 0;
-            font-family: 'Montserrat', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0;
+            font-family: "Montserrat", system-ui, sans-serif;
             background: var(--er-cream);
             color: var(--er-charcoal);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
         }
 
-        .container {
-            background: white;
-            padding: 40px;
-            max-width: 600px;
+        .main-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
             width: 100%;
-            border-radius: 16px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+        }
+
+        .data-card {
+            max-width: 720px;
+            width: 100%;
+            padding: 2.5rem 2.25rem;
+            border-radius: 1.5rem;
+            background-color: #ffffff;
+            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.08);
+            border-top: 6px solid var(--er-pink);
             text-align: center;
+        }
+
+        .success-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            background: rgba(249, 175, 177, 0.15);
+            color: var(--er-rose);
+            font-weight: 600;
+            margin-bottom: 1.5rem;
         }
 
         .hero-image {
             width: 100%;
-            max-height: 250px;
+            max-height: 300px;
             object-fit: cover;
-            border-radius: 12px;
-            margin-bottom: 20px;
+            border-radius: 1rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         }
 
-        h1 {
-            font-family: 'DM Serif Display', serif;
-            font-size: 2.4rem;
-            margin-bottom: 10px;
-            color: var(--er-lavender);
+        .milestone-title {
+            font-family: "DM Serif Display", serif;
+            font-size: 2rem;
+            text-align: center;
+            letter-spacing: 0.06em;
+            margin: 0 0 0.5rem;
+            color: var(--er-charcoal);
         }
 
-        p {
-            font-size: 1.1rem;
+        .milestone-subtitle {
+            font-size: 0.95rem;
+            text-align: center;
+            color: rgba(58, 63, 59, 0.7);
+            margin-bottom: 2rem;
             line-height: 1.6;
-            margin-top: 0;
-            margin-bottom: 20px;
         }
 
         .amount-box {
-            margin: 20px auto;
+            margin: 1.5rem auto;
             display: inline-block;
-            background: var(--er-blue);
+            background: linear-gradient(135deg, var(--er-pink), var(--er-rose));
             color: white;
-            padding: 12px 22px;
-            border-radius: 12px;
-            font-size: 1.2rem;
+            padding: 1rem 2rem;
+            border-radius: 999px;
+            font-size: 1.25rem;
             font-weight: 600;
+            box-shadow: 0 6px 16px rgba(249, 175, 177, 0.4);
         }
 
-        .home-btn {
-            display: inline-block;
-            margin-top: 25px;
-            padding: 12px 24px;
-            font-size: 1rem;
+        .impact-box {
+            background: linear-gradient(135deg, rgba(249, 175, 177, 0.08), rgba(255, 216, 209, 0.15));
+            border: 2px solid var(--er-blush);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            text-align: left;
+        }
+
+        .impact-box strong {
+            display: block;
+            font-size: 0.85rem;
             font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--er-charcoal);
+            margin-bottom: 0.75rem;
+        }
+
+        .impact-box p {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: rgba(58, 63, 59, 0.8);
+            margin: 0;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid var(--er-blush);
+            margin: 2rem 0;
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-action {
+            padding: 0.85rem 1.5rem;
+            border-radius: 999px;
+            border: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.18s ease;
             text-decoration: none;
-            background: var(--er-sage);
-            color: white;
-            border-radius: 10px;
-            transition: 0.2s ease;
+            display: inline-block;
+            text-align: center;
         }
 
-        .home-btn:hover {
+        .btn-primary {
+            background: var(--er-sage);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(154, 181, 157, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: rgba(154, 181, 157, 0.85);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(154, 181, 157, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--er-charcoal);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(58, 63, 59, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(58, 63, 59, 0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(58, 63, 59, 0.4);
+        }
+
+        .btn-tertiary {
+            background: transparent;
+            color: var(--er-lavender);
+            border: 2px solid var(--er-lavender);
+            box-shadow: none;
+        }
+
+        .btn-tertiary:hover {
             background: var(--er-lavender);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .small-note {
+            font-size: 0.8rem;
+            color: rgba(58, 63, 59, 0.5);
+            margin-top: 1rem;
+            font-style: italic;
+        }
+
+        @media (max-width: 640px) {
+            .data-card {
+                padding: 2rem 1.5rem;
+            }
+
+            .milestone-title {
+                font-size: 1.7rem;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn-action {
+                width: 100%;
+            }
+
+            .amount-box {
+                font-size: 1.1rem;
+                padding: 0.85rem 1.5rem;
+            }
         }
     </style>
 </head>
-
 <body>
-    <div class="container">
-        <img src="/images/paintingclass.avif" alt="Painting class" class="hero-image">
-        <h1>Thank You for Your Donation</h1>
-        <p>Your support helps Ella Rises empower young women through STEAM education, creative mentorship, and leadership opportunities.</p>
-        <% if (typeof amount !== 'undefined') { %>
-            <div class="amount-box">
-                Donation Amount: $<%= amount %>
+    <%- include('../common/navbar.ejs') %>
+
+    <div class="main-content">
+        <div class="data-card">
+
+            <div class="success-badge">Donation Received</div>
+
+            <img src="/images/paintingclass.avif" alt="Painting class" class="hero-image">
+
+            <h1 class="milestone-title">Thank You for Your Donation!</h1>
+
+            <p class="milestone-subtitle">
+                Your support helps Ella Rises empower young women through STEAM education, creative mentorship, and leadership opportunities.
+            </p>
+
+            <% if (typeof amount !== 'undefined') { %>
+                <div class="amount-box">
+                    Donation Amount: $<%= amount %>
+                </div>
+            <% } %>
+
+            <div class="impact-box">
+                <strong>Your Impact</strong>
+                <p>
+                    We appreciate your generosity and belief in our mission. Your donation directly supports programs that
+                    provide mentorship, educational resources, and opportunities for young women to thrive in STEAM fields.
+                </p>
             </div>
-        <% } %>
-        <p>We appreciate your generosity and belief in our mission.</p>
-        <a href="/" class="home-btn">Return Home</a>
+
+            <hr>
+
+            <div class="button-group">
+                <a href="/" class="btn-action btn-primary">
+                    Return Home
+                </a>
+
+                <a href="/events" class="btn-action btn-secondary">
+                    View Events
+                </a>
+
+                <a href="/donations" class="btn-action btn-secondary">
+                    Make Another Donation
+                </a>
+            </div>
+
+            <a href="https://www.ellarises.org/" target="_blank" rel="noopener noreferrer" class="btn-action btn-tertiary">
+                Visit EllaRises.org
+            </a>
+
+            <p class="small-note">
+                Thank you for helping us lift and mentor the rising generation.
+            </p>
+
+        </div>
     </div>
+
+    <%- include('../common/footer.ejs') %>
 </body>
 </html>

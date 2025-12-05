@@ -1,251 +1,294 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Thank You | Ella Rises</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Thank You | Ella Rises</title>
 
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:wght@400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:wght@400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-  <style>
-    :root {
-      --er-blue:     #99B7C6;
-      --er-lavender: #978EC4;
-      --er-cream:    #F9F5EA;
-      --er-rose:     #E9B7C7;
-      --er-navy:     #1F3140;
-      --er-dark:     #333333;
-    }
+    <style>
+        :root {
+            /* Full Ella Rises Color Palette */
+            --er-blue:     #99B7C6;
+            --er-lavender: #978EC4;
+            --er-cream:    #F9F5EA;
+            --er-blush:    #FFD8D1;
+            --er-pink:     #F9AFB1;
+            --er-sage:     #9AB59D;
+            --er-charcoal: #3A3F3B;
+            --er-peach:    #F4B092;
+            --er-rose:     #CE325B;
+        }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+        * { box-sizing: border-box; }
 
-    body {
-      font-family: "Montserrat", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: linear-gradient(135deg, var(--er-cream), var(--er-blue));
-      color: var(--er-dark);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-    }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0;
+            font-family: "Montserrat", system-ui, sans-serif;
+            background: var(--er-cream);
+            color: var(--er-charcoal);
+        }
 
-    .thankyou-container {
-      background-color: white;
-      max-width: 700px;
-      width: 100%;
-      border-radius: 18px;
-      padding: 32px 28px 28px;
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
-      border: 1px solid rgba(0, 0, 0, 0.04);
-      text-align: center;
-    }
+        .main-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+            width: 100%;
+        }
 
-    .thankyou-badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 6px 14px;
-      border-radius: 999px;
-      font-size: 0.75rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      background: rgba(153, 183, 198, 0.12);
-      color: var(--er-navy);
-      margin-bottom: 18px;
-    }
+        .data-card {
+            max-width: 720px;
+            width: 100%;
+            padding: 2.5rem 2.25rem;
+            border-radius: 1.5rem;
+            background-color: #ffffff;
+            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.08);
+            border-top: 6px solid var(--er-pink);
+            text-align: center;
+        }
 
-    .thankyou-title {
-      font-family: "DM Serif Display", "Times New Roman", serif;
-      font-size: 2rem;
-      margin-bottom: 12px;
-      color: var(--er-navy);
-    }
+        .success-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            background: rgba(154, 181, 157, 0.15);
+            color: var(--er-sage);
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
 
-    .thankyou-subtitle {
-      font-size: 0.98rem;
-      line-height: 1.6;
-      color: #555555;
-      margin-bottom: 24px;
-    }
+        .milestone-title {
+            font-family: "DM Serif Display", serif;
+            font-size: 2rem;
+            text-align: center;
+            letter-spacing: 0.06em;
+            margin: 0 0 0.5rem;
+            color: var(--er-charcoal);
+        }
 
-    .impact-box {
-      background: linear-gradient(135deg, rgba(151, 142, 196, 0.08), rgba(233, 183, 199, 0.16));
-      border-radius: 14px;
-      padding: 16px 18px;
-      margin-bottom: 26px;
-      font-size: 0.92rem;
-      line-height: 1.5;
-      color: #3b3b3b;
-    }
+        .milestone-subtitle {
+            font-size: 0.95rem;
+            text-align: center;
+            color: rgba(58, 63, 59, 0.7);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
 
-    .impact-box strong {
-      color: var(--er-navy);
-    }
+        .impact-box {
+            background: linear-gradient(135deg, rgba(249, 175, 177, 0.08), rgba(255, 216, 209, 0.15));
+            border: 2px solid var(--er-blush);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            text-align: left;
+        }
 
-    .redirect-info {
-      font-size: 0.85rem;
-      color: #777777;
-      margin-bottom: 18px;
-    }
+        .impact-box strong {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--er-charcoal);
+            margin-bottom: 0.75rem;
+        }
 
-    .redirect-info span {
-      font-weight: 600;
-    }
+        .impact-box p {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: rgba(58, 63, 59, 0.8);
+            margin: 0;
+        }
 
-    .button-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-      margin-bottom: 10px;
-    }
+        .redirect-info {
+            font-size: 0.85rem;
+            color: rgba(58, 63, 59, 0.6);
+            margin-bottom: 1.5rem;
+        }
 
-    .er-button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 10px 18px;
-      border-radius: 999px;
-      border: 1px solid transparent;
-      font-size: 0.9rem;
-      font-weight: 500;
-      text-decoration: none;
-      cursor: pointer;
-      transition: transform 0.08s ease, box-shadow 0.08s ease, background-color 0.08s ease, border-color 0.08s ease;
-      white-space: nowrap;
-    }
+        .redirect-info span {
+            font-weight: 600;
+            color: var(--er-charcoal);
+        }
 
-    .er-button.primary {
-      background: var(--er-lavender);
-      color: white;
-      box-shadow: 0 8px 18px rgba(151, 142, 196, 0.45);
-    }
+        hr {
+            border: none;
+            border-top: 1px solid var(--er-blush);
+            margin: 2rem 0;
+        }
 
-    .er-button.primary:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 10px 22px rgba(151, 142, 196, 0.55);
-    }
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
 
-    .er-button.secondary {
-      background: white;
-      border-color: rgba(31, 49, 64, 0.18);
-      color: var(--er-navy);
-    }
+        .btn-action {
+            padding: 0.85rem 1.5rem;
+            border-radius: 999px;
+            border: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.18s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
 
-    .er-button.secondary:hover {
-      background: rgba(153, 183, 198, 0.06);
-    }
+        .btn-primary {
+            background: var(--er-sage);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(154, 181, 157, 0.3);
+        }
 
-    .er-button.ghost {
-      background: transparent;
-      border-color: transparent;
-      color: #666666;
-      font-size: 0.85rem;
-    }
+        .btn-primary:hover {
+            background: rgba(154, 181, 157, 0.85);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(154, 181, 157, 0.4);
+        }
 
-    .er-button.ghost:hover {
-      background: rgba(0, 0, 0, 0.03);
-    }
+        .btn-secondary {
+            background: var(--er-charcoal);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(58, 63, 59, 0.3);
+        }
 
-    .small-note {
-      font-size: 0.8rem;
-      color: #888888;
-      margin-top: 6px;
-    }
+        .btn-secondary:hover {
+            background: rgba(58, 63, 59, 0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(58, 63, 59, 0.4);
+        }
 
-    @media (max-width: 600px) {
-      .thankyou-container {
-        padding: 24px 18px 20px;
-      }
+        .btn-tertiary {
+            background: transparent;
+            color: var(--er-lavender);
+            border: 2px solid var(--er-lavender);
+            box-shadow: none;
+        }
 
-      .thankyou-title {
-        font-size: 1.6rem;
-      }
+        .btn-tertiary:hover {
+            background: var(--er-lavender);
+            color: white;
+            transform: translateY(-1px);
+        }
 
-      .button-group {
-        flex-direction: column;
-      }
+        .small-note {
+            font-size: 0.8rem;
+            color: rgba(58, 63, 59, 0.5);
+            margin-top: 1rem;
+            font-style: italic;
+        }
 
-      .er-button {
-        width: 100%;
-      }
-    }
-  </style>
+        @media (max-width: 640px) {
+            .data-card {
+                padding: 2rem 1.5rem;
+            }
+
+            .milestone-title {
+                font-size: 1.7rem;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn-action {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
-  <main class="thankyou-container">
-    <div class="thankyou-badge">Survey submitted</div>
+    <%- include('../common/navbar.ejs') %>
 
-    <h1 class="thankyou-title">Thank you for your feedback</h1>
+    <div class="main-content">
+        <div class="data-card">
 
-    <p class="thankyou-subtitle">
-      Your responses help Ella Rises improve future events and better support young women in STEAM fields.
-      We are grateful you took the time to share your experience.
-    </p>
+            <div class="success-badge">Survey Submitted</div>
 
-    <div class="impact-box">
-      <strong>What happens next</strong><br />
-      Your survey will be included in reports for donors, mentors, and program leaders so they can see which
-      activities are most impactful and where we can keep improving.
+            <h1 class="milestone-title">Thank You for Your Feedback!</h1>
+
+            <p class="milestone-subtitle">
+                Your responses help Ella Rises improve future events and better support young women in STEAM fields.
+                We are grateful you took the time to share your experience.
+            </p>
+
+            <div class="impact-box">
+                <strong>What Happens Next</strong>
+                <p>
+                    Your survey will be included in reports for donors, mentors, and program leaders so they can see which
+                    activities are most impactful and where we can keep improving.
+                </p>
+            </div>
+
+            <% if (typeof redirectUrl !== "undefined" && redirectUrl) { %>
+                <p class="redirect-info">
+                    <span>You will be redirected in a few seconds.</span><br>
+                    If nothing happens, choose one of the options below.
+                </p>
+            <% } else { %>
+                <p class="redirect-info">
+                    Choose where to go next using the options below.
+                </p>
+            <% } %>
+
+            <hr>
+
+            <div class="button-group">
+                <a href="<%= typeof redirectUrl !== 'undefined' && redirectUrl ? redirectUrl : '/' %>" class="btn-action btn-primary">
+                    Return to Home
+                </a>
+
+                <a href="/events" class="btn-action btn-secondary">
+                    View Events
+                </a>
+
+                <a href="/surveys" class="btn-action btn-secondary">
+                    Take Another Survey
+                </a>
+            </div>
+
+            <a href="https://www.ellarises.org/" target="_blank" rel="noopener noreferrer" class="btn-action btn-tertiary">
+                Visit EllaRises.org
+            </a>
+
+            <p class="small-note">
+                Thank you for helping us lift and mentor the rising generation.
+            </p>
+
+        </div>
     </div>
+
+    <%- include('../common/footer.ejs') %>
 
     <% if (typeof redirectUrl !== "undefined" && redirectUrl) { %>
-      <p class="redirect-info">
-        You will be redirected in a few seconds.
-        <span>If nothing happens, choose one of the options below.</span>
-      </p>
-    <% } else { %>
-      <p class="redirect-info">
-        You can choose where to go next using the options below.
-      </p>
+        <script>
+            const AUTO_REDIRECT_SECONDS = 8;
+
+            setTimeout(function () {
+                window.location.href = "<%= redirectUrl %>";
+            }, AUTO_REDIRECT_SECONDS * 1000);
+        </script>
     <% } %>
-
-    <div class="button-group">
-      <!-- Primary redirect option - usually your app home or events page -->
-      <a href="<%= typeof redirectUrl !== 'undefined' && redirectUrl ? redirectUrl : '/' %>" class="er-button primary">
-        Return to Ella Rises app
-      </a>
-
-      <!-- Internal route examples - adjust to match your app -->
-      <a href="/events" class="er-button secondary">
-        View upcoming events
-      </a>
-
-      <a href="/surveys" class="er-button secondary">
-        Take another survey
-      </a>
-    </div>
-
-    <a
-      href="https://www.ellarises.org/"
-      target="_blank"
-      rel="noopener noreferrer"
-      class="er-button ghost"
-    >
-      Visit EllaRises.org
-    </a>
-
-    <p class="small-note">
-      Thank you for helping us lift and mentor the rising generation.
-    </p>
-  </main>
-
-  <% if (typeof redirectUrl !== "undefined" && redirectUrl) { %>
-    <script>
-      const AUTO_REDIRECT_SECONDS = 8;
-
-      setTimeout(function () {
-        window.location.href = "<%= redirectUrl %>";
-      }, AUTO_REDIRECT_SECONDS * 1000);
-    </script>
-  <% } %>
 </body>
 </html>

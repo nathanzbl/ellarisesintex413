@@ -355,7 +355,6 @@ app.post("/survey", async (req, res) => {
     await knex("survey").insert({
       participantid: participantId,
       eventid: eventId,
-      recommendationid: recom,
       surveysatisfactionscore: sat,
       surveyusefulnessscore: useful,
       surveyinstructorscore: instr,
@@ -545,12 +544,10 @@ The Ella Rises Team`,
   } catch (err) {
     console.error("Survey submit error:", err);
 
-    const events = await knex("eventdefinition")
-      .select("eventdefid", "eventname")
-      .orderBy("eventdefid", "asc");
+    const surveyData = await getSurveyEventsData();
 
     res.status(500).render("survey/surveys", {
-      events,
+      ...surveyData,
       error_message:
         "There was a problem saving your survey. Please try again.",
     });

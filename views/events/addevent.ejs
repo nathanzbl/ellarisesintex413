@@ -1,159 +1,342 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Add Event | Ella Rises</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Add Event | Ella Rises</title>
 
-<style>
-    :root {
-        --er-blue:     #99B7C6;
-        --er-lavender: #978EC4;
-        --er-cream:    #F9F5EA;
-        --er-blush:    #FFD8D1;
-        --er-pink:     #F9AFB1;
-        --er-sage:     #9AB59D;
-        --er-charcoal: #3A3F3B;
-        --er-peach:    #F4B092;
-        --er-rose:     #CE325B;
-    }
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:wght@400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-    body {
-        margin: 0;
-        font-family: "Montserrat", sans-serif;
-        background: var(--er-cream);
-        color: var(--er-charcoal);
-    }
+    <style>
+        :root {
+            /* Full Ella Rises Color Palette */
+            --er-blue:     #99B7C6;
+            --er-lavender: #978EC4;
+            --er-cream:    #F9F5EA;
+            --er-blush:    #FFD8D1;
+            --er-pink:     #F9AFB1;
+            --er-sage:     #9AB59D;
+            --er-charcoal: #3A3F3B;
+            --er-peach:    #F4B092;
+            --er-rose:     #CE325B;
+        }
 
-    .page-title {
-        text-align: center;
-        font-size: 2.7rem;
-        margin-top: 2.5rem;
-        margin-bottom: 1.5rem;
-        font-family: "DM Serif Display", serif;
-        color: var(--er-charcoal);
-        letter-spacing: 0.02em;
-    }
+        * { box-sizing: border-box; }
 
-    .container {
-        width: 70%;
-        margin: 0 auto;
-        background: white;
-        padding: 3rem;
-        border-radius: 1.5rem;
-        border-top: 10px solid var(--er-pink);
-        box-shadow: 0 12px 28px rgba(0,0,0,0.12);
-    }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0;
+            font-family: "Montserrat", system-ui, sans-serif;
+            background: var(--er-cream);
+            color: var(--er-charcoal);
+        }
 
-    label {
-        font-weight: 600;
-        font-size: 0.95rem;
-        margin-top: 1.4rem;
-        display: block;
-        color: var(--er-charcoal);
-        letter-spacing: 0.04em;
-    }
+        .main-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+            width: 100%;
+        }
 
-    input, textarea, select {
-        width: 100%;
-        padding: 14px;
-        margin-top: 0.4rem;
-        border-radius: 12px;
-        border: 1px solid #ddd;
-        font-size: 0.95rem;
-        background: #fff;
-    }
+        .data-card {
+            max-width: 720px;
+            width: 100%;
+            padding: 2.5rem 2.25rem;
+            border-radius: 1.5rem;
+            background-color: #ffffff;
+            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.08);
+            border-top: 6px solid var(--er-pink);
+        }
 
-    textarea {
-        resize: vertical;
-    }
+        .milestone-title {
+            font-family: "DM Serif Display", serif;
+            font-size: 2rem;
+            text-align: center;
+            letter-spacing: 0.06em;
+            margin: 0 0 0.25rem;
+        }
 
-    button {
-        margin-top: 2rem;
-        width: 100%;
-        padding: 1rem;
-        background: var(--er-pink);
-        color: white;
-        border: none;
-        border-radius: 12px;
-        font-size: 1.1rem;
-        font-weight: 600;
-        cursor: pointer;
-        box-shadow: 0 10px 25px rgba(249,175,177,0.4);
-        transition: 0.2s ease;
-        letter-spacing: 0.05em;
-    }
+        .milestone-subtitle {
+            font-size: 0.95rem;
+            text-align: center;
+            color: rgba(58, 63, 59, 0.7);
+            margin-bottom: 2rem;
+        }
 
-    button:hover {
-        background: var(--er-rose);
-        box-shadow: 0 14px 32px rgba(206,50,91,0.35);
-    }
+        /* FORM-SPECIFIC STYLES (MATCHES SURVEY PAGE) */
+        .mb-3 { /* Spacing for form groups */
+            margin-bottom: 2rem;
+        }
 
-    .error {
-        text-align: center;
-        color: var(--er-rose);
-        font-weight: bold;
-        margin-bottom: 1rem;
-    }
-</style>
+        .field-label { /* Label styling */
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 0.75rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .text-input, /* General input field style */
+        .date-input,
+        .datetime-input,
+        .number-input,
+        .textarea-input,
+        .file-input,
+        .select-input { /* Added for potential future dropdowns */
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid var(--er-blush);
+            border-radius: 0.75rem;
+            font-family: inherit;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s ease;
+            background: #fff; /* Ensure background is white */
+        }
+
+        .textarea-input {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .text-input:focus,
+        .date-input:focus,
+        .datetime-input:focus,
+        .number-input:focus,
+        .textarea-input:focus,
+        .file-input:focus,
+        .select-input:focus {
+            border-color: var(--er-pink);
+        }
+
+        .text-input::placeholder,
+        .date-input::placeholder,
+        .datetime-input::placeholder,
+        .number-input::placeholder,
+        .textarea-input::placeholder {
+            color: rgba(58, 63, 59, 0.5);
+        }
+
+        /* Adjust date input icon if necessary (similar to select) */
+        input[type="date"]::-webkit-calendar-picker-indicator,
+        input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+            filter: invert(30%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(50%); /* Darken calendar icon */
+            cursor: pointer;
+        }
+
+        /* Select dropdown styling */
+        .select-input {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%233A3F3B' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            padding-right: 2.5rem;
+        }
+
+        /* BUTTON STYLING*/
+        .btn-action {
+            padding: 0.85rem 1rem;
+            border-radius: 999px;
+            border: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 0 10px 24px rgba(206, 50, 91, 0.25);
+            transition: all 0.18s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-save-milestone { /* Specific button for saving */
+            background: var(--er-pink);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(249, 175, 177, 0.3);
+        }
+
+        .btn-save-milestone:hover {
+            background: var(--er-rose);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(206, 50, 91, 0.4);
+        }
+
+        .btn-back { /* Specific button for going back */
+            background: var(--er-charcoal);
+            color: #fff;
+            margin-left: 1rem; /* Spacing between buttons */
+            box-shadow: 0 4px 12px rgba(58, 63, 59, 0.3);
+        }
+
+        .btn-back:hover {
+            background: rgba(58, 63, 59, 0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(58, 63, 59, 0.4);
+        }
+
+        .message-alert { /* General alert style */
+            text-align: center;
+            color: var(--er-rose);
+            background: rgba(206, 50, 91, 0.07);
+            padding: 0.8rem 1.2rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .text-center-wrapper {
+             text-align: center;
+             margin-top: 2rem;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid var(--er-blush);
+            margin: 2rem 0;
+        }
+
+        /* Form grid layout */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 640px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
-
 <body>
+    <%- include('../common/navbar.ejs') %>
 
-<%- include('../common/navbar.ejs') %>
+    <div class="main-content">
+        <div class="data-card">
 
-<h1 class="page-title">Add New Event</h1>
+            <h1 class="milestone-title">Add New Event</h1>
+            <p class="milestone-subtitle">Create a new event for the Ella Rises community.</p>
 
-<div class="container">
+            <% if (typeof error_message !== 'undefined' && error_message) { %>
+                <div class="message-alert" style="color: var(--er-rose); background: rgba(206, 50, 91, 0.07);">
+                    <%= error_message %>
+                </div>
+            <% } %>
 
-    <% if (error_message) { %>
-        <p class="error"><%= error_message %></p>
-    <% } %>
+            <form action="/events/add" method="POST" enctype="multipart/form-data">
 
-    <form action="/events/add" method="POST" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label for="eventname" class="field-label">Event Name:</label>
+                    <input type="text"
+                           class="text-input"
+                           id="eventname"
+                           name="eventname"
+                           required>
+                </div>
 
-        <label>Event Name</label>
-        <input type="text" name="eventname" required>
+                <div class="mb-3">
+                    <label for="eventdescription" class="field-label">Description:</label>
+                    <textarea class="textarea-input"
+                              id="eventdescription"
+                              name="eventdescription"
+                              required></textarea>
+                </div>
 
-        <label>Description</label>
-        <textarea name="eventdescription" rows="3" required></textarea>
+                <div class="form-row">
+                    <div class="mb-3">
+                        <label for="eventtype" class="field-label">Event Type:</label>
+                        <select id="eventtype" name="eventtype" class="select-input" required>
+                            <option value="">Select type</option>
+                            <option value="Service">Service</option>
+                            <option value="Workshop">Workshop</option>
+                            <option value="Activity">Activity</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
 
-        <label>Event Type</label>
-        <select name="eventtype" required>
-            <option value="Service">Service</option>
-            <option value="Workshop">Workshop</option>
-            <option value="Activity">Activity</option>
-            <option value="Other">Other</option>
-        </select>
+                    <div class="mb-3">
+                        <label for="eventrecurrencepattern" class="field-label">Recurrence Pattern:</label>
+                        <select id="eventrecurrencepattern" name="eventrecurrencepattern" class="select-input" required>
+                            <option value="">Select pattern</option>
+                            <option value="None">None</option>
+                            <option value="Weekly">Weekly</option>
+                            <option value="Monthly">Monthly</option>
+                            <option value="Yearly">Yearly</option>
+                        </select>
+                    </div>
+                </div>
 
-        <label>Recurrence Pattern</label>
-        <select name="eventrecurrencepattern" required>
-            <option value="None">None</option>
-            <option value="Monthly">Monthly</option>
-            <option value="Weekly">Weekly</option>
-            <option value="Yearly">Yearly</option>
-        </select>
+                <div class="form-row">
+                    <div class="mb-3">
+                        <label for="eventdatetimestart" class="field-label">Start Date & Time:</label>
+                        <input type="datetime-local"
+                               class="datetime-input"
+                               id="eventdatetimestart"
+                               name="eventdatetimestart"
+                               required>
+                    </div>
 
-        <label>Start Date & Time</label>
-        <input type="datetime-local" name="eventdatetimestart" required>
+                    <div class="mb-3">
+                        <label for="eventdatetimeend" class="field-label">End Date & Time:</label>
+                        <input type="datetime-local"
+                               class="datetime-input"
+                               id="eventdatetimeend"
+                               name="eventdatetimeend"
+                               required>
+                    </div>
+                </div>
 
-        <label>End Date & Time</label>
-        <input type="datetime-local" name="eventdatetimeend" required>
+                <div class="mb-3">
+                    <label for="eventlocation" class="field-label">Location:</label>
+                    <input type="text"
+                           class="text-input"
+                           id="eventlocation"
+                           name="eventlocation"
+                           required>
+                </div>
 
-        <label>Location</label>
-        <input type="text" name="eventlocation" required>
+                <div class="mb-3">
+                    <label for="eventcapacity" class="field-label">Capacity:</label>
+                    <input type="number"
+                           class="number-input"
+                           id="eventcapacity"
+                           name="eventcapacity"
+                           required>
+                </div>
 
-        <label>Capacity</label>
-        <input type="number" name="eventcapacity" required>
+                <div class="mb-3">
+                    <label for="eventimage" class="field-label">Event Image:</label>
+                    <input type="file"
+                           class="file-input"
+                           id="eventimage"
+                           name="eventimage"
+                           accept="image/*"
+                           required>
+                </div>
 
-        <!-- NEW IMAGE UPLOAD FIELD -->
-        <label>Event Image</label>
-        <input type="file" name="eventimage" accept="image/*" required>
+                <hr>
 
-        <button type="submit">Save Event</button>
+                <div class="text-center-wrapper">
+                    <input type="submit" value="Save Event" class="btn-action btn-save-milestone">
+                    <a href="/events" class="btn-action btn-back">Cancel</a>
+                </div>
 
-    </form>
-
-</div>
-<%- include('../common/footer.ejs') %>
+            </form>
+        </div>
+    </div>
+    <%- include('../common/footer.ejs') %>
 </body>
 </html>
