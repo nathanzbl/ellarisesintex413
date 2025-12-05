@@ -175,6 +175,27 @@
       height: 400px;
     }
 
+    /* Tableau Dashboard Section */
+    .tableau-section {
+      background: white;
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      margin-bottom: 2rem;
+    }
+
+    .tableau-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--er-charcoal);
+      margin-bottom: 1.5rem;
+    }
+
+    .tableauPlaceholder {
+      width: 100%;
+      margin: 0 auto;
+    }
+
     /* Birthdays Section */
     .birthdays-section {
       background: white;
@@ -275,13 +296,13 @@
 
       <div class="stat-card blue">
         <div class="stat-label">Total Donations</div>
-        <div class="stat-value">$<%= stats.totalDonations %></div>
+        <div class="stat-value">$<%= Number(stats.totalDonations).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></div>
         <div class="stat-detail">All time contributions</div>
       </div>
 
       <div class="stat-card lavender">
         <div class="stat-label">Avg Donation</div>
-        <div class="stat-value">$<%= stats.avgDonation %></div>
+        <div class="stat-value">$<%= Number(stats.avgDonation).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></div>
         <div class="stat-detail">Per participant</div>
       </div>
 
@@ -295,6 +316,33 @@
         <div class="stat-label">Milestones Completed</div>
         <div class="stat-value"><%= stats.completionPercentage %>%</div>
         <div class="stat-detail"><%= stats.completedMilestones %> of <%= stats.totalMilestones %> milestones</div>
+      </div>
+    </div>
+
+    <!-- Embedded Tableau Dashboard -->
+    <div class="tableau-section">
+      <h2 class="tableau-title">Interactive Analytics Dashboard</h2>
+      <div class='tableauPlaceholder' id='viz1764944072890' style='position: relative; width: 100%;'>
+        <noscript>
+          <a href='#'>
+            <img alt='Dashboard 1 (2)' src='https://public.tableau.com/static/images/El/EllaRisesManagerDashboard/Dashboard12/1_rss.png' style='border: none' />
+          </a>
+        </noscript>
+        <object class='tableauViz' style='display:none;'>
+          <param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' />
+          <param name='embed_code_version' value='3' />
+          <param name='site_root' value='' />
+          <param name='name' value='EllaRisesManagerDashboard/Dashboard12' />
+          <param name='tabs' value='no' />
+          <param name='toolbar' value='yes' />
+          <param name='static_image' value='https://public.tableau.com/static/images/El/EllaRisesManagerDashboard/Dashboard12/1.png' />
+          <param name='animate_transition' value='yes' />
+          <param name='display_static_image' value='yes' />
+          <param name='display_spinner' value='yes' />
+          <param name='display_overlay' value='yes' />
+          <param name='display_count' value='yes' />
+          <param name='language' value='en-US' />
+        </object>
       </div>
     </div>
 
@@ -334,6 +382,16 @@
       <% } else { %>
         <div class="no-birthdays">No birthdays this week</div>
       <% } %>
+    </div>
+
+    <!-- Milestone Goals Chart -->
+    <div class="chart-section">
+      <div class="chart-header">
+        <h2 class="chart-title">Milestone Goals by Education Level</h2>
+      </div>
+      <div class="chart-container">
+        <canvas id="milestonesChart"></canvas>
+      </div>
     </div>
   </div>
 
@@ -415,6 +473,166 @@
     function changeYear(year) {
       window.location.href = '/dashboard?year=' + year;
     }
+
+    // Milestone Goals Chart Configuration
+    const milestoneCtx = document.getElementById('milestonesChart').getContext('2d');
+    const milestoneData = <%- JSON.stringify(milestoneChartData) %>;
+
+    const milestoneChart = new Chart(milestoneCtx, {
+      type: 'line',
+      data: {
+        labels: milestoneData.years,
+        datasets: [
+          {
+            label: 'Middle School',
+            data: milestoneData.middleSchool,
+            borderColor: '#99B7C6',
+            backgroundColor: 'rgba(153, 183, 198, 0.1)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: '#99B7C6',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointRadius: 5,
+            pointHoverRadius: 7
+          },
+          {
+            label: 'High School',
+            data: milestoneData.highSchool,
+            borderColor: '#978EC4',
+            backgroundColor: 'rgba(151, 142, 196, 0.1)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: '#978EC4',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointRadius: 5,
+            pointHoverRadius: 7
+          },
+          {
+            label: 'College',
+            data: milestoneData.college,
+            borderColor: '#9AB59D',
+            backgroundColor: 'rgba(154, 181, 157, 0.1)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: '#9AB59D',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointRadius: 5,
+            pointHoverRadius: 7
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+            labels: {
+              font: {
+                family: 'Montserrat',
+                size: 12
+              },
+              padding: 15,
+              usePointStyle: true
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return context.dataset.label + ': ' + context.parsed.y + ' milestones';
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              stepSize: 1,
+              callback: function(value) {
+                return Math.floor(value);
+              },
+              font: {
+                family: 'Montserrat'
+              }
+            },
+            grid: {
+              color: 'rgba(0, 0, 0, 0.05)'
+            },
+            title: {
+              display: true,
+              text: 'Number of Milestones',
+              font: {
+                family: 'Montserrat',
+                size: 11
+              }
+            }
+          },
+          x: {
+            ticks: {
+              font: {
+                family: 'Montserrat'
+              }
+            },
+            grid: {
+              display: false
+            },
+            title: {
+              display: true,
+              text: 'Year',
+              font: {
+                family: 'Montserrat',
+                size: 11
+              }
+            }
+          }
+        }
+      }
+    });
+  </script>
+
+  <!-- Tableau Visualization Script -->
+  <script type='text/javascript'>
+    // Wait for DOM to be fully loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      var divElement = document.getElementById('viz1764944072890');
+      if (divElement) {
+        var vizElement = divElement.getElementsByTagName('object')[0];
+        if (vizElement) {
+          if (divElement.offsetWidth > 800) {
+            vizElement.style.minWidth = '1300px';
+            vizElement.style.maxWidth = '1366px';
+            vizElement.style.width = '100%';
+            vizElement.style.minHeight = '827px';
+            vizElement.style.maxHeight = '1627px';
+            vizElement.style.height = (divElement.offsetWidth * 0.75) + 'px';
+          } else if (divElement.offsetWidth > 500) {
+            vizElement.style.minWidth = '1300px';
+            vizElement.style.maxWidth = '1366px';
+            vizElement.style.width = '100%';
+            vizElement.style.minHeight = '827px';
+            vizElement.style.maxHeight = '1627px';
+            vizElement.style.height = (divElement.offsetWidth * 0.75) + 'px';
+          } else {
+            vizElement.style.width = '100%';
+            vizElement.style.height = '2677px';
+          }
+
+          // Load Tableau API
+          var scriptElement = document.createElement('script');
+          scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';
+          scriptElement.async = true;
+          vizElement.parentNode.insertBefore(scriptElement, vizElement);
+        }
+      }
+    });
   </script>
 
   <%- include('common/footer.ejs') %>
