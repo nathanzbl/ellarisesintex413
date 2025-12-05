@@ -39,37 +39,6 @@
 
 ---
 
-## 📁 Project Structure
-
-```
-project-root/
-├── src/
-│   ├── server.js
-│   ├── routes/
-│   ├── controllers/
-│   ├── models/
-│   └── middleware/
-├── views/
-│   ├── layouts/
-│   ├── partials/
-│   ├── participants/
-│   ├── events/
-│   ├── surveys/
-│   ├── milestones/
-│   ├── donations/
-│   └── dashboard/
-├── public/
-│   ├── css/
-│   ├── js/
-│   └── images/
-└── sql/
-    ├── create_tables.sql
-    ├── insert_data.sql
-    ├── normalization_3nf.xlsx
-    └── erd.pdf
-```
-
----
 
 ## 💻 Local Setup
 
@@ -90,10 +59,7 @@ cp .env.example .env
 
 ### Database
 
-```bash
-psql -U <user> -d <db> -f sql/create_tables.sql
-psql -U <user> -d <db> -f sql/insert_data.sql
-```
+
 
 ### Run
 
@@ -126,9 +92,7 @@ npm start
 
 - `bcrypt`
 - `express-session`
-- CSRF protection
 - Input sanitization
-- `helmet` (optional)
 
 ---
 
@@ -183,87 +147,19 @@ npm start
 |-------------|--------|
 | Deployed on AWS | ✔️ |
 | Managed RDS PostgreSQL | ✔️ |
-| HTTPS (ACM) | ✔️ |
+| HTTPS (CertBot) | ✔️ |
 | Custom Domain (Route 53) | ✔️ |
 | HTTP 418 route | ✔️ |
 | No Learner Lab | ✔️ |
 
 ### Stack Includes
 
-- Elastic Beanstalk or EC2
+- EC2
 - RDS PostgreSQL
 - Route 53
-- ACM SSL
-- Optional S3 for static assets
+
 
 ---
 
-## 📊 Data & Analytics (IS 415)
 
-### Python Exploratory Analysis
 
-**Location:** `analysis/ella_rises_exploration.ipynb`
-
-**Includes:**
-
-- Dataset overview
-- Cleaning
-- Univariate analysis (4+ variables)
-- Bivariate analysis (4+ relationships)
-- Insights after each step
-
-### Key Insights
-
-1. Event type strongly influences milestone attainment
-2. Recommendation score is the strongest predictor
-3. STEAM programming → higher milestone progress
-4. Instructor quality → satisfaction → milestones
-5. Demographic differences show varying outcomes
-
----
-
-## 🖥️ Presentation Materials
-
-**Location:** `/presentation/`
-
-- Slide deck
-- Two SWD-compliant charts
-- Narrative structure: problem → insights → action
-- Dashboard demo
-- Four short walkthrough videos
-
----
-
-## 🧪 TA Grading Guide
-
-1. Open live site
-2. Log in as admin
-3. Test CRUD for all entities
-4. Verify common user read-only permissions
-5. Test dashboard filters
-6. Confirm HTTPS + custom domain
-7. Visit `/teapot` for HTTP 418
-8. Review SQL schema + inserts
-9. Open normalization spreadsheet + ERD
-10. Watch the videos
-
-> **Everything required for grading is included in the ZIP.**
-
----
-
-## 👥 Team
-
-*Add your names here.*
-
----
-
-## 🛠️ Tech Stack
-
-| Category | Technologies |
-|----------|--------------|
-| **Backend** | Node.js, Express |
-| **Templating** | EJS |
-| **Database** | PostgreSQL, Knex |
-| **Visualization** | Chart.js, Tableau |
-| **Analytics** | Python (Pandas, NumPy, Matplotlib, Seaborn) |
-| **Cloud** | AWS (EB/EC2, RDS, Route 53, ACM) |
