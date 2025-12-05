@@ -1551,20 +1551,23 @@ app.get("/donations", async (req, res, next) => {
 
 app.get('/profile', async (req, res) => {
     try {
-        // Check if the user is logged in
-        if (!res.locals.isLoggedIn) {
+        // Check if the user is logged in via session
+        if (!req.session.isLoggedIn || !req.session.user) {
+            console.log('Profile: User not logged in, redirecting to login');
             return res.redirect('/login');
         }
 
-        // 1. Get the current user's ID from the session
-        const currentUserId = req.session.user.id;
+        // 1. Get the current user's username from the session
+        const currentUsername = req.session.user.username;
+        console.log('Profile: Loading profile for username:', currentUsername);
 
-        // 2. Fetch the user's detailed data from the database
+        // 2. Fetch the user's detailed data from the database by username
         const user = await knex("users")
-            .where("participantid", currentUserId)
+            .where("username", currentUsername)
             .first();
 
         if (!user) {
+            console.error('Profile error: User not found for username:', currentUsername);
             return res.redirect('/login');
         }
 
@@ -1574,6 +1577,7 @@ app.get('/profile', async (req, res) => {
             .first();
 
         if (!participant) {
+            console.error('Profile error: Participant not found for participantid:', user.participantid);
             return res.redirect('/login');
         }
 
@@ -2610,6 +2614,36 @@ app.get("/events/detail/:id", async (req, res) => {
         res.render("events/eventdetail", { event });
     } catch (err) {
         console.error("Error loading event detail:", err);
+        res.status(500).render("404");
+    }
+});
+
+// Public — RSVP by Event Definition (from public events page)
+app.get("/rsvp/:eventdefid", async (req, res) => {
+    try {
+        // Get the first upcoming event for this event definition
+        const event = await knex("event")
+            .join("eventdefinition", "event.eventdefid", "eventdefinition.eventdefid")
+            .select(
+                "event.eventid",
+                "event.eventdatetimestart",
+                "event.eventlocation",
+                "eventdefinition.eventname",
+                "eventdefinition.eventdefid"
+            )
+            .where("event.eventdefid", req.params.eventdefid)
+            .where("event.eventdatetimestart", ">=", knex.fn.now())
+            .orderBy("event.eventdatetimestart", "asc")
+            .first();
+
+        if (!event) {
+            // No upcoming events, just show success page
+            return res.render("rsvpsuccess");
+        }
+
+        res.render("events/eventrsvp", { event });
+    } catch (err) {
+        console.error("Error loading RSVP page:", err);
         res.status(500).render("404");
     }
 });

@@ -49,7 +49,7 @@
     }
 
     .data-card {
-      max-width: 1200px;
+      max-width: 1400px;
       width: 100%;
       padding: 2.5rem 2.25rem;
       border-radius: 1.5rem;
@@ -155,26 +155,26 @@
     .table-custom {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.85rem;
-      min-width: 1000px;    /* enough room for all 11 columns */
+      font-size: 0.8rem;
+      min-width: 100%;
     }
 
     .table-custom thead tr {
       background-color: var(--er-charcoal);
       color: var(--er-cream);
-      font-size: 0.8rem;
-      letter-spacing: 0.08em;
+      font-size: 0.7rem;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
     }
 
     .table-custom th,
     .table-custom td {
-      padding: 0.8rem 0.9rem;
+      padding: 0.6rem 0.5rem;
       text-align: left;
       border-bottom: 1px solid var(--er-blush);
       vertical-align: top;
       white-space: normal;
-      word-break: normal;
+      word-break: break-word;
     }
 
     .table-custom tbody tr:nth-child(even) {
@@ -187,7 +187,7 @@
 
     .table-custom th:nth-child(1),
     .table-custom td:nth-child(1) {
-      width: 60px;
+      width: 40px;
       white-space: nowrap;
     }
 
@@ -195,15 +195,18 @@
     .table-custom th:nth-child(10),
     .table-custom td:nth-child(10) {
       white-space: nowrap;
+      font-size: 0.7rem;
     }
 
     .score-col {
       text-align: center;
+      width: 50px;
     }
 
     .comment-cell {
-      max-width: 260px;
+      max-width: 180px;
       white-space: normal;
+      font-size: 0.75rem;
     }
 
     /* pills and comment controls */
@@ -250,7 +253,6 @@
 
     .edit-button {
       display: inline-block;
-      margin-right: 0.25rem;
       padding: 0.45rem 0.9rem;
       border-radius: 999px;
       border: none;
@@ -264,11 +266,14 @@
       box-shadow: 0 5px 12px rgba(32, 131, 47, 0.25);
       transition: all 0.18s ease;
       white-space: nowrap;
+      min-width: 95px;
+      text-align: center;
     }
 
     .edit-button:hover {
-      background: var(--er-blue);
+      background: var(--er-charcoal);
       transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(58, 63, 59, 0.4);
     }
 
     .delete-button {
@@ -285,11 +290,23 @@
       box-shadow: 0 5px 12px rgba(206, 50, 91, 0.25);
       transition: all 0.18s ease;
       white-space: nowrap;
+      min-width: 95px;
     }
 
     .delete-button:hover {
-      background: #a82848;
+      background: var(--er-charcoal);
       transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(58, 63, 59, 0.4);
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .action-buttons form {
+      margin: 0;
     }
 
     .empty-state {
@@ -471,25 +488,26 @@
                   </td>
                   <% if (typeof userRole !== 'undefined' && userRole === 'manager') { %>
                   <td>
-                    <a
-                      href="/survey/<%= s.surveyid %>/edit?<%=
-                        selectedEventDefId ? 'eventDefId=' + encodeURIComponent(selectedEventDefId) : ''
-                      %>"
-                      class="edit-button"
-                    >
-                      Edit
-                    </a>
+                    <div class="action-buttons">
+                      <a
+                        href="/survey/<%= s.surveyid %>/edit?<%=
+                          selectedEventDefId ? 'eventDefId=' + encodeURIComponent(selectedEventDefId) : ''
+                        %>"
+                        class="edit-button"
+                      >
+                        Edit
+                      </a>
 
-                    <form
-                      action="/survey/<%= s.surveyid %>/delete?<%=
-                        selectedEventDefId ? 'eventDefId=' + encodeURIComponent(selectedEventDefId) : ''
-                      %>"
-                      method="POST"
-                      style="display:inline"
-                      onsubmit="return confirm('Delete this survey response?');"
-                    >
-                      <button type="submit" class="delete-button">Delete</button>
-                    </form>
+                      <form
+                        action="/survey/<%= s.surveyid %>/delete?<%=
+                          selectedEventDefId ? 'eventDefId=' + encodeURIComponent(selectedEventDefId) : ''
+                        %>"
+                        method="POST"
+                        onsubmit="return confirm('Delete this survey response?');"
+                      >
+                        <button type="submit" class="delete-button">Delete</button>
+                      </form>
+                    </div>
                   </td>
                   <% } %>
                 </tr>

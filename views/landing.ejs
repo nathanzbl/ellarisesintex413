@@ -20,8 +20,11 @@
 }
 
 /* ---------------- GLOBAL ---------------- */
-body {
+html, body {
     margin: 0;
+    padding: 0;
+    width: 100%;
+    overflow-x: hidden;
     background-color: white;
     font-family: 'Montserrat', sans-serif;
 }
@@ -71,12 +74,11 @@ body {
     padding: 0 2rem;
 }
 
-/* Pink-outlined white text */
+/* White text with shadow for readability */
 .text-outline {
     color: white;
     font-family: "DM Serif Display", serif;
-    text-shadow:
-        -1px -1px 0 var(--er-pink);
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
 }
 
 /* Title */
@@ -101,11 +103,20 @@ body {
     font-weight: 600;
     font-size: 1.1rem;
     text-decoration: none;
-    transition: 0.25s;
+    transition: all 0.25s ease;
     box-shadow: 0 8px 25px rgba(249,175,177,0.45);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    min-width: 160px;
+    text-align: center;
+    line-height: 1.2;
 }
 .cta-btn:hover {
     background: var(--er-rose);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(206, 50, 91, 0.5);
 }
 
 /* ---------------- SECTION BELOW HERO ---------------- */
@@ -176,9 +187,14 @@ body {
     border: 1px solid var(--border-color);
     box-shadow: 0 5px 15px rgba(0,0,0,0.05);
     transition: 0.25s;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    display: block;
 }
 .program-card:hover {
     transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
 }
 
 .program-card img {
@@ -200,39 +216,87 @@ body {
     color: var(--text-gray);
     line-height: 1.6;
 }
+
+/* ---------------- MOBILE RESPONSIVE ---------------- */
+@media (max-width: 768px) {
+    .hero-wrapper {
+        height: 60vh;
+    }
+
+    .hero-content {
+        padding: 0 1rem;
+    }
+
+    .hero-title {
+        font-size: 2.5rem;
+    }
+
+    .hero-subtitle {
+        font-size: 1.2rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .cta-btn {
+        font-size: 1rem;
+        padding: 16px 28px;
+        width: auto;
+        min-width: 180px;
+    }
+
+    .section {
+        padding: 50px 15px;
+    }
+
+    .section-content h2 {
+        font-size: 1.8rem;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .stat-item {
+        padding: 20px;
+    }
+
+    .stat-item .number {
+        font-size: 2.5rem;
+    }
+
+    .program-card-grid {
+        grid-template-columns: 1fr;
+        gap: 25px;
+    }
+
+    .program-card img {
+        height: 200px;
+    }
+
+    .program-content-wrapper {
+        padding: 20px;
+    }
+
+    .program-content-wrapper h3 {
+        font-size: 1.3rem;
+    }
+}
 </style>
 </head>
 
 <body>
     <%- include('common/navbar.ejs') %>
-<!-- <main>
     <%- include('spanishtranslationstorage.ejs') %>
-</main>
-<header id="welcome">
-    <div class="hero-container">
-        
-        <img src="/images/ellarises.jpg" alt="A group of young women from Ella Rises smiling">
-        
-        <h1 data-i18n-key="hero_headline">Pursuing Higher Education. Embracing Heritage.</h1>
-        <p data-i18n-key="hero_text">
-            Welcome to Ella Rises. Our objective is to empower the future generation of women by **inviting young women to pursue higher education and embrace their heritage**. We provide culturally rooted programs and educational experiences through our signature programs focusing on **mariachi, ballet folklorico, and STEAM**.
-        </p>
-        <div class="hero-buttons">
-            <a href="/donations" class="cta-btn" data-i18n-key="btn_donate">Support Our Mission (Donate)</a>
-            <a href="#impact" class="secondary-btn" data-i18n-key="btn_impact">View Our Impact</a> 
-        </div>
-    </div>
-</header> -->
 
 <!-- ===================== HERO WITH SLIDESHOW ===================== -->
 <div class="hero-wrapper">
 
     <div class="hero-slideshow">
-        <img src="/images/Homestemworkshop.jpg" class="active">
-        <img src="/images/HomeClassRoom.jpg">
-        <img src="/images/Homeclasshelp.jpg">
-        <img src="/images/HomeBYUtour.jpg">
-        <img src="/images/Homeanimationworkshop.jpg">
+        <img src="/images/Homestemworkshop.jpg" class="active" alt="Young women participating in a STEM workshop, engaging with technology and learning">
+        <img src="/images/HomeClassRoom.jpg" alt="Students in a classroom setting, focused on educational activities">
+        <img src="/images/Homeclasshelp.jpg" alt="Instructor helping a student with classwork in a supportive learning environment">
+        <img src="/images/HomeBYUtour.jpg" alt="Group of young women on a university tour at BYU, exploring higher education opportunities">
+        <img src="/images/Homeanimationworkshop.jpg" alt="Participants engaged in an animation workshop, learning creative digital skills">
     </div>
 
     <div class="hero-overlay"></div>
@@ -287,29 +351,29 @@ body {
 
         <div class="program-card-grid">
 
-            <div class="program-card">
-                <img src="/images/BF_Single_RedDress.png">
+            <a href="/eventspublic" class="program-card">
+                <img src="/images/BF_Single_RedDress.png" alt="Young woman in traditional red Ballet Folklorico dress performing cultural dance">
                 <div class="program-content-wrapper">
                     <h3 data-i18n-key="card_mariachi_title">Mariachi Workshops</h3>
                     <p data-i18n-key="card_mariachi_text_short">Develop musical talent, stage presence, and cultural connection.</p>
                 </div>
-            </div>
+            </a>
 
-            <div class="program-card">
-                <img src="/images/Mariachi_Single.png">
+            <a href="/eventspublic" class="program-card">
+                <img src="/images/Mariachi_Single.png" alt="Participant in traditional Mariachi attire holding an instrument, showcasing cultural heritage">
                 <div class="program-content-wrapper">
                     <h3 data-i18n-key="card_folklorico_title">Ballet Folklorico</h3>
                     <p data-i18n-key="card_folklorico_text_short">Learn vibrant regional dances that build pride and discipline.</p>
                 </div>
-            </div>
+            </a>
 
-            <div class="program-card">
-                <img src="/images/steamEllaRises.jpg">
+            <a href="/eventspublic" class="program-card">
+                <img src="/images/steamEllaRises.jpg" alt="Students engaged in hands-on STEAM activities, exploring science, technology, engineering, arts, and mathematics">
                 <div class="program-content-wrapper">
                     <h3 data-i18n-key="card_steam_title">STEAM Education</h3>
                     <p data-i18n-key="card_steam_text_short">Hands-on workshops encouraging curiosity and future careers.</p>
                 </div>
-            </div>
+            </a>
 
         </div>
 
