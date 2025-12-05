@@ -10,19 +10,26 @@
 |------|-------|
 | **URL** | `<ellarises.byuisresearch.com>` |
 
-### Admin Login
+### Manager Login
 
 | Field | Value |
 |-------|-------|
-| Username | `SteveCarell` |
-| Password | `test123` |
+| Username | `EllaJohnson` |
+| Password | `admin12` |
 
-### Common User Login
+### Viewer Login
 
 | Field | Value |
 |-------|-------|
-| Username | `"WarrenBuffet123"` |
-| Password | `password1` |
+| Username | `MateoHill` |
+| Password | `admin12` |
+
+### User Login
+
+| Field | Value |
+|-------|-------|
+| Username | `"BrooklyAllen"` |
+| Password | `user12` |
 
 ### Other Requirements
 
